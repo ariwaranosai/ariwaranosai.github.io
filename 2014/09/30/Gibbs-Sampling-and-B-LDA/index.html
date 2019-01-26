@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="之前已经见过了变分推断这种求近似解的手段，它似乎为我们对复杂模型提供了一个漂亮的解法，但是我们也发现变分推断求解过程比较复杂，又比较依赖指数家族共轭分布（虽然非指数家族或者非共轭可解，但是手段更加复杂），MC(蒙特卡洛方法)就提供了另一种手段，其中在概率图模型上常用的就是MCMC(蒙特卡洛马尔科夫)方法，用一句话描述MCMC，就是对于在随机向量\(X\)状态空间上的随机过程\({X(1),...,">
+<meta name="keywords" content="LDA,Sampling,MCMC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Gibbs Sampling与B-LDA">
+<meta property="og:url" content="http://ariwaranosai.xyz/2014/09/30/Gibbs-Sampling-and-B-LDA/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="之前已经见过了变分推断这种求近似解的手段，它似乎为我们对复杂模型提供了一个漂亮的解法，但是我们也发现变分推断求解过程比较复杂，又比较依赖指数家族共轭分布（虽然非指数家族或者非共轭可解，但是手段更加复杂），MC(蒙特卡洛方法)就提供了另一种手段，其中在概率图模型上常用的就是MCMC(蒙特卡洛马尔科夫)方法，用一句话描述MCMC，就是对于在随机向量\(X\)状态空间上的随机过程\({X(1),...,">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/B-LDA.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Gibbs Sampling与B-LDA">
+<meta name="twitter:description" content="之前已经见过了变分推断这种求近似解的手段，它似乎为我们对复杂模型提供了一个漂亮的解法，但是我们也发现变分推断求解过程比较复杂，又比较依赖指数家族共轭分布（虽然非指数家族或者非共轭可解，但是手段更加复杂），MC(蒙特卡洛方法)就提供了另一种手段，其中在概率图模型上常用的就是MCMC(蒙特卡洛马尔科夫)方法，用一句话描述MCMC，就是对于在随机向量\(X\)状态空间上的随机过程\({X(1),...,">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/B-LDA.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2014/09/30/Gibbs-Sampling-and-B-LDA/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Gibbs Sampling与B-LDA | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2014/09/30/Gibbs-Sampling-and-B-LDA/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Gibbs Sampling与B-LDA
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2014-09-30 00:00:00" itemprop="dateCreated datePublished" datetime="2014-09-30T00:00:00+08:00">2014-09-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>之前已经见过了变分推断这种求近似解的手段，它似乎为我们对复杂模型提供了一个漂亮的解法，但是我们也发现变分推断求解过程比较复杂，又比较依赖指数家族共轭分布（虽然非指数家族或者非共轭可解，但是手段更加复杂），MC(蒙特卡洛方法)就提供了另一种手段，其中在概率图模型上常用的就是MCMC(蒙特卡洛马尔科夫)方法，用一句话描述MCMC，就是对于在随机向量<span class="math inline">\(X\)</span>状态空间上的随机过程<span class="math inline">\({X(1),...,X(t)}\)</span>,如果给出适当的概率转移矩阵并作用于<span class="math inline">\(X\)</span>,就可以构造出马尔可夫链使<span class="math inline">\(X(t)\)</span>的分布收敛到其真实后验分布.因此,这一类算法称为MCMC算法。其中比较常见的就是Gibbs采样算法。 <a id="more"></a></p>
+<p>这里有一些有意思的前置知识。我们常说统计学分为频率学派与贝叶斯学派，频率学派认为我们要求的变量其实是个我们所未知的定值，如MLE(极大似然)，MAP(极大后验)等方法其实是求了在其定义下的最优值，MLE是使似然函数最大的值，而MAP是使后验函数最大的值，但是贝叶斯学派认为这些值本身就是个分布，此时如果还是用MLE中的概率最大的单一值的话，就是损失掉很多信息，所以取期望是个更好的选项，回忆我们在面对复杂的生成模型时写出的联合分布往往只有参数节点和观察到的节点，希望将其中的变量都给积分积掉(其实本质上就是使用其期望)，而且要注意这里的积分其实和随机变量本身是离散的还是连续的没有关系。比如对于观察到的<span class="math inline">\(\mathcal{X}\)</span>和我们感兴趣的<span class="math inline">\(p(y|\pi)\)</span>，我们往往使用</p>
+<p><span class="math display">\[p(y|x) = \int p(y|\pi)p(\pi|\mathcal{X})\]</span></p>
+<p>明确了这一点，我们采用MC方法的合理性就明了了，很多积分是难求甚至是不可求的，而MC方法提供了一种通过采样接近的方法</p>
+<p><span class="math display">\[\int f(x)p(x)dx = E_{p(x)}[f(x)]\simeq \frac{1}{n}\sum_{i=1}^{n}f(x_i)\]</span></p>
+<p>即通过多次采样取期望的方式估计积分值。</p>
+<p>好啦，这里我们已经有了求解积分的方法,剩下的就是对分布<span class="math inline">\(p(x)\)</span>采样了，面对一个复杂的生成模型，怎样才能采样出对应的分布,MCMC方法就解决了这个问题，首先重要的一点是马尔科夫链细致平稳分布，即对于满足一定性质的马氏链（我们常见的概率图模型基本都满足这个性质,详细的可以看<a href="http://web.mit.edu/~wingated/www/introductions/mcmc-gibbs-intro.pdf" target="_blank" rel="noopener">这篇介绍</a>）具有转移概率矩阵P,进过一定次数的迭代后，会趋于一个稳定分布。所以，对于<span class="math inline">\(x\)</span>来看，如果我们找到一个合适的概率转移矩阵，那么经过一定次数的迭代，我们就能获得合理的<span class="math inline">\(p(x)\)</span>生成<span class="math inline">\(x\)</span>的采样。gibbs采样就是利用这种方法求解。</p>
+<p>gibbs采样在实际应用的推导中显得较为简单，它假设对于<span class="math inline">\(p(x)\)</span>和<span class="math inline">\(p(y)\)</span>两个难求的分布，如果我们可以通过<span class="math inline">\(p(x)=\int p(x,y)dy\)</span>来求解，即从<span class="math inline">\(p(x|y=y_{i-1})\)</span>中生成<span class="math inline">\(x_i\)</span>，同理，对于<span class="math inline">\(y\)</span>也有<span class="math inline">\(p(y)=\int p(x,y)dx\)</span>，即<span class="math inline">\(p(y|x = x_i)\)</span>生成<span class="math inline">\(y_i\)</span>，则这种方式可以生成一个gibbs序列，在一定的迭代次数之后就会收敛到固定的分布，此时采样就可以求得我们想要的积分。 gibbs采样的形式比较简单，对于要采样的<span class="math inline">\(Z\)</span>，有<span class="math inline">\(z=&lt;z_ 0,z_1,...,z_k&gt;\)</span>，其中<span class="math inline">\(k&gt;1\)</span>，则我们可以</p>
+<blockquote>
+<p>初始化<span class="math inline">\(z_{(0)}:=&lt;z_1^{(0)},...,z_j^{(0)}&gt;\)</span><br>
+  for <span class="math inline">\(t = 1\)</span> to T do<br>
+    for <span class="math inline">\(i = 1\)</span> to k do<br>
+      <span class="math inline">\(z_i^{(t+1)}\sim P(Z_i|z_1^{(t+1)},...,z_{i-1}^{(t+1)},z_{i+1}^{(t)},...,z_k^{(t)})\)</span><br>
+    end for<br>
+  end for</p>
+</blockquote>
+<p>而</p>
+<p><span class="math display">\[P(Z_i|z_1^{(t+1)},...,z_{i-1}^{(t+1)},z_{i+1}^{(t)},...,z_k^{(t)})=\frac{P(z_1^{(t+1)},...,z_{i-1}^{(t+1)},z_{i+1}^{(t)},...,z_k^{(t)})}{P(Z_i|z_1^{(t+1)},...,z_k^{(t)})}\]</span></p>
+<p>之前已经看过LDA的变分推断的推导，这里用更复杂一点的B-LDA(<a href="http://www.mysmu.edu/faculty/fdzhu/paper/SDM%2713.pdf" target="_blank" rel="noopener">论文戳这里</a>)为例子,先看生成模型（详细一点的读书笔记可以看<a href="http://www.crescentmoon.info/?p=525" target="_blank" rel="noopener">这里</a>）。</p>
+<p><img src="http://nkssai.qiniudn.com/B-LDA.png"></p>
+<p>与LDA相比，针对twitter数据，论文进行了一些新的假设首先是简化LDA中一个文章多个主题的情况，在twitter的短文中一条推文只有一个主题，其次加入背景词，认为twitter中有一些常见的词并不是由主题生成而是由背景词生成,另一方面认为用户的行文本身其实也是由主题决定的，为此还有一个生成行为的多项分布。</p>
+<p>具体的生成过程为:</p>
+<p>对于<span class="math inline">\(1\leq t \leq T\)</span>，生成<span class="math inline">\(\phi_t \sim Dir(\beta)\)</span>,<span class="math inline">\(\psi_t \sim Dir(\eta)\)</span> 生成<span class="math inline">\(\phi&#39; \sim Dir(\beta&#39;)\)</span>,<span class="math inline">\(\varphi\sim Dir(\gamma)\)</span> 对于每一个用户从<span class="math inline">\(u=1,...,U\)</span> 利用<span class="math inline">\(\theta_u\sim Dir(\alpha)\)</span>生成每个用户的主体分布 对于该用户的第n个推文，<span class="math inline">\(n=1,...,N_u\)</span> 从该用户的<span class="math inline">\(\theta_u\)</span>生成该推文主题<span class="math inline">\(z_{u,n}\)</span> 对于每一个单词<span class="math inline">\(l=1,...,L_{u,n}\)</span> 生成<span class="math inline">\(y_{u,n,l} \sim Bernoulli(\varphi)\)</span>,来决定词是由背景词还是主题生成 当<span class="math inline">\(y_{u,n,l}=1\)</span>的时候，从主题中生成单词，即<span class="math inline">\(w_{u,n,l} \sim \phi_{z_u,n}\)</span>，当<span class="math inline">\(y_{u,n,l}=0\)</span>的时候，从背景词中生成单词，即<span class="math inline">\(w_{u,n,l}\sim \phi&#39;\)</span>。 生成用户行为<span class="math inline">\(b_{u,n} \sim \psi_{z_u,n}\)</span></p>
+<p>这里可以看到我们想要采样求解的隐变量决定词生成来源的<span class="math inline">\(y\)</span>和主题<span class="math inline">\(z\)</span>,首先先写出联合分布有</p>
+<p><span class="math display">\[\begin{split}&amp;p(Z,Y,B,W|\alpha, \beta, \beta&#39;,\gamma,\eta) \\
+    =&amp;p(W|Z,Y,\beta, \beta&#39;)p(Y|\gamma)p(B|Z,\eta)p(Z|\alpha)\end{split}\]</span></p>
+<p>然后依次展开</p>
+<p>对于<span class="math inline">\(p(Z|\alpha)\)</span>有</p>
+<p><span class="math display">\[\begin{split}p(Z|\alpha) &amp;= \int p(Z|\theta)p(\theta|\alpha) \\
+                        &amp;= \int \big(\prod_u^U\prod_{t}^T\theta^{n_u^t}_{t,u}\big)\big(\prod_{u}^U\frac{1}{\Delta(\alpha)}\prod_t^T\theta_{t,u}^{\alpha_t-1}\big)d\theta \\
+                        &amp;= \int\big(\prod_{u}^U\frac{1}{\Delta(\alpha)}\prod_t^T\theta_{t,u}^{n_u^t+\alpha_t-1}\big)d\theta \\
+                        &amp;= \int \prod_{u}^U\frac{\Delta(n_u^t+\alpha)}{\Delta(\alpha)}\frac{1}{\Delta(n_u^t+\alpha)}\prod_t^T\theta_{t,u}^{n_u^t+\alpha_t-1} d\theta \\
+                        &amp;= \prod_{u}^U\frac{\Delta(n_u^t+\alpha)}{\Delta(\alpha)}
+\end{split}\]</span></p>
+<p>这里我们发现由于采用了共轭的先验，所以对于参数很容易就能通过积分消掉，既能减少采样的复杂度，又能简化式子的形式。我们观察这个式子的内容，很容易就能发现，其形式的规律。通过相似的方法还能求解出其他的带超参的。</p>
+<p><span class="math display">\[p(B|Z,\eta) = \int p(B|Z,\psi)p(\psi|\eta)d\psi = \prod_{t=1}^T \frac{\Delta(n_b^t+\eta)}{\Delta(\eta)}\]</span></p>
+<p><span class="math display">\[p(Y|\gamma)=\frac{\Delta(n_{(.)}^y+\gamma)}{\Delta(\gamma)}\]</span></p>
+<p>这里的<span class="math inline">\(n_{(.)}^y\)</span>实际上是同时代表了<span class="math inline">\(y=1\)</span>和<span class="math inline">\(y=0\)</span>的情况。</p>
+<p>现在只还剩<span class="math inline">\(p(W|Z,Y,\beta,\beta&#39;)\)</span>，这其实是模型核心的部分，通过指示变量<span class="math inline">\(y\)</span>指示从背景词分布中生成，还是从主题中生成,根据之前的规律，其实我们期望积分积掉<span class="math inline">\(\phi\)</span>和<span class="math inline">\(\phi&#39;\)</span>。</p>
+<p><span class="math display">\[\begin{split}p(W|Z,Y,\beta,\beta&#39;) &amp; = \int_\phi \int_{\phi&#39;} p(W|Z,Y,\beta, \beta&#39;)p(\phi|\beta)p(\phi&#39;|\beta&#39;)d\phi d\phi&#39; \\ 
+&amp;=\int_\phi \int_{\phi&#39;} (\prod_w^W\phi&#39;^{n_{y=0}^w}_w\prod_t^T\phi_t^{n^w_{t,y=1}})
+(\prod_t^T\frac{1}{\Delta(\beta)}\prod_w^W\phi_{t,w}^{\beta_{w}-1})(\prod_w^W\phi&#39;^{\beta&#39;_w-1}_w)d\phi d\phi&#39; \\
+&amp;= \frac{\Delta(n_{y=0}^w+\beta&#39;)}{\Delta(\beta&#39;)}\prod_{t=1}^T\frac{\Delta(n_{t,y=1}^w+\beta)}{\Delta(\beta)}
+\end{split}\]</span></p>
+<p>有了以上几个式子，我们就可以写出来最初的式子为</p>
+<p><span class="math display">\[\begin{split}&amp;p(Z,Y,B,W|\alpha, \beta, \beta&#39;,\gamma,\eta) \\
+    &amp;=p(W|Z,Y,\beta, \beta&#39;)p(Y|\gamma)p(B|Z,\eta)p(Z|\alpha)\\
+    &amp;=\frac{\Delta(n_{(.)}^y+\gamma)}{\Delta(\gamma)}\frac{\Delta(n_{y=0}^w+\beta&#39;)}{\Delta(\beta&#39;)}\prod_{t=1}^T\frac{\Delta(n_{t,y=1}^w+\beta)}{\Delta(\beta)}\\
+    &amp;\prod_{t=1}^T \frac{\Delta(n_b^t+\eta)}{\Delta(\eta)}\prod_{u}^U\frac{\Delta(n_u^t+\alpha)}{\Delta(\alpha)}
+    \end{split}\]</span></p>
+<p>下一步就是求要采样的条件分布。联合分布中<span class="math inline">\(B,W\)</span>都是观察到的变量，并且我们在采样的过程中已经积分掉了参数，剩下的就是针对<span class="math inline">\(Z、Y\)</span>的采样对于每一个Z，由于每一个用户的每一条twitter都有自己的<span class="math inline">\(Z\)</span>，所以在求每一个条件分布的时候，应该对应每一个<span class="math inline">\(Z_{u,n}\)</span>即第u个用户的第n个推文，如果我们要剥离这条推文，那么与这条推文相关的用户行为即<span class="math inline">\(B_{u,n}\)</span>也应该被剥离，这里用<span class="math inline">\(c\)</span>代表<span class="math inline">\(\{u,n\}\)</span>，于是有</p>
+<p><span class="math display">\[\begin{split}&amp;p(z_c|Z_{\lnot c}, W, Y, B)\\
+&amp;\propto\frac{p(Z,Y,B,W|\alpha, \beta, \beta&#39;,\gamma,\eta)}{p(Z_{\lnot c},Y,B_{\lnot c},W|\alpha, \beta, \beta&#39;,\gamma,\eta)} \\
+&amp;=\frac{\Delta(n_{z,y=1}^w+\beta)}{\Delta(n_{z,y=1,\lnot c}^w+\beta)}
+\frac{\Delta(n^b_z+\eta)}{\Delta(n^b_{z,\lnot c}+\eta)}
+\frac{\Delta(n^u_z+\alpha)}{\Delta(n_{z,\lnot c}^u+\alpha)}
+\end{split}\]</span></p>
+<p>将伽马函数消掉就可以得到最后的迭代式，只要注意到<span class="math inline">\(\Gamma(x + 1) = x\Gamma(x)\)</span>，就能利用各个统计量<span class="math inline">\(n\)</span>之间的差消掉伽马函数，得到迭代式。</p>
+<p>同理，对于指示标签<span class="math inline">\(y\)</span>，考虑到对于每一个词都是由<span class="math inline">\(y_{u,n,l}\)</span>指示的，所以应该剥离掉<span class="math inline">\(y_{u,n,l}\)</span>，这里用<span class="math inline">\(d\)</span>表示<span class="math inline">\({u,n,l}\)</span>。由于剥离了指示标签<span class="math inline">\(y_d\)</span>，其实在生成模型中与其相关的项目也是可以直接看出来的，即由<span class="math inline">\(y\)</span>指示的部分和生成的部分。</p>
+<p><span class="math display">\[\begin{split}&amp;p(y_d|Y_{\lnot d},Z,W,B) \\
+&amp;=\frac{\Delta(n_{(.)}^y+\gamma)}{\Delta(n^y_{\lnot d}+\gamma)}\frac{\Delta(n^w_{y=0}+\beta&#39;)}{\Delta(n^w_{y=0,\lnot d}+\beta&#39;)}\prod_{t=1}^U\frac{\Delta(n^w_{t,y=1}+\beta)}{\Delta(n^w_{t,y=1,\lnot d}+\beta)}
+\end{split}\]</span></p>
+<p>这里其实包含了<span class="math inline">\(y=1\)</span>和<span class="math inline">\(y=0\)</span>两种情况，分别会导致对后面两项不同的结果，而且剥离一个<span class="math inline">\(y_d\)</span>其实指示对统计量造成了1的影响，所以得到的形式很简单。</p>
+<p>这样我们就得到了所有需要采样的变量的表达式，然后我们先对未知的部分随机初始化，然后通过采样的参数生成具体的分布，最后多次采样得到值就可以了，有一些要注意的是，首先由于随机初始化要经过一定的迭代次数才能达到稳态，所以最初的阶段称为<code>build-in</code>，这段时间一般对结果采样，另一方面，为了获得结果，可以每次都对变量采样，也可以隔一定的次数采样，由于其实采样的结果是分布而不是值（其实贝叶斯就是这样认为的），所以根据目的不同，其实针对结果也有很多处理的方式。而且，对于部分隐变量已知的情况（比如部分<span class="math inline">\(z\)</span>已知时），可以在采样中不改变标签来利用已知信息。</p>
+<p>这里我们可以发现，相比变分推断这种方法，采样的方法从形式上来看其实更加简单，但是难以直接判断收敛，但是对于分布如果是非指数家族的时候始终很实用的方法</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/LDA/" rel="tag"># LDA</a>
+          
+            <a href="/tags/Sampling/" rel="tag"># Sampling</a>
+          
+            <a href="/tags/MCMC/" rel="tag"># MCMC</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/09/13/VB-LDA/" rel="next" title="变分推断与LDA">
+                <i class="fa fa-chevron-left"></i> 变分推断与LDA
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/02/07/lambda-Y-combinator/" rel="prev" title="lambda演算到Y-combinator">
+                lambda演算到Y-combinator <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

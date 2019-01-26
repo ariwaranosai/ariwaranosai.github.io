@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="首先从LDA（Latent Dirichlet Allocation）开始，LDA是文档聚类的生成模型，又是PGM（概率图模型）很典型的一个例子，先看看它的生成图模型（这里并不讨论LDA与PLSA优劣，或者是其他有关文档主题发现模型有关的问题，主要是以LDA为一个例子，学习变分推断这个方法）。">
+<meta name="keywords" content="LDA,近似推断,PGM,Variational-Bayes">
+<meta property="og:type" content="article">
+<meta property="og:title" content="变分推断与LDA">
+<meta property="og:url" content="http://ariwaranosai.xyz/2014/09/13/VB-LDA/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="首先从LDA（Latent Dirichlet Allocation）开始，LDA是文档聚类的生成模型，又是PGM（概率图模型）很典型的一个例子，先看看它的生成图模型（这里并不讨论LDA与PLSA优劣，或者是其他有关文档主题发现模型有关的问题，主要是以LDA为一个例子，学习变分推断这个方法）。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/LDA.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/VBEM.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/VBNP.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="变分推断与LDA">
+<meta name="twitter:description" content="首先从LDA（Latent Dirichlet Allocation）开始，LDA是文档聚类的生成模型，又是PGM（概率图模型）很典型的一个例子，先看看它的生成图模型（这里并不讨论LDA与PLSA优劣，或者是其他有关文档主题发现模型有关的问题，主要是以LDA为一个例子，学习变分推断这个方法）。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/LDA.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2014/09/13/VB-LDA/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>变分推断与LDA | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2014/09/13/VB-LDA/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">变分推断与LDA
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2014-09-13 00:00:00" itemprop="dateCreated datePublished" datetime="2014-09-13T00:00:00+08:00">2014-09-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>首先从LDA（Latent Dirichlet Allocation）开始，LDA是文档聚类的生成模型，又是PGM（概率图模型）很典型的一个例子，先看看它的生成图模型（这里并不讨论LDA与PLSA优劣，或者是其他有关文档主题发现模型有关的问题，主要是以LDA为一个例子，学习变分推断这个方法）。 <a id="more"></a></p>
+<p><img src="http://nkssai.qiniudn.com/LDA.png"></p>
+<p>先理解一下这个模型的话，图中每一个圆圈指的是随机变量或者参数，涂黑的圆圈代表的是被观测到的变量，这里的<span class="math inline">\(w\)</span>就是被观测到的词的分布，包裹着圈的方框，其实代表的是实体，其中的字母代表实体的数目，图中外面的实体就是文章的个数为<span class="math inline">\(M\)</span>，其中每个文章中单词数为<span class="math inline">\(N\)</span>，<span class="math inline">\(z\)</span>为指示生成<span class="math inline">\(w\)</span>的主题，<span class="math inline">\(\theta\)</span>为生成主题<span class="math inline">\(z\)</span>的分布。<span class="math inline">\(\alpha\)</span>和<span class="math inline">\(\beta\)</span>都是超参。</p>
+<p>所以生成整个文章的过程应该是，共有<span class="math inline">\(V\)</span>个单词，<span class="math inline">\(K\)</span>个主题。每个文章中都有隐含的分布<span class="math inline">\(\theta\)</span>来生成主题（这里应该注意的是一篇文章可能有很多主题,每一次生成单词的时候都会选择主题），选定主题<span class="math inline">\(z\)</span>后，通过<span class="math inline">\(z\)</span>指定的<span class="math inline">\(\beta\)</span>（<span class="math inline">\(\beta\)</span>应该为一个）中的一行选择单词<span class="math inline">\(w\)</span>。</p>
+<p>形式化来表示为: 选择<span class="math inline">\(N \sim Poisson(\xi)\)</span><br>
+选择<span class="math inline">\(\theta \sim Dir(\alpha)\)</span><br>
+对于每一个单词<br>
+选择主题<span class="math inline">\(z_n \sim Multinomial(\theta)\)</span><br>
+由通过<span class="math inline">\(z\)</span>在<span class="math inline">\(\beta\)</span>中选择出来的一个多项分布<span class="math inline">\(p(w_n|z_n,\beta)\)</span>生成单词<span class="math inline">\(w_n\)</span>。</p>
+<p>整个生成过程写出来应该是</p>
+<p><span class="math display">\[p(\theta,z,w|\alpha,\beta)=p(\theta|\alpha)\prod_{n=1}^Np(z_n|\theta)p(w_n|z_n,\beta) \]</span></p>
+<p>对于这个模型推断的关键在于其中对于给定参数以及观测的<span class="math inline">\(w\)</span>的后验分布<span class="math inline">\(p(\theta,z|w,\alpha,\beta)=\frac{p(\theta,z,w|\alpha,\beta)}{p(\theta|\alpha,\beta)}\)</span>的计算。由于有两个隐藏变量纠缠在一起，我们没法直接用像EM一样方法准确求解，这里我们就需要变分推断了。</p>
+<p>让我们先回到之前的EM的那个式子：</p>
+<p><span class="math display">\[\ln p(X)=\mathcal{L}(q)+KL(q||p)\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[\mathcal{L}(q)=\int q(Z)\ln \frac{ p(X,Z)}{q(Z)}\mathcal{d}z\]</span></p>
+<p><span class="math display">\[KL(q||p)=-\int q(Z)\ln \frac{p(Z|X)}{q(Z)}\mathcal{d}z\]</span></p>
+<p>两个与之前的式子不太一样，一是将累加变成了积分，这只是对离散与连续变量的不同而已，另一方面是我们没有写<span class="math inline">\(\theta\)</span>，这是因为在我们要处理的模型中，不只是有隐藏变量<span class="math inline">\(z\)</span>还有其他的随机变量<span class="math inline">\(\theta\)</span>,所以这里的<span class="math inline">\(Z\)</span>就代表所有未知随机变量。我们之前的方法是通过用<span class="math inline">\(q(z)\)</span>来接近<span class="math inline">\(p(Z|X)\)</span>来极大化<span class="math inline">\(\mathcal{L}\)</span>，那时我们采用的是令<span class="math inline">\(q(z)=p(Z|X,\theta^{old})\)</span>，但是此时我们要优化的量不只是简单的隐藏变量<span class="math inline">\(z\)</span>，而是整个集合<span class="math inline">\(\{z_n\}\)</span>，其中<span class="math inline">\(\{z_n\}\)</span>之间也有复杂的联系，所以我们没法直接优化。</p>
+<p>为了解决由于<span class="math inline">\(\{z_n\}\)</span>之间相互纠结而导致的难以求解的问题，我们索性将将<span class="math inline">\(q(Z)\)</span>因子化为</p>
+<p><span class="math display">\[q(Z)=\prod_{i=1}^{M}q_i(Z_i)\]</span></p>
+<p>其实就是将不同<span class="math inline">\(z_i\)</span>之间的联系割断，然后用来接近真实的<span class="math inline">\(q(Z)\)</span>，（这里要注意的是将<span class="math inline">\(Z\)</span>分成互不重叠的集合<span class="math inline">\(\{z_i\}\)</span>，并不一定是一个个的拆分，有时候分成几个团反而更容易计算），这种假设并不是平白无故的产生的，在系统结构是well-mixed，即生成过程是完全图的情况下，根据平均场(Mean Field Method)理论，这种时候往往可以用一个单体来代替周围复杂的相互作用（这点是我自己的理解，可能并不准确，关于平均场的部分在之后应该还会有补充）。所以，对于一个<span class="math inline">\(z_i\)</span>的状况用一个<span class="math inline">\(q_i(z_i)\)</span>来描述也是合理的，而且之后我们会见到在LDA中，采用以<span class="math inline">\(\gamma\)</span>为参数的对应分布来接近<span class="math inline">\(\theta\)</span>的真实分布。</p>
+<p>至此，我们找到了接近真实<span class="math inline">\(q(Z)\)</span>其实就是<span class="math inline">\(p(Z|X)\)</span>的方法，剩下的就是推出具体的式子了。这里我见到两种证明方法，一种是将<span class="math inline">\(\mathcal{L}\)</span>看做是以<span class="math inline">\(q(Z)\)</span>为参数的泛函，然后再利用变分法以及Euler-Lagrange方程求解其极值，其中将<span class="math inline">\(q(Z)\)</span>置换为<span class="math inline">\(q_i(z_i)\)</span>乘积，然后由于存在<span class="math inline">\(q_i(z_i)\)</span>积分和为1的约束，再利用拉格朗日乘子法就可以求解（本人数学基础为渣，这部分还是看看<a href="http://blog.huajh7.com/wp-content/uploads/2013/03/Variational-Inference-full.pdf" target="_blank" rel="noopener">大神的介绍</a>，这里也只能感叹各种不同学科背后数学的紧密联系，果然数学才是这个世界的真理）。</p>
+<p>另一种是来自《PRML》中的比较容易理解的求解方式. 先考虑极大化<span class="math inline">\(\mathcal{L}\)</span>的过程，对于其中一个<span class="math inline">\(q_i(z_i)\)</span>，我们可以将<span class="math inline">\(\mathcal{L}\)</span>改写为</p>
+<p><span class="math display">\[\begin{split} \mathcal{L}(q)=&amp; \int \prod_i q_i\ln p(X,Z)dZ-\int \prod_i q_i\sum_i\ln q_i dZ\\
+    =&amp;\int \prod_iq_i\bigg\{\ln p(X,Z)-\sum_i\ln q_i\bigg\}dZ \\ \end{split}\]</span></p>
+<p>考虑其中的一个<span class="math inline">\(q_j\)</span>则有</p>
+<p><span class="math display">\[\begin{split} \mathcal{L}(q) =&amp; \int q_j \bigg\{ \int \ln p(X,Z)\prod_{i \neq j}q_idZ_i\bigg\}dZ_j - \int q_j \ln q_j dZ_j + const \\
+= &amp; \int q_j \ln \widetilde{p}(X,Z_j)dZ_j - \int q_j \ln q_j dZ_j + const \\
+= &amp; \int q_j \frac{\widetilde{p}(X,Z_j)}{q_j}dZ_j + const\\
+= &amp; - KL(q_j || \widetilde{p}(X,Z_j)) + const
+\end{split}\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[\begin{split} \ln\widetilde{p}(X,Z_j)=&amp;\int \ln p(X,Z)\prod_{i \neq j}q_idZ_i \\
+=&amp; E_{i\neq j}[\ln p(X,Z)]
+\end{split}\]</span></p>
+<p>这时候，我们就发现在给定所有的<span class="math inline">\(\{q_{i\neq j}\}\)</span>时，想要极大化<span class="math inline">\(\mathcal{L}\)</span>等价于极小化<span class="math inline">\(q_j\)</span>和<span class="math inline">\(\widetilde{p}(X,Z_j)\)</span>的KL散度，如果我们用<span class="math inline">\(q^*_j(Z_j)\)</span>表示<span class="math inline">\(q_j(Z_j)\)</span>的最优值，则那我们只要让<span class="math inline">\(q_j^*(Z_j)\)</span>为<span class="math inline">\(E_{i\neq j}[\ln p(X,Z)]\)</span>就可以了。准确写出来应该是：</p>
+<p><span class="math display">\[q^*_j(Z_j)=\frac{exp(E_{i\neq j}[\ln p(X,Z)]}{\int exp(E_{i\neq j}[\ln p(X,Z)])dZ_j}\]</span></p>
+<p>这样我们又得到了之前在EM中M步优化的方法，将纠缠在一起的<span class="math inline">\(Z\)</span>分割成相互独立的集合<span class="math inline">\(\{z_j\}\)</span>，然后依次迭代优化，直到收敛。</p>
+<p>至此，我们最初的问题好像是解决了。其实在这种基础上还有一些扩展的算法，比如下面这个VBEM算法。</p>
+<p>我们之前在讨论模型时，将所有的隐藏变量和参数都放到<span class="math inline">\(Z\)</span>中，但是实际情况中，隐藏变量和参数往往是不同的，所以我们其实可以采用与EM很相似的过程，将隐藏变量与参数也分开优化，这就是所谓的变分EM算法，（其实所谓的变分法应该就是对于泛函求极值的方法，而对于我们面对的难以求解的模型，将复杂的那部分根据平均场理论拆开，然后就能得到一个个以<span class="math inline">\(q_i(z_i)\)</span>为参数的泛函，利用变分法求解其极值，所得到的算法都可以成为变分推断。好吧，这句是我胡扯的。）</p>
+<p>在VBEM中，要优化的式子与变分推断没什么大的不同,如果用m表示其中的超参的话，我们能发现在用<span class="math inline">\(\mathcal{L}\)</span>接近似然的时候依然有</p>
+<p><span class="math display">\[\ln p(X|m) = \mathcal{L}(q_z(Z),q_{\theta}(\theta),X) + KL(q||p)\]</span></p>
+<p>所以我们发现，其实VBEM只是把隐藏变量和参数的优化分开，最终EM的迭代过程其实也很相似</p>
+<p><span class="math display">\[\ln q_z^{(t+1)} \propto  E_{q_{\theta}^{(t)}}[\ln p(X,Z|\theta,m)]\]</span></p>
+<p><span class="math display">\[q_{\theta}^{(t+1)} \propto p(\theta,m)exp E_{q_{x}^{(t+1)}}(x)\big[\ln p(X,Z|\theta,m)\big]\]</span></p>
+<p>这里有一张与EM过程相似的图，解释了相似的过程</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/VBEM.png" alt="VBEM"><figcaption>VBEM</figcaption>
+</figure>
+<p>由于我们把所有的未知变量全都拿到<span class="math inline">\(Z\)</span>和<span class="math inline">\(\theta\)</span>中去了，所以在我们不更新超参的时候，其实整个模型的似然上界是不变的，VBEM的EM过程是在接近现有的上界的过程，而超参的更新才是极大化上界的过程(这一部分有不少讲的很清楚的资料比如这篇<a href="http://www.cse.buffalo.edu/faculty/mbeal/thesis/beal03_2.pdf" target="_blank" rel="noopener">介绍</a>)。</p>
+<p>不过我们发现一个问题，在不优化超参的时候，上界其实没有变化的，而我们却要通过近似EM的迭代来求一个局部最优解，是不是有一些简单的情况，可以让我们直接就求出来上界的优化方法呢？</p>
+<p>我们在选择超参与先验分布的时候往往会选择对应的共轭分布，为的是先验分布于似然函数相乘之后得到的后验依然是相同的分布族。即在很多时候，我们已经知道了后验分布的具体形式，那我们只要假设<span class="math inline">\(q_j\)</span>依然符合相应的分布，并且给它对应的参数作为相应的充分统计量，就可以免去相对复杂的推导过程，直接通过变分下界的极大化，来求得优化的方法。</p>
+<p>下面以一维高斯为例，尝试一下两种解法：</p>
+<p>对于一个一维高斯分布，其观测数据为<span class="math inline">\(X={x_1,...,X_N}\)</span>,我们希望推断的是均值的<span class="math inline">\(\mu\)</span>和方差的倒数<span class="math inline">\(\sigma\)</span>,其实就是高斯的充分统计量。</p>
+<p>首先先引入共轭分布的:</p>
+<p><span class="math display">\[p(\mu|\tau)=\mathcal{N}(\mu|\mu_0, (\lambda_0\tau)^{-1})\]</span></p>
+<p><span class="math display">\[p(\tau)=Gam(\tau|a_0,b_0)\]</span></p>
+<p>对于观测到的数据<span class="math inline">\(X\)</span>有似然为：</p>
+<p><span class="math display">\[p(X|\mu,\tau)=(\frac{\tau}{2\pi})exp\big\{-\frac{\tau}{2}\sum_{n=1}^{N}(x_n-\mu)^2\big\}\]</span></p>
+<p>我们斩断<span class="math inline">\(\mu\)</span>与<span class="math inline">\(\tau\)</span>的联系，</p>
+<p><span class="math display">\[q(\mu,\tau)=q_\mu(\mu)q_\tau(\tau)\]</span></p>
+<p>然后对于其中的<span class="math inline">\(q_\mu(\mu)\)</span>尤其最优解<span class="math inline">\(q_\mu^*(\mu)\)</span>:</p>
+<p><span class="math display">\[\begin{split}\ln q^*_u(\mu)&amp;= \mathbb{E}_r[\ln p(\mathbf{X}|\mu,\tau)+\ln p(\mu|\tau)]+const \\&amp;= -\frac{\mathbb{E}[\tau]}{2}\{\lambda_0(\mu-u_0)^2+\sum^N_{n=1}(x_n-\mu)^2\}+const \\\end{split}\]</span></p>
+<p>有一些地方要注意，在求<span class="math inline">\(E[\ln p(X,Z)]\)</span>时，由于我们要利用改进<span class="math inline">\(\mu\)</span>来优化，所以我们只关心与<span class="math inline">\(\mu\)</span>有关的部分，表现在生成模型中其实就是只有图中直接相连和有共同子节点的才有关,所以我们在上式的期望中仅有两项。我们发现其实大括号中间是<span class="math inline">\(\mu\)</span>的二次项，显然<span class="math inline">\(q_u(u)\)</span>是个高斯分布，所以我们可以求解出来</p>
+<p><span class="math display">\[\begin{split}u_N &amp;=\frac{\lambda_0u_0+N\bar{x}}{\lambda_0+N} \\\lambda_N &amp;=(\lambda_0+N)\mathbb{E}[\tau] \\\end{split}\]</span></p>
+<p>然后对于<span class="math inline">\(q_\tau(\tau)\)</span>，有：</p>
+<p><span class="math display">\[\begin{split}\ln q^*_r(\tau)&amp;=\mathbb{E}_u[\ln p(\mathbf{X}|\mu,\tau)+\ln p(\mu|\tau)]+\ln p(\tau)+const \\&amp;=(a_0-1)\ln \tau-b_o \tau+\frac{1}{2}\ln \tau+\frac{N}{2}\ln \tau \\&amp; -\frac{\tau}{2}\mathbb{E}_u[\sum^N_{n=1}(x_n-\mu)^2+\lambda_0(\mu-u_0)^2]+const \\\end{split}\]</span></p>
+<p>对于<span class="math inline">\(\tau\)</span>,我们的先验分布有<span class="math inline">\(p(\tau)\)</span>与其他变量无关，所以在期望外面，而且对于整理后的形式，我们用可以把它化成gamma分布的形式，其参数为：</p>
+<p><span class="math display">\[\begin{split}a_N&amp;=a_0+\frac{N}{2} \\b_N&amp;=b_0+\frac{1}{2}\mathbb{E}_u[\sum^N_{n=1}(x_n-\mu)^2+\lambda_0(\mu-u_0)^2]\end{split}\]</span></p>
+<p>然后为了求解出来具体的值，我们需要将两个式子解出来的参数根据分布的性质（这里指数分布家族的好处再次体现出来，充分统计量有着更良好的形式）联立，就能解出来，各个<span class="math inline">\(q\)</span>的参数的依赖关系。</p>
+<p><span class="math display">\[\begin{equation}\begin{split}&amp; u_N =\frac{\lambda_0u_0+N\bar{x}}{\lambda_0+N} \\&amp; \lambda_N =(\lambda_0+N)\frac{a_N}{b_N} \\&amp; a_N=a_0+\frac{N+1}{2}\\&amp;b_N=b_0+\frac{1}{2}[(\lambda_0+N)(\lambda^{-1}_N+\mu^2_N)\\ &amp;-2(\lambda_0u_0+\sum^N_{n=1}x_n)u_N+(\sum^N_{n=1}{x_n}^2)+\lambda_0{u_0}^2)]\\\end{split}\end{equation}\]</span></p>
+<p>然后根据参数依赖迭代关系，迭代更新就好了。在这种方法中，我们也发现<span class="math inline">\(q\)</span>函数本身与<span class="math inline">\(p\)</span>也有着相同的形式，（直觉上是很自然的,至于内在的原因是不是与指数家族与共轭分布有关，还得多看看书），所以我们可以一开始就假设它满足这个形式，直接优化<span class="math inline">\(\mathcal{L}\)</span>。所以，我们直接写出来<span class="math inline">\(\mathcal{L}\)</span></p>
+<p><span class="math display">\[\begin{split}\mathcal{L} = &amp; \int q(Z) \ln\frac{p(X,Z)}{q(Z)}dZ \\ 
+= &amp; E_q[\ln p(X,Z)] - E_q[\ln q(Z)] \\
+= &amp; E_q[\ln p(X|\mu, \tau)] + E_q[\ln p(\mu|\tau)] + E_q[\ln p(\tau)] \\
+&amp;- E[q_\mu(\mu)] - E[q_\tau[\tau]]
+\end{split}\]</span></p>
+<p>由于我们已经知道各个<span class="math inline">\(q_j\)</span>的分布，所以自然能写出来其似然期望与自身期望形式，即可以将<span class="math inline">\(\mathcal{L}\)</span>写作各个参数的形式，我们直接针对各个参数求偏导就可以求得迭代的形式了。这个地方的详细推倒可以在《Machine Learning:A Probabilistic Perspective》第21章里面找到。</p>
+<p>到这里，变分推断的基础大致都看了一遍。也该回到我们LDA的问题上了。</p>
+<p>回到LDA的生成过程上来，我们再来看一眼LDA的生成过程。</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/VBNP.png" alt="新生成过程"><figcaption>新生成过程</figcaption>
+</figure>
+<p>我们发现其实整个模型中，<span class="math inline">\(\alpha\)</span>和<span class="math inline">\(\beta\)</span>都是超参，位置的参数只有<span class="math inline">\(\theta\)</span>，而<span class="math inline">\(z\)</span>为隐藏变量，我们难以优化的原因也是<span class="math inline">\(\theta\)</span>与<span class="math inline">\(z\)</span>纠缠在一起，所以我们干脆就把<span class="math inline">\(\theta\)</span>与<span class="math inline">\(z\)</span>的联系切断，即把<span class="math inline">\(\theta\)</span>和<span class="math inline">\(z\)</span>分到不同的组中，然后我们之前就提过我们对每一个<span class="math inline">\(q_j\)</span>的假设其实是不重要的，因为我们最终都是要将他们近似到<span class="math inline">\(p\)</span>上，所以可以在假设中加入参数，即可得到第二个图，切断了<span class="math inline">\(\theta\)</span>与<span class="math inline">\(z\)</span>的联系，然后又加入新的参数以作为对<span class="math inline">\(\theta\)</span>和<span class="math inline">\(z\)</span>的影响因子。</p>
+<p>按照已经介绍的方法，我们可以写出<span class="math inline">\(\mathcal{L}\)</span>:</p>
+<p><span class="math display">\[\mathcal{L} = E_q[\ln p(w|z,\beta)] + E_q[\ln p(z|\theta)] + E_q[\ln p(\theta|\alpha)] - E_q[\ln q(\theta)] - E_q[\ln q(z)]\]</span></p>
+<p>然后展开这个式子</p>
+<p>对于<span class="math inline">\(E_q[\ln p(z|\theta)]\)</span>,首先有<span class="math inline">\(p(z|\theta)=\prod_{i=1}^{k}\theta_i^{(z_i)}\)</span>则其整个对数似然应该有<span class="math inline">\(\sum_n^N\sum_i^Kz_{in}\ln \theta_i\)</span>，对于同一文章的主题都有一个<span class="math inline">\(\theta\)</span>生成，则其期望有</p>
+<p><span class="math display">\[\begin{split}E_q[\ln p(z|\theta)] = &amp; E_q\big[\sum_{n=1}^N\sum_{i=1}^Kz_{in}\ln \theta_i\big] 
+= E_q\big[\sum_{n=1}^N\ln \theta\sum_{i=1}^Kz_{in}\big] \\
+= &amp; \sum_{n=1}^N\ln E_{q(\gamma)}[\ln\theta]\sum_{i=1}^KE_{q(\phi)}[z_{in}]
+= \sum_{n=1}^N(\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j))\sum_{i=1}^K\phi_{ni} \\
+= &amp; \sum_{n=1}^N\sum_{i=1}^K\phi_{ni} (\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j))
+\end{split}\]</span></p>
+<p>这里注意其实<span class="math inline">\(z_{ni}\)</span>的期望就是<span class="math inline">\(\phi_{ni}\)</span>,最后Dirichlet分布的那个期望的证明在LDA原论文的附录A.1。 对于<span class="math inline">\(E_q[\ln q(z)]\)</span>，显然有</p>
+<p><span class="math display">\[\begin{split}E_{q(\phi)}[\ln q(z)]= &amp;E_{q(\phi)}\big[\ln \prod_{n=1}^N\prod_{i=1}^{k}\phi_{ni}^{z_{ni}}\big] \\ 
+= &amp; E_{q(\phi)}\big[\sum_{n=1}^{N}\sum_{i=1}^{k}z_{ni}\ln \phi_{ni}\big]\\
+= &amp; \sum_{n=1}^{N}\sum_{i=1}^{k}E[z_{ni}]\ln \phi_{ni} \\
+= &amp; \sum_{n=1}^{N}\sum_{i=1}^{k}\phi_{ni}\ln \phi_{ni}
+\end{split}\]</span></p>
+<p>对于<span class="math inline">\(E_q[\ln p(w|z, \beta)]\)</span>有</p>
+<p><span class="math display">\[\begin{split}E_q[\ln p(w|z, \beta)] = &amp; E_q[\ln \prod_{i=1}^k\prod_{n=1}^N\prod_{j=1}^V\beta^{z_{ni}w_n^j}_{ij}] \\
+= &amp; \sum_{n=1}^N\sum_{i=1}^k\sum_{j=1}^V\phi_{nj}w_n^j\ln \beta_{ij}
+\end{split}\]</span></p>
+<p>对于<span class="math inline">\(E_q[\ln q(\theta)]\)</span>有</p>
+<p><span class="math display">\[\begin{split} E_q[\ln q(\theta)] = &amp; (\sum_{j=1}^k(\gamma_j - 1)E_{q(\gamma)}[\ln \theta_i]) + \ln \Gamma(\sum_{i=1}^k\gamma_i)-\sum_{i=1}^k \ln\Gamma(\gamma_i) \\
+= &amp; \sum_{i=1}^k(\gamma_i - 1)(\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j)) + \ln \Gamma(\sum_{j=1}^k\gamma_j)-\sum_{i=1}^k \ln\Gamma(\gamma_i)
+\end{split}\]</span></p>
+<p>这里要注意的的是<span class="math inline">\(w_n\)</span>本身是一个长度为所有word个数的且其中只有一个元素为1其余为0的向量,而<span class="math inline">\(w_n^j\)</span>为文章第N个词是单词表第j个词的情况。所以，<span class="math inline">\(\beta_{ij}\)</span>是否有效，需要满足第n个词的主题是不是i即<span class="math inline">\(z_{ni}\)</span>,以及第N个词是不是单词表的第j个词即<span class="math inline">\(w_n^j\)</span>两个条件。</p>
+<p>对于<span class="math inline">\(E_q[\ln p(\theta|\alpha)]\)</span>的计算与<span class="math inline">\(E_q[\ln q(\theta)]\)</span>相似两次展开Dirichlet分布就好了。</p>
+<p><span class="math display">\[E_q[\ln p(\theta|\alpha)]= \sum_{i=1}^k(\alpha_i - 1)(\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j)) + \ln \Gamma(\sum_{i=1}^k\alpha_i)-\sum_{i=1}^k \ln\Gamma(\alpha_i)\]</span></p>
+<p>则整个<span class="math inline">\(\mathcal{L}\)</span>为：</p>
+<p><span class="math display">\[\begin{split}
+\mathcal{L}(\gamma,\phi;\alpha,\beta) = &amp; (\sum_{i=1}^k(\alpha_i - 1)(\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j)) + \ln \Gamma(\sum_{i=1}^k\alpha_i)-\sum_{i=1}^k \ln\Gamma(\alpha_i) \\
++ &amp; \sum_{n=1}^N\sum_{i=1}^K\phi_{ni} (\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j)) \\
++ &amp; \sum_{n=1}^N\sum_{i=1}^k\sum_{j=1}^V\phi_{nj}w_n^j\ln \beta_{ij} \\
+- &amp; \sum_{i=1}^k(\gamma_i - 1)(\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j)) - \ln \Gamma(\sum_{j=1}^k\gamma_j)+\sum_{i=1}^k \ln\Gamma(\gamma_i) \\
+- &amp; \sum_{n=1}^{N}\sum_{i=1}^{k}\phi_{ni}\ln \phi_{ni}
+\end{split}\]</span></p>
+<p>由于对于<span class="math inline">\(\phi\)</span>还有<span class="math inline">\(\sum_{i=1}^k\phi_{ni}=1\)</span>的约束，所以用拉格朗日乘子法,对于其中的一个<span class="math inline">\(\phi_{ni}\)</span></p>
+<p><span class="math display">\[\mathcal{L}_{[\phi_{ni]}}=\phi_{ni}(\psi(\gamma_i)-\psi(\sum_{j=i}^k\gamma_j))+\phi_{ni}\ln \beta_{iv}-\phi_{ni}\ln\beta_{iv}+\lambda_n(\sum_{j=1}^{k}\phi_{ni}-1)\]</span></p>
+<p>这里<span class="math inline">\(\beta_{iv}\)</span>其实省略了之前的<span class="math inline">\(w_n^j\)</span>，对于每一个<span class="math inline">\(\phi_{ni}\)</span>都有对应的同一主题、同一单词的<span class="math inline">\(\beta\)</span>中的概率对应就是<span class="math inline">\(\beta_{iv}\)</span>。然后求偏导，令其等于零，显然有</p>
+<p><span class="math display">\[\phi_{ni} \propto \beta_{iv}exp(\psi(\gamma_i)-\psi(\sum_{j=1}^{k}\gamma_j))\]</span></p>
+<p>再看<span class="math inline">\(\gamma_i\)</span></p>
+<p>$<span class="math display">\[$\begin{split}
+\mathcal{L}_{\gamma} = &amp; (\sum_{i=1}^k(\alpha_i - 1)(\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j)) 
++ \sum_{n=1}^N\phi_{ni} (\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j)) \\
+- &amp; \sum_{j=1}^k(\gamma_j - 1)(\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j)) - \ln \Gamma(\sum_{j=1}^k\gamma_j)+\ln\Gamma(\gamma_i) \\
+\end{split}\]</span>$$</p>
+<p>即</p>
+<p><span class="math display">\[\mathcal{L}_{[\gamma]}=\sum_{i=1}^{k}(\psi(\gamma_i)-\psi(\sum_{j=1}^k\gamma_j))(\alpha_i+\sum_{n=1}^N\phi_{ni}-\gamma_i)-\ln \Gamma(\sum_{j=1}^{k}\gamma_j)+\ln \Gamma(\gamma_i)\]</span></p>
+<p>对<span class="math inline">\(\gamma_i\)</span>求偏导，对于第一项，<span class="math inline">\(\sum_{i=1}^k\psi(\gamma_i)(\alpha_i+\sum_{n=1}^N\phi_{ni}-\gamma_i)\)</span>由于其中只有一个<span class="math inline">\(\gamma_i\)</span>，所以偏导应该为<span class="math inline">\(\psi&#39;(\gamma_i)(\alpha_i+\sum_{n=1}^N\phi_{ni}-\gamma_i) - \psi(\gamma_i)\)</span>,但对于<span class="math inline">\(\sum_{i=1}^k\psi(\sum_{j=1}^k\gamma_j)(\alpha_i+\sum_{n=1}^N\phi_{ni}-\gamma_i)\)</span>，这里由于对于每个i，都有<span class="math inline">\(\psi(\sum_{j=1}^k\gamma_j)\)</span>中存在一个<span class="math inline">\(\gamma_i\)</span>，故，其偏导为<span class="math inline">\(\psi&#39;(\sum_{j=1}^k\gamma_j)\sum_{j=1}^k(\alpha_j+\sum_{n=1}^N\phi_{nj}-\gamma_j)-\psi(\sum_{j=1}^{k}\gamma_j)\)</span>)，由于有<span class="math inline">\(\psi(a)=\frac{d}{da}\ln \Gamma(a)\)</span>,所以最后只剩下</p>
+<p><span class="math display">\[\frac{\partial \mathcal{L}}{\partial \gamma_i} = \psi&#39;(\gamma_i)(\alpha_i+\sum_{n=1}^N\phi_{ni}-\gamma_i)-\psi&#39;(\sum_{j=1}^k\gamma_j)\sum_{j=1}^k(\alpha_j+\sum_{n=1}^N\phi_{nj}-\gamma_j)\]</span></p>
+<p>让<span class="math inline">\(\gamma_i\)</span>取得极大值的条件为</p>
+<p><span class="math display">\[\gamma_i=\alpha_i+\sum_{n=1}^{N}\phi_{ni}\]</span></p>
+<p>到这里，我们得到了<span class="math inline">\(\gamma\)</span>与<span class="math inline">\(\phi\)</span>的迭代式子。下面应该找<span class="math inline">\(\alpha\)</span>与<span class="math inline">\(\beta\)</span>，我们发现我们在估计<span class="math inline">\(\gamma\)</span>和<span class="math inline">\(\beta\)</span>时，只是在一篇文章的层面上来观察模型，这我们也可以从生成过程图上理解这个问题，由于每篇文章都是可交换与独立同分布的所以，整个文集的极大似然，其实就是所有似然的累加，加上对于同一主题<span class="math inline">\(\beta_i\)</span>所有元素之和应该为一，在故对于<span class="math inline">\(\beta\)</span>有</p>
+<p><span class="math display">\[\mathcal{L}=\sum_{d=1}^{M}\sum_{n=1}^{N_d}\sum_{i=1}^{k}\sum_{j=1}^{V}\phi_{dni}w_{dn}^j\ln \beta_{ij}+\sum_{i=1}^k\lambda_i(\sum_{i=1}^k\beta_{ij}-1)\]</span></p>
+<p>取偏导为零为</p>
+<p><span class="math display">\[\beta_{ij}\propto \sum_{d=1}^M\sum_{n=1}^{N_d}\phi_{dni}w_{dn}^j\]</span></p>
+<p>对于<span class="math inline">\(\alpha\)</span>有</p>
+<p><span class="math display">\[\mathcal{L}_{[\alpha_i]}=\sum_{d=1}^M\big(\ln \Gamma(\sum_{j=1}^k\alpha_j)-\sum_{i=1}^k\ln \Gamma(\alpha_i)+\sum_{i=1}^{k}((\alpha_i-1)(\psi(\gamma_{di})-\psi(\sum_{j=1}^k\gamma_{dj}))\big)\]</span></p>
+<p>由于每个文本中都有<span class="math inline">\(\alpha_i\)</span>，所以对于一个<span class="math inline">\(\alpha_i\)</span></p>
+<p><span class="math display">\[\frac{\partial\mathcal{L}}{\partial \alpha}=M(\psi(\sum_{j=1}^{k}\alpha_j)-\psi(\alpha_i))+\sum_{d=1}^{M}(\psi(\gamma_{di}-\psi(\sum_{j}^{k}\gamma_{dj})))\]</span></p>
+<p>这个式子中要求对每一个<span class="math inline">\(\alpha_i\)</span>迭代的时候还需要依赖于其他的<span class="math inline">\(\alpha_{j\neq i}\)</span>，为了简化运算复杂度，采用LDA论文附录A.2中的方法,其Hessian的元素为</p>
+<p><span class="math display">\[\frac{\partial\mathcal{L}}{\partial \alpha_i \alpha_j}=\delta(i,j)M(\psi&#39;(\alpha_i)-\psi&#39;(\sum_{j=1}^k\alpha_j)\]</span></p>
+<p>对于<span class="math inline">\(\alpha\)</span>的更新</p>
+<p><span class="math display">\[\alpha_{new} = \alpha_{old} - H(\alpha_{old})^{-1}g(\alpha_{old})\]</span></p>
+<p>至此，对于LDA中所有的参数估计的过程。整个迭代过程为</p>
+<p>整个过程也分为EM两步<br>
+E步为<br>
+  初始化所有的<span class="math inline">\(\phi_{ni}^0\)</span>为<span class="math inline">\(1/k\)</span><br>
+  初始化所有的<span class="math inline">\(\gamma_i\)</span>为<span class="math inline">\(\alpha_i+N/k\)</span><br>
+  repeat<br>
+    for n = 1 to N<br>
+      for i = 1 to k<br>
+        <span class="math inline">\(\phi_{ni}^{t+1}=\beta_{iw_n}exp(\psi(\gamma_i&#39;))\)</span><br>
+      归一化<span class="math inline">\(\phi_n^{t+1}\)</span><br>
+    <span class="math inline">\(\gamma^{t+1}=\alpha+\sum_{n=1}^N\phi_n^{t+1}\)</span> 这里都是向量</p>
+<p>M步为<br>
+对于每一个<span class="math inline">\(\beta_{ij} \propto \sum_{d=1}^M\sum_{n=1}^{N_d}\phi_{dni}^*w_{dn}^j\)</span><br>
+对于<span class="math inline">\(\alpha\)</span>有<span class="math inline">\(\alpha_{new} = \alpha_{old} - H(\alpha_{old})^{-1}g(\alpha_{old})\)</span></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/LDA/" rel="tag"># LDA</a>
+          
+            <a href="/tags/近似推断/" rel="tag"># 近似推断</a>
+          
+            <a href="/tags/PGM/" rel="tag"># PGM</a>
+          
+            <a href="/tags/Variational-Bayes/" rel="tag"># Variational-Bayes</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/09/03/EM-and-GLAD/" rel="next" title="EM与GLAD">
+                <i class="fa fa-chevron-left"></i> EM与GLAD
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/09/30/Gibbs-Sampling-and-B-LDA/" rel="prev" title="Gibbs Sampling与B-LDA">
+                Gibbs Sampling与B-LDA <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="最近看到了__Haoyi Li__大神的macropy项目，整体实现的思路很有意思。hack进python的import过程， 然后用macros的代码展开ast模块parse过的AST。这里有一个基础问题就是python的import hook是什么样子的。">
+<meta name="keywords" content="Python,Macros">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python Import Hook">
+<meta property="og:url" content="http://ariwaranosai.xyz/2017/06/23/pyimport/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="最近看到了__Haoyi Li__大神的macropy项目，整体实现的思路很有意思。hack进python的import过程， 然后用macros的代码展开ast模块parse过的AST。这里有一个基础问题就是python的import hook是什么样子的。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python Import Hook">
+<meta name="twitter:description" content="最近看到了__Haoyi Li__大神的macropy项目，整体实现的思路很有意思。hack进python的import过程， 然后用macros的代码展开ast模块parse过的AST。这里有一个基础问题就是python的import hook是什么样子的。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2017/06/23/pyimport/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Python Import Hook | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2017/06/23/pyimport/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Python Import Hook
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-06-23 00:00:00" itemprop="dateCreated datePublished" datetime="2017-06-23T00:00:00+08:00">2017-06-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近看到了__Haoyi Li__大神的<a href="https://github.com/lihaoyi/macropy" target="_blank" rel="noopener">macropy</a>项目，整体实现的思路很有意思。hack进python的import过程， 然后用macros的代码展开ast模块parse过的AST。这里有一个基础问题就是<code>python</code>的<code>import hook</code>是什么样子的。</p>
+<a id="more"></a>
+<p>###python 2</p>
+<p><code>python2</code>和<code>python3</code>在<code>import hook</code>上有一些的不同。这里先看<code>python2</code>的部分。</p>
+<p><code>python2</code>的<code>import hook</code>的在<a href="https://www.python.org/dev/peps/pep-0302/" target="_blank" rel="noopener"><code>pep 302</code></a>中描述。存在两个<code>import object</code>的对象列表，<code>sys.meta_path</code>以及<code>sys.path_hooks</code>，满足一定的格式，每一次import文件（不一定是py，可能是其他的，比如是zip文件）的时候，都会先后询问<code>sys.meta_path</code>以及<code>sys.path_hooks</code>的文件是否能<code>handle</code>文件，直到找出一个能够<code>handle</code>的对象。对于那种不依赖<code>sys.path</code>的<code>import</code>比如<code>Built-in</code>或者<code>frozen</code>的部分，就应该注册到<code>sys.meta_path</code>里面。</p>
+<p>接下来的问题就是<code>import object</code>应该是长成什么样子的。<code>import protocol</code>中定义了两种对象<code>finder</code>和<code>loader</code>。<code>finder</code>中应该有一个<code>find_module</code>方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">finder.find_module(fullname, path=<span class="keyword">None</span>)</span><br></pre></td></tr></table></figure>
+<p>其中<code>fullname</code>用来表示<code>import</code>的全称，<code>meta_path</code>中的对象，第二个参数会给<code>None</code>代表<code>top-level</code>的模块，或者<code>package.__path__</code>代表子模块的位置。如果找到了返回对应的<code>loader</code>对象，如果不能的话就返回None，而<code>raise</code>异常会导致<code>import</code>的中断。</p>
+<p>然后<code>loader</code>对象应该有方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loader.load_module(fullname)</span><br></pre></td></tr></table></figure>
+<p>这个函数应该返回module对象。</p>
+<p>###Python 3</p>
+<p><code>python3</code>之后<code>importlib</code>中提供了相应的脚手架。</p>
+<p><a href="https://github.com/python/cpython/blob/3.6/Lib/importlib/abc.py" target="_blank" rel="noopener">importlib.abc</a>中提供了相应的抽象的代码。</p>
+<pre><code>object
+ +-- Finder (deprecated)
+ |    +-- MetaPathFinder
+ |    +-- PathEntryFinder
+ +-- Loader
+ +-- ResourceLoader --------+
+  +-- InspectLoader          |
+       +-- ExecutionLoader --+
+                             +-- FileLoader
+                             +-- SourceLoader</code></pre>
+<p>然后在<code>cpython</code>的实现中<a href="https://github.com/python/cpython/blob/master/Lib/importlib/_bootstrap_external.py" target="_blank" rel="noopener">import</a>过程中，给出了具体的实现。其中<code>PathFinder</code>等一些类都是可以复用的，因为这些不同，所以在hack宏的时候还要针对Python版本做区分做点事情。</p>
+<p>###一个完整的流程</p>
+<p>要把自己的代码加到import的过程，就要重新实现一套object，然后把自己处理AST的部分插进流程里面就行。</p>
+<p>根据之前的分析我们需要两个对象<code>finder</code>和<code>load</code>（其实一个也无所谓，finder返回自己就好了）。</p>
+<p>整体的入口应该在<code>import</code>的过程中，将我们的类加到<code>sys.meta_path</code>里面。<code>MacroFinder</code>和<code>_MacroLoader</code>分别实现了<code>finder</code>和<code>loader</code>。</p>
+<p>在<code>finder</code>中根据<code>package</code>和<code>path</code>找到<code>code</code>，然后主管<code>parse</code>这段代码，得到<code>AST</code>，之后的宏就可以在这里进行处理，然后构造新的<code>module</code>，在上下文中<code>exec</code>这个<code>module</code>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">   source, path = self._get_source(fullname, path)</span><br><span class="line"><span class="keyword">except</span>:</span><br><span class="line">   <span class="string">"""pass if exception occur"""</span></span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">astree = ast.parse(source)</span><br><span class="line">code = compile(astree, path, <span class="string">"exec"</span>)</span><br><span class="line"><span class="comment"># todo find macros and expand them</span></span><br><span class="line">module = self._construct_module(fullname, path)</span><br><span class="line">exec(code, module.__dict__)</span><br><span class="line"><span class="keyword">return</span> module.__loader__</span><br></pre></td></tr></table></figure>
+<p>其中<code>_get_source</code>和<code>_construct_module</code>都可以利用现有的脚手架来实现。其中只不过需要根据不同的<code>python</code>版本来调整实现。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">def</span> <span class="title">_get_source</span><span class="params">(self, module_name, package_path)</span>:</span></span><br><span class="line">     <span class="keyword">if</span> six.PY2:</span><br><span class="line"><span class="comment"># python2中可以利用imp来实现</span></span><br><span class="line">         <span class="keyword">import</span> imp</span><br><span class="line">         (file, pathname, desc) = imp.find_module(</span><br><span class="line">             module_name.split(<span class="string">'.'</span>)[<span class="number">-1</span>],</span><br><span class="line">             package_path</span><br><span class="line">         )</span><br><span class="line"></span><br><span class="line">         source_code = file.read()</span><br><span class="line">         file.close()</span><br><span class="line">         file_path = file.name</span><br><span class="line">     <span class="keyword">else</span>:</span><br><span class="line">      <span class="comment"># python3中就利用importlib.machinery的内容来实现</span></span><br><span class="line">         <span class="keyword">from</span> importlib.machinery <span class="keyword">import</span> PathFinder</span><br><span class="line">         loader = PathFinder.find_module(module_name, package_path)</span><br><span class="line">         source_code = loader.get_source(module_name)</span><br><span class="line">         file_path = loader.path</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span> source_code, file_path</span><br></pre></td></tr></table></figure>
+<p>在使用的时候只要在文件开始将</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sys.meta_path.insert(<span class="number">0</span>, MacroFinder())</span><br></pre></td></tr></table></figure>
+<p>之后就可以用了，为了证明效果，可以在获得AST的时候进行一些操作。不过由于这种实现机制，每次使用宏的时候都要在最上面执行这个命令。而且宏和使用宏的文件需要分开。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Python/" rel="tag"># Python</a>
+          
+            <a href="/tags/Macros/" rel="tag"># Macros</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/30/cats-2/" rel="next" title="一点尾巴以及-Cats和Cats">
+                <i class="fa fa-chevron-left"></i> 一点尾巴以及-Cats和Cats
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/31/2017-2018/" rel="prev" title="JOJO 钢炼 2017-2018">
+                JOJO 钢炼 2017-2018 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

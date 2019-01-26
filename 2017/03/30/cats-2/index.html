@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="差点3月份就没有产出了，毕业论文算是刚刚编出来，虽然不知道能不能顺利毕业。这次内容有很水，最近又搞起来炼丹，烂七八糟什么事情都有。开始实习，马上又要放清明了。">
+<meta name="keywords" content="Scala,Cats">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一点尾巴以及-Cats和Cats">
+<meta property="og:url" content="http://ariwaranosai.xyz/2017/03/30/cats-2/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="差点3月份就没有产出了，毕业论文算是刚刚编出来，虽然不知道能不能顺利毕业。这次内容有很水，最近又搞起来炼丹，烂七八糟什么事情都有。开始实习，马上又要放清明了。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/nt.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/ntnt.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一点尾巴以及-Cats和Cats">
+<meta name="twitter:description" content="差点3月份就没有产出了，毕业论文算是刚刚编出来，虽然不知道能不能顺利毕业。这次内容有很水，最近又搞起来炼丹，烂七八糟什么事情都有。开始实习，马上又要放清明了。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/nt.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2017/03/30/cats-2/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>一点尾巴以及-Cats和Cats | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2017/03/30/cats-2/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一点尾巴以及-Cats和Cats
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-03-30 20:06:11" itemprop="dateCreated datePublished" datetime="2017-03-30T20:06:11+08:00">2017-03-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Cats/" itemprop="url" rel="index"><span itemprop="name">Cats</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>差点3月份就没有产出了，毕业论文算是刚刚编出来，虽然不知道能不能顺利毕业。这次内容有很水，最近又搞起来炼丹，烂七八糟什么事情都有。开始实习，马上又要放清明了。</p>
+<a id="more"></a>
+<h3 id="exponentials">Exponentials</h3>
+<h4 id="internal-hom-set">internal hom-set</h4>
+<p>一个类型其实就是一堆值的集合。对于<code>Boolean</code>就是元素只有<code>true</code>和<code>false</code>两个元素的集合。而对于一个类型为<code>a-&gt;b</code>的函数，就是出于两个<code>object</code>之间的<code>morphism</code>，而<code>morphism</code>构成的集合叫<code>hom-set</code>。而从另一个角度看<code>a-&gt;b</code>也是一个类型我们也可以构造诸如<code>(a-&gt;b)-&gt;(a-&gt;c)</code>来把<code>a-&gt;b</code>这个函数看做一个<code>object</code>。这样其实<code>hom-set</code>的内容其实依旧是<code>object</code>集合中的一部分。所以这部分对象叫<code>internal hom-set</code>。</p>
+<h4 id="exponentials-1">Exponentials</h4>
+<p>我们之前提过<code>sum types</code>以及<code>product types</code>。而这种<code>function object</code>样子的<code>internal hom-set</code>，他们好像并不是上述类型。比如<code>Char -&gt; Boolean</code>，<code>Char</code>用<code>ASCII</code>表示共256个元素，<code>Boolean</code>共2个元素，那么<code>Char-&gt;Boolean</code>应该有<span class="math inline">\(2^{256}\)</span>即对于<code>Char</code>中的每一个元素都能选择映射到<code>Boolean</code>中任意一个元素中。因此<code>internal hom-set</code>从<code>a</code>到<code>b</code>，就可以称为<code>exponential</code>用<span class="math inline">\(b^a\)</span>表示。</p>
+<h3 id="cartesian-closed-categories">Cartesian Closed Categories</h3>
+<p>一个<code>cartesian closed category</code>必须存在：</p>
+<ol type="1">
+<li><code>termainal object</code>。</li>
+<li>对于任意<code>objects pair</code>的<code>product</code>。</li>
+<li>对于认为<code>objects pair</code>的<code>exponential</code>。</li>
+</ol>
+<p>一个<code>cartesian closed category</code>可以看成一个允许无穷序列乘的代数。而<code>terminal object</code>就是其中的0元。</p>
+<h3 id="algebraic-data-types的一些性质">Algebraic Data Types的一些性质</h3>
+<p>有了加法和乘法以及0、1元，我们可以讨论一下具体的性质。</p>
+<p>我们利用<code>initial object</code>代替<code>0</code>，用<code>final object</code>代替<code>1</code>，而指数是<code>internal hom-object</code>。对于<code>Hask</code>，我们使用<code>Void</code>来当做<code>0</code>，而<code>1</code>是<code>()</code>，而指数就是<code>function type</code>。这样<span class="math inline">\(a^0 = 1\)</span>的就是<code>Void -&gt; a</code>，这其实就是<code>absurd</code>。实际上并没有这种函数，而且所有的<code>Void -&gt; a</code>其实都是一样的，因为它根本就不会正常运行，不会返回结果。</p>
+<p>同理，<span class="math inline">\(1^a = 1\)</span>就变成了<code>a -&gt; ()</code>。而<span class="math inline">\(a^1 = a\)</span>就变成了<code>() -&gt; a</code>。</p>
+<p>接下来看一些更复杂的例子，对于<span class="math inline">\(a^{b + c} = a^b + a^c\)</span>。</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">f</span>: <span class="type">Either</span> <span class="type">Int</span> <span class="type">Double</span> -&gt; <span class="type">String</span></span><br></pre></td></tr></table></figure>
+<p>这种样子，可以通过下面这种方式定义</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">f</span> (<span class="type">Left</span> n) = <span class="keyword">if</span> n &lt; <span class="number">0</span> <span class="keyword">then</span> <span class="string">""</span> <span class="keyword">else</span> <span class="string">""</span></span><br><span class="line"><span class="title">f</span> (<span class="type">Right</span> x) = <span class="keyword">if</span> n &lt; <span class="number">0.0</span> <span class="keyword">then</span> <span class="string">""</span> <span class="keyword">else</span> <span class="string">""</span></span><br></pre></td></tr></table></figure>
+<p>然后<span class="math inline">\((a \times b)^c = a^c \times b^c\)</span>可以理解成</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">f</span>: <span class="type">String</span> -&gt; (<span class="type">Double</span>, <span class="type">Int</span>)</span><br></pre></td></tr></table></figure>
+<p>等价于 <figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">g1</span>: <span class="type">String</span> -&gt; <span class="type">Double</span></span><br><span class="line"><span class="title">g2</span>: <span class="type">String</span> -&gt; <span class="type">Int</span></span><br><span class="line"></span><br><span class="line"><span class="title">f</span>: <span class="type">String</span> -&gt; (<span class="type">Double</span>, <span class="type">Int</span>)</span><br><span class="line"><span class="title">f</span> s = (g1 s, g2 s)</span><br></pre></td></tr></table></figure></p>
+<h3 id="curry-howard-isomorphism">Curry-Howard Isomorphism</h3>
+<p><code>Curry-Howard Isomorphism</code>是个很重要的概念，直观的来说它指出了逻辑推理和程序语言之间的一致性。程序语言与逻辑推理同构，程序类型与逻辑命题同构。在与外界隔离的情况下，一段程序等价于一段逻辑证明。</p>
+<p>也是基于这些前提，才有很多用于逻辑证明的语言比如<code>Coq</code>、<code>Agda</code>、<code>F*</code>等语言的出现。</p>
+<h3 id="natural-transformations">Natural Transformations</h3>
+<p><code>functor</code>将一个<code>category</code>映射到另一个<code>category</code>。虽然可能将多个<code>object</code>映射到同一个<code>object</code>，但是它不会破坏之前的形状。可以将<code>source category</code>看做<code>target category</code>的一个<code>blueprint</code>。可能存在多个<code>functor</code>将一个<code>source category</code>映射到多个<code>target category</code>,同时保留相同的形状。</p>
+<p>假设存在<code>C</code>和<code>D</code>两个范畴，对于<code>C</code>中的<code>a</code>，存在<code>F</code>和<code>G</code>两个<code>functor</code>将<code>a</code>映射到<code>F a</code>和<code>G a</code>。又因为<code>F a</code>和<code>G a</code>同时存在于一个范畴，我们更倾向于直接使用<code>D</code>的中的箭头来连接<code>F a</code>和<code>G a</code>。因此，我们<code>natural</code>的使用已经存在的连接。对于任意的<code>object a</code>，一个<code>natural transformation</code>就是一系列的<code>F a</code>映射到<code>G a</code>的<code>morphism</code>。</p>
+<h4 id="形式化定义">形式化定义</h4>
+<p>对于范畴<code>C</code>和<code>D</code>之间的<code>functor``F</code>和<code>G</code>，一个<code>natural transformation</code><span class="math inline">\(\eta\)</span>从<code>F</code>到<code>G</code>是指一系列的<code>morphism</code>满足如下性质</p>
+<ol type="1">
+<li><code>natural transformation</code>对于<code>C</code>中的对象<code>a</code>的<code>morphism</code>有<span class="math inline">\(\eta_x = F(X) \rightarrow G(X)\)</span>。其中<span class="math inline">\(\eta_x\)</span>被称为<span class="math inline">\(\eta\)</span>在<code>X</code>上的<code>componet</code>。</li>
+<li><code>Component</code>对于每一个<code>morphism</code>在C中的<span class="math inline">\(f: X \rightarrow Y\)</span>，都满足<span class="math inline">\(\eta_Y \circ F(f) = G(f) \circ \eta_X\)</span></li>
+</ol>
+<p>如果我们多选几个<code>object</code>就可以有如下图的结构</p>
+<p><img src="http://nkssai.qiniudn.com/nt.png"></p>
+<p>根据这个图形，我们又可以得到更多的路径比如</p>
+<p><span class="math display">\[G f \circ \eta_a = \eta_b \circ F f\]</span></p>
+<p>换个角度，从一个容器的角度看待<code>natural transformation</code>。它把对一个<code>object</code>映射到<code>morphism</code>，同时还可以看成将一个<code>morphism</code>映射到<code>commuting squares</code>。</p>
+<h4 id="polymorphic-functions">Polymorphic Functions</h4>
+<p>有一个很常见的函数</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">headOption</span></span>[<span class="type">T</span>](list: <span class="type">List</span>[<span class="type">T</span>]): <span class="type">Option</span>[<span class="type">T</span>] = list <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> a::b =&gt; <span class="type">Some</span>(a)</span><br><span class="line">    <span class="keyword">case</span> _ =&gt; <span class="type">None</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为这个函数对于任意的<code>T</code>类型都成立，所以也被称为<code>Polymorphic Functions</code>。也是<code>natural transformation</code>。</p>
+<p>因此，我们可以得到一个<code>functor</code>的范畴，而其中的<code>morphism</code>就是<code>natural transformation</code>。</p>
+<p>然后我们整理一下思路。首先我们有范畴（为了区别之后的范畴以后就称为小范畴），范畴包含一堆<code>objects</code>以及<code>morphisms</code>。然后我们还有<code>Cat</code>，更高级一点的范畴，以<code>functor</code>为<code>morphism</code>，以<code>小范畴</code>为<code>objects</code>的范畴。再进一步，我们依然可以将<code>functor</code>看做<code>objects</code>，然后用<code>natural transformation</code>当做<code>morphism</code>。我们用<code>Cat(C,D)</code>表示范畴C和D之间的<code>functor</code>的集合。而一个<code>functor</code>的范畴<code>[C,D]</code>同时也可以看做两个范畴之间<code>functor</code>的集合。</p>
+<h3 id="categories">2-Categories</h3>
+<p>一个<code>Cat</code>可以看做<code>2-category</code>，如果其满足</p>
+<ol type="1">
+<li>其元素是范畴。</li>
+<li>1-morphisms为这些范畴中的<code>functors</code>。</li>
+<li>2-morphisms位<code>functors</code>上的<code>natural transformations</code>。</li>
+</ol>
+<p>对于一般的范畴C和D我们定义<code>Hom-Category</code>，即函子范畴<span class="math inline">\(D^C\)</span>。这个和上面的指数类型很相似。</p>
+<p>我们看一个例子</p>
+<p>假如我们有两个<code>functor</code></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">F</span> :: <span class="type">C</span> -&gt; <span class="type">D</span></span><br><span class="line"><span class="type">G</span> :: <span class="type">D</span> -&gt; <span class="type">E</span></span><br></pre></td></tr></table></figure>
+<p>因此我们可以组合他们</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">G</span> . <span class="type">F</span> :: <span class="type">C</span> -&gt; <span class="type">E</span></span><br></pre></td></tr></table></figure>
+<p>假如我们有两个<code>natural transformations</code>分别为<span class="math inline">\(\alpha\)</span>和<span class="math inline">\(\beta\)</span>。 然后作用于<code>F</code>和<code>G</code>上。</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">a</span> :: <span class="type">F</span> -&gt; <span class="type">F'</span></span><br><span class="line"><span class="title">b</span> :: <span class="type">G</span> -&gt; <span class="type">G'</span></span><br></pre></td></tr></table></figure>
+<p>这里我们并不能组合<span class="math inline">\(\alpha\)</span>和<span class="math inline">\(\beta\)</span>。但是可以组合<code>F'</code>和<code>G'</code>。因此，我们可以定义<code>natural transformation</code>的<code>horizontal composition</code>为</p>
+<p><span class="math display">\[
+\beta \circ \alpha :: G \circ F -&gt; G&#39; \circ F&#39;
+\]</span></p>
+<p>这个结果也不难得到。我们看一个完整的图</p>
+<p><img src="http://nkssai.qiniudn.com/ntnt.png"></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+            <a href="/tags/Cats/" rel="tag"># Cats</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/17/cat-1/" rel="next" title="Functor-Cats和Cats">
+                <i class="fa fa-chevron-left"></i> Functor-Cats和Cats
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/23/pyimport/" rel="prev" title="Python Import Hook">
+                Python Import Hook <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#exponentials"><span class="nav-number">1.</span> <span class="nav-text">Exponentials</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#internal-hom-set"><span class="nav-number">1.1.</span> <span class="nav-text">internal hom-set</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#exponentials-1"><span class="nav-number">1.2.</span> <span class="nav-text">Exponentials</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cartesian-closed-categories"><span class="nav-number">2.</span> <span class="nav-text">Cartesian Closed Categories</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#algebraic-data-types的一些性质"><span class="nav-number">3.</span> <span class="nav-text">Algebraic Data Types的一些性质</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#curry-howard-isomorphism"><span class="nav-number">4.</span> <span class="nav-text">Curry-Howard Isomorphism</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#natural-transformations"><span class="nav-number">5.</span> <span class="nav-text">Natural Transformations</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#形式化定义"><span class="nav-number">5.1.</span> <span class="nav-text">形式化定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#polymorphic-functions"><span class="nav-number">5.2.</span> <span class="nav-text">Polymorphic Functions</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#categories"><span class="nav-number">6.</span> <span class="nav-text">2-Categories</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

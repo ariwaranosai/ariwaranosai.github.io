@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概念 首先是题目的三个关键点 - multi-view：这个名词由于实验室见到的比较多比较熟悉，multi-view是指同一个物体可能有多个view，以常见的数据集3-sources Text为例子，对于相同的story有3个新闻出版社的news，每一个新闻出版社其实就是一个view，multi-view聚类就是要利用这三个views之间的一些信息对story进行聚类。 - multi-insta">
+<meta name="keywords" content="multi-view,LDA,multi-label,multi-instance">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Multi-View Multi-Instance Multi-Label Learning">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/03/18/Multi-label/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="概念 首先是题目的三个关键点 - multi-view：这个名词由于实验室见到的比较多比较熟悉，multi-view是指同一个物体可能有多个view，以常见的数据集3-sources Text为例子，对于相同的story有3个新闻出版社的news，每一个新闻出版社其实就是一个view，multi-view聚类就是要利用这三个views之间的一些信息对story进行聚类。 - multi-insta">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/papermulti-instance.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/mlMIMLmix.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Multi-View Multi-Instance Multi-Label Learning">
+<meta name="twitter:description" content="概念 首先是题目的三个关键点 - multi-view：这个名词由于实验室见到的比较多比较熟悉，multi-view是指同一个物体可能有多个view，以常见的数据集3-sources Text为例子，对于相同的story有3个新闻出版社的news，每一个新闻出版社其实就是一个view，multi-view聚类就是要利用这三个views之间的一些信息对story进行聚类。 - multi-insta">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/papermulti-instance.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/03/18/Multi-label/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Multi-View Multi-Instance Multi-Label Learning | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/03/18/Multi-label/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Multi-View Multi-Instance Multi-Label Learning
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-03-18 10:05:10" itemprop="dateCreated datePublished" datetime="2015-03-18T10:05:10+08:00">2015-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="概念">概念</h4>
+<p>首先是题目的三个关键点 - multi-view：这个名词由于实验室见到的比较多比较熟悉，<code>multi-view</code>是指同一个物体可能有多个<code>view</code>，以常见的数据集<code>3-sources Text</code>为例子，对于相同的<code>story</code>有3个新闻出版社的<code>news</code>，每一个新闻出版社其实就是一个<code>view</code>，multi-view聚类就是要利用这三个<code>views</code>之间的一些信息对<code>story</code>进行聚类。 - multi-instance：这个名词也出现了相当长的时间，<code>multi-instance</code>是指在一些分类任务中，我们无法得到具体每一个数据点的标签，只能得到一个数据点<code>bag</code>的标签，最终要学习到每一个数据点的标签。下面这个例子，得到的标注数据只有一个个<code>bag</code>的标注数据，最终我们想要得到每一个元素的数据。 <img src="http://nkssai.qiniudn.com/papermulti-instance.png" alt="multi-instrance"> - multi-Label：这个意义就比较明显了，很多时候，同一个对象可能有多个类别标签，比如书《黑客与画家》既可以有<code>计算机</code>这个的标签又可以有<code>lisp</code>这个标签。</p>
+<p>整篇论文的核心在于提出了MIMLmix模型并给出求解。Zhou老板之前就在multi-label和multi-instrance方向上发了很多论文，这一篇也是在之前的基础上考虑了<code>multi-view</code>和数据在不同view分布不均衡的情况的新方法。</p>
+<h4 id="定义问题">定义问题</h4>
+<p>形式化定义这个<code>multi-view multi-instrance multi-label</code>这个问题如下：</p>
+<p>给定标签集合<span class="math inline">\(\mathcal{Y} = \{y_l | l = ...L\}\)</span>，以及训练数据集<span class="math inline">\(\mathcal{D} = \{(X_n,Y_n)|n = 1...N\}\)</span>，其中<span class="math inline">\(X_n = \{x_{nvm}|v = 1...V, m=1...M_{nv}\}\)</span>是指第v个<code>view</code>下的个<code>instance</code>的数据，<span class="math inline">\(Y_n = {y_{nl}| l = 1...L_n}\)</span>是对应数据的标签集合。学习的目标是预测每一个没有标注的数据<code>bag</code>的标签。</p>
+<h4 id="生成过程">生成过程</h4>
+<p>MIMLmix有如下的生成过程：</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/mlMIMLmix.png" alt="Generative Process"><figcaption>Generative Process</figcaption>
+</figure>
+<ul>
+<li>对于每一个样本组<span class="math inline">\(X_n\)</span>
+<ul>
+<li>根据<span class="math inline">\(\theta^{&#39;}_n \sim Dir(\alpha^{&#39;})\)</span>生成主题分布</li>
+<li>对于每一个样本组的标签
+<ul>
+<li>现根据主题分布生成主题<span class="math inline">\(g \sim Multi(\theta^{’}_n)\)</span></li>
+<li>根据主题选择的分布中生成标签<span class="math inline">\(y \sim Multi(\beta_g^{&#39;&#39;})\)</span></li>
+</ul></li>
+<li>根据样本组标签生成每一个样本标签的分布<span class="math inline">\(\theta_n \sim Dir(\eta \odot y_n + \varepsilon)\)</span></li>
+<li>对于每一个在view v中的样本<span class="math inline">\(x_{nvm}\)</span>
+<ul>
+<li>采样其样本主题 <span class="math inline">\(z_{nvm} \sim Multi(\theta_n)\)</span></li>
+<li>然后根据样本主题选择的分布生成观察到的值 <span class="math inline">\(x_{nvm} \sim p(x_{nvm}| z_{nvm} = y, \beta_v)\)</span></li>
+</ul></li>
+</ul></li>
+</ul>
+<p>整体来看，模型分为两部分，左半部分是LDA的部分，用来生成每个example即<span class="math inline">\(X_n\)</span>的标签，剩下一部分是<code>multi-view</code>的部分，用来对应每个<span class="math inline">\(x_n\)</span>的标签。其中两个地方比较有意思。第一点是在从y向<span class="math inline">\(\theta\)</span>转换的时候，采用的是通过<span class="math inline">\(\alpha_n = \eta \odot y_n + \varepsilon\)</span>来生成参数，在训练的时候，令<span class="math inline">\(\varepsilon = 0\)</span>以及<span class="math inline">\(y_{nl}\)</span>在存在标签l在<span class="math inline">\(Y_n\)</span>时为1，否则为0，在测试推断的时候，设<span class="math inline">\(\varepsilon\)</span>为非零值，所有的<span class="math inline">\(y_n\)</span>设为1。通过<span class="math inline">\(\eta\)</span>来控制生成标签<span class="math inline">\(y_n\)</span>对整个样本的主题分布<span class="math inline">\(\theta\)</span>的影响。第二点是对于不同的数据集观察到的值可能是离散的，也有可能是连续的。 - 离散的情况下直接令 <span class="math display">\[p(x|\beta_y) = 
+\left( \begin{array}\leavevmode ||x||_1\\ x_1\ldots x_D 
+\end{array}\right)\prod_{i=1}^D(\beta_{yi})^{x_i}\]</span> 其实就是一般的多项分布，总个数是其中非零的元素即存在标签的个数，然后从里面选出标签的概率。</p>
+<ul>
+<li>连续的情况把超参取成<span class="math inline">\(\beta_{vy} = \{u_{vy}, \Sigma_{vy}\}\)</span>，采用高斯分布 <span class="math display">\[p(x|\beta_y) = \frac{exp[-\frac{1}{2}(x  - \mu_y)^T\Sigma_z^{-1}(x - \mu_y)]}{(2\pi)^{D/2}|\Sigma_y|^{\frac{1}{2}}}\]</span></li>
+</ul>
+<h4 id="nmf中的multi-view">NMF中的multi-view</h4>
+<p>之前看的概率图模型中虽然会有用到多个view的信息，如社区发现中同时使用链接和内容两个view的例子，虽然有这种例子，但是很多时候并没有明确指出来，之前见到的比较多的明确提出<code>multi-view</code>的是在NMF中。</p>
+<p>以论文《multi-view clustering via joint nonnegative matrix factorization》中的目标函数为例：</p>
+<p><span class="math display">\[\sum_{v=1}^{n_v}\|X^{(v)} - U^{(v)}(V^{(V)})^T\|_F^2 + \sum_{v=1}^{n_v}\lambda_v\|V^{(v)} - V^*\|\]</span></p>
+<p>其实观察NMF的目标函数和生成模型，两者有很多相通的地方，NMF的<code>multi-view</code>首先将每个view分解为自己所处空间的基<span class="math inline">\(U\)</span>和坐标<span class="math inline">\(V\)</span>，假设我们要求<span class="math inline">\(U\)</span>归一化，那么<span class="math inline">\(U\)</span>的每一列其实可以看做一个多项分布，那么坐标在这一列上的值其实就是分布的结果，而<code>multi-view</code>里面假设的不同view之间的联系在NMF的式子中体现在要极小化<span class="math inline">\(\|V^{(v)} - V^*\|\)</span>这一项，其实就是假设每个view分布的结果与最终分布的结果应该尽可能的一致。</p>
+<p>对应到概率图模型的生成过程中来看，每个<code>view</code>都有自己的<span class="math inline">\(z\)</span>，而生成<span class="math inline">\(z\)</span>的分布<span class="math inline">\(\theta\)</span>是由统一的<span class="math inline">\(L\)</span>的情况来控制的（我们也可以通过参数来调整）。这样一看，两方的建模方式都挺有道理的。NMF的方式简洁，当然VC维更低，同时求解也更简单（这个是个人看法），概率图模型因为提供了更加详细的建模和更多可调的参数，VC维更高，但是也有更加细致建模的能力。</p>
+<h4 id="模型求解">模型求解</h4>
+<p>常用的两大求解方法，变分推断、Gibbs Sampling，这里采用的是变分推断的方法。</p>
+<p>整个模型其实可以看做两个LDA连在一起，而联系<span class="math inline">\(\theta\)</span>与y之间也是确定关系，所以求解过程与LDA基本相同。唯一不同的地方在当x为连续值时，采用的是高斯分布，不过这只会影响到EM的M步对<span class="math inline">\(\mu\)</span>和<span class="math inline">\(\Sigma\)</span>的更新，而且根据正太分布的假设，完全可以直接写出来结果。</p>
+<p>在从标注数据训练出关于标签分布的参数后，在测试数据上，y的值由<span class="math inline">\(\phi^{&#39;}\)</span>的值采样获得，而<span class="math inline">\(\alpha\)</span>的更新是由<span class="math inline">\(\beta^{&#39;}\)</span>和<span class="math inline">\(\theta^{&#39;}_{ny}\)</span>更新。</p>
+<h4 id="面对view间不同的重要性">面对view间不同的重要性</h4>
+<p>这个算法还有一个特点就是面对不同view之间的数据重要性不相同的时候有相应的应对策略。</p>
+<p>引入随机变量<span class="math inline">\(l_v\)</span>代表第V个view的每个样本组的样本的个数，并且服从分布<span class="math inline">\(l_v \sim Po(\lambda_v)\)</span>，然后假设不同的view之间的共有的样本个数为<span class="math inline">\(\lambda\)</span>，同时<span class="math inline">\(p(l_v | \lambda) \sim Multi(\rho), \rho = (\rho_1,...,\rho_V), \rho_v = \frac{\lambda_v}{\lambda}\)</span>。由于<span class="math inline">\(w_v = \lambda \rho_v / \lambda_v = 1\)</span>，所以原式可以写成</p>
+<p><span class="math display">\[p(z_n, X_n| \theta_n, \beta) = \prod_{vm} p(x_{nvm}, z_{nvm} | \theta_n, \beta)^{w_v}\]</span></p>
+<p>通过改变<span class="math inline">\(w_v\)</span>的值同时保证<span class="math inline">\(\sum_v w_v = 1\)</span>，就可以改变不同view的权值来改变影响力。而在变分推断的时候，把权值考虑进去就变成了</p>
+<p><span class="math display">\[L_{[w_v]} = \sum_i w_v\{E_q[\log p(z_{vi}|\theta_n] - E_q [\log q(z_{vi}|\phi_{vi})] + E_q[\log p(x_{vi} | z_{vi}, \beta_{1:V})]\}\]</span></p>
+<h4 id="实验">实验</h4>
+<p>（暂略）</p>
+<h4 id="总结">总结</h4>
+<p>这篇论文模型上比较有意思的地方在用概率图解释了<code>multi-view</code>，两个嵌套的LDA的求解，针对离散和连续变量的优化，以及与不同view之间权值的设计的方法。</p>
+<p>引用:</p>
+<ol type="1">
+<li><p>Labeling Complicated Objects: Multi-View Multi-Instance Multi-Label Learning. (2014). Labeling Complicated Objects: Multi-View Multi-Instance Multi-Label Learning.</p></li>
+<li><p>Multi-View Clustering via Joint Nonnegative Matrix Factorization. (2013). Multi-View Clustering via Joint Nonnegative Matrix Factorization., 252–260. doi:10.1137/1.9781611972832.28</p></li>
+<li><p>《PRML》</p></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/multi-view/" rel="tag"># multi-view</a>
+          
+            <a href="/tags/LDA/" rel="tag"># LDA</a>
+          
+            <a href="/tags/multi-label/" rel="tag"># multi-label</a>
+          
+            <a href="/tags/multi-instance/" rel="tag"># multi-instance</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/02/07/lambda-Y-combinator/" rel="next" title="lambda演算到Y-combinator">
+                <i class="fa fa-chevron-left"></i> lambda演算到Y-combinator
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/13/blending-bagging/" rel="prev" title="Blending and Bagging">
+                Blending and Bagging <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#概念"><span class="nav-number">1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#定义问题"><span class="nav-number">2.</span> <span class="nav-text">定义问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#生成过程"><span class="nav-number">3.</span> <span class="nav-text">生成过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#nmf中的multi-view"><span class="nav-number">4.</span> <span class="nav-text">NMF中的multi-view</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#模型求解"><span class="nav-number">5.</span> <span class="nav-text">模型求解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#面对view间不同的重要性"><span class="nav-number">6.</span> <span class="nav-text">面对view间不同的重要性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实验"><span class="nav-number">7.</span> <span class="nav-text">实验</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

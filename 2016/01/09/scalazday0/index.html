@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="这个是为了学习Scalaz而翻译的笔记，Scalaz是为Scala提供函数式编程能力的库，实现了诸如Functor，Monad等type classes，恩，你在Haskell熟悉的东西，想在scala里面用基本都要去Scalaz里面找。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="learning Scalaz-day0">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/01/09/scalazday0/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="这个是为了学习Scalaz而翻译的笔记，Scalaz是为Scala提供函数式编程能力的库，实现了诸如Functor，Monad等type classes，恩，你在Haskell熟悉的东西，想在scala里面用基本都要去Scalaz里面找。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="learning Scalaz-day0">
+<meta name="twitter:description" content="这个是为了学习Scalaz而翻译的笔记，Scalaz是为Scala提供函数式编程能力的库，实现了诸如Functor，Monad等type classes，恩，你在Haskell熟悉的东西，想在scala里面用基本都要去Scalaz里面找。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/01/09/scalazday0/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>learning Scalaz-day0 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/01/09/scalazday0/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">learning Scalaz-day0
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-01-09 13:17:32" itemprop="dateCreated datePublished" datetime="2016-01-09T13:17:32+08:00">2016-01-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Scalaz翻译/" itemprop="url" rel="index"><span itemprop="name">Scalaz翻译</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这个是为了学习Scalaz而翻译的笔记，Scalaz是为Scala提供函数式编程能力的库，实现了诸如<code>Functor</code>，<code>Monad</code>等<code>type classes</code>，恩，你在Haskell熟悉的东西，想在scala里面用基本都要去<code>Scalaz</code>里面找。</p>
+<a id="more"></a>
+<h4 id="什么是polymorphism">什么是polymorphism</h4>
+<p><code>polymorphism</code>一般翻译成多态，虽然我们在<code>C++</code>里面也会提多态，但是在<code>programming languages and type theory</code>里面就不太一样。简单来说，一个<code>polymorphic type</code> 就是指其操作可以应用到多个其他类型上。基础的多态有三种：</p>
+<ul>
+<li>Parametric polymorphism。这个就是像常见的泛型一样，类型定义包含一个或多个类型变量，这样就可以通过给定具体的类型参数，来接受不同类型的值了。比如：</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">head</span></span>[<span class="type">A</span>](xs: <span class="type">List</span>[<span class="type">A</span>]) = xs(<span class="number">0</span>)</span><br><span class="line">head(<span class="number">1</span>::<span class="number">2</span>::<span class="type">Nil</span>)</span><br><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Car</span>(<span class="params">make: <span class="type">String</span></span>)</span></span><br><span class="line"><span class="class"><span class="title">head</span>(<span class="params"><span class="type">Car</span>("civic"</span>)</span>::<span class="type">Car</span>(<span class="string">"CR-V"</span>)::<span class="type">Nil</span>)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Subtype polymorphism。也叫subtyping或者inclusion polymorphism。比如C++里面基于虚函数的多态，一个名字(引用？形参？)代表的实例都有共同的<code>superclass</code>。</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Plus</span>[<span class="type">A</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">plus</span></span>(a2: <span class="type">A</span>): <span class="type">A</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">plus</span></span>[<span class="type">A</span> &lt;: <span class="type">Plus</span>[<span class="type">A</span>]](a1: <span class="type">A</span>, a2: <span class="type">A</span>): <span class="type">A</span> = a1.plus(a2)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Ad-hoc polymorphism。这个比如C++的函数重载。即一个函数通过有限的指定的类型或者其组合来区分不同的实现。而在scala里面，还可以通过隐式类型转换实现。其实这里可以看出来Scala隐式类型转换的一个好处，我们可以针对已有的类型添加功能，而不用更改其代码，并且可以通过作用域来控制其起作用的时机。</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Plus</span>[<span class="type">A</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">plus</span></span>(a1: <span class="type">A</span>, a2: <span class="type">A</span>): <span class="type">A</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">plus</span></span>[<span class="type">A</span>: <span class="type">Plus</span>](a1: <span class="type">A</span>, a2: <span class="type">A</span>): <span class="type">A</span> = </span><br><span class="line">	implicitly[<span class="type">Plus</span>[<span class="type">A</span>]].plus(a1, a2)</span><br><span class="line"></span><br><span class="line"><span class="keyword">implicit</span> <span class="keyword">val</span> <span class="type">StringPlus</span> = <span class="keyword">new</span> <span class="type">Plus</span>[<span class="type">String</span>] &#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">plus</span></span>(a1: <span class="type">String</span>, a2: <span class="type">String</span>) = a1 + a2</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="一个ad-hoc-polymorphism的例子">一个<code>ad-hoc polymorphism</code>的例子</h4>
+<p>一般<code>sum</code>是这么写的</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sum</span></span>(xs: <span class="type">List</span>[<span class="type">Int</span>]): <span class="type">Int</span> = xs.foldLeft(<span class="number">0</span>) &#123;_ + _&#125;</span><br><span class="line"></span><br><span class="line">sum(<span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>))</span><br></pre></td></tr></table></figure>
+<p>如果我们想把它弄得更<code>generalize</code>一点，提供一种抽象，<code>Monoid</code>，（你懂得就是那个<code>Monoid</code>），它应该满足包含<code>map</code>和<code>zero</code>，两个函数，以及一些性质，这个可以通过很多haskell的书看到。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">IntMonoid</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">mappend</span></span>(a: <span class="type">Int</span>, b: <span class="type">Int</span>): <span class="type">Int</span> = a + b</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">mzero</span></span>: <span class="type">Int</span> = <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后把上面那个改写成</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sum</span></span>(xs: <span class="type">List</span>[<span class="type">Int</span>]): <span class="type">Int</span> =</span><br><span class="line">	xs.foldLeft(<span class="type">IntMonoid</span>.mzero)(<span class="type">IntMonoid</span>.mappend)</span><br></pre></td></tr></table></figure>
+<p>然后在进一步，抽象出<code>Monoid</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Monoid</span>[<span class="type">A</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">mappend</span></span>(a1: <span class="type">A</span>, a2: <span class="type">A</span>):<span class="type">A</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">mzero</span></span>: <span class="type">A</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">IntMonoid</span> <span class="keyword">extends</span> <span class="title">Monoid</span>[<span class="type">Int</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">mappend</span></span>(a: <span class="type">Int</span>, b: <span class="type">Int</span>): <span class="type">Int</span> = a + b</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">mzero</span></span>: <span class="type">Int</span> = <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sum</span></span>(xs: <span class="type">List</span>[<span class="type">Int</span>], m: <span class="type">Monoid</span>[<span class="type">Int</span>]): <span class="type">Int</span> = </span><br><span class="line">	xs.foldLeft(m.mzero)(m.mappend)</span><br></pre></td></tr></table></figure>
+<p>但是这样sum还是没有摆脱具体的类型，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sum</span></span>[<span class="type">A</span>](xs: <span class="type">List</span>[<span class="type">A</span>], m: <span class="type">Monoid</span>[<span class="type">A</span>]): <span class="type">A</span> = </span><br><span class="line">	xs.foldLeft(m.mzero)(m.mappend)</span><br><span class="line"></span><br><span class="line">sum(<span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>), <span class="type">IntMonoid</span>)</span><br></pre></td></tr></table></figure>
+<p>这样显示的给出<code>Monoid</code>未免太过复杂，这个时候就需要<code>implicit</code>出马了</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sum</span></span>[<span class="type">A</span>](xs: <span class="type">List</span>[<span class="type">A</span>])(<span class="keyword">implicit</span> m: <span class="type">Monoid</span>[<span class="type">A</span>]): <span class="type">A</span> =</span><br><span class="line">    xs.foldLeft(m.mzero)(m.mappend)</span><br><span class="line"></span><br><span class="line"><span class="keyword">implicit</span>  <span class="keyword">val</span> intMonoid = <span class="type">IntMonoid</span></span><br><span class="line"></span><br><span class="line">sum(<span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>))</span><br></pre></td></tr></table></figure>
+<p>这样对于任何一个已有的类型，我们都可以不用更改其自身通过<code>implicit</code>来完成像是给它添加的新功能的效果，而且是编译时的。</p>
+<h4 id="foldleft">FoldLeft</h4>
+<p>下面把目光转向<code>foldleft</code>操作。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">FoldLeftList</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">foldLeft</span></span>[<span class="type">A</span>, <span class="type">B</span>](xs: <span class="type">List</span>[<span class="type">A</span>], b: <span class="type">B</span>, f: (<span class="type">B</span>, <span class="type">A</span>) =&gt; <span class="type">B</span>) = </span><br><span class="line">		xs.foldLeft(b)(f)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sum</span></span>[<span class="type">A</span>](xs: <span class="type">List</span>[<span class="type">A</span>])(<span class="keyword">implicit</span> m: <span class="type">Monoid</span>[<span class="type">A</span>]): <span class="type">A</span> =</span><br><span class="line">    <span class="type">FoldLeftList</span>.foldLeft(xs, m.mzero, m.mappend)</span><br></pre></td></tr></table></figure>
+<p>这样显然长得不好看，所以，我们采用之前的那种方式抽象出一个<code>typeclass</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">FoldLeft</span>[<span class="type">F</span>[_]] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">foldLeft</span></span>[<span class="type">A</span>, <span class="type">B</span>](xs: <span class="type">F</span>[<span class="type">A</span>], b: <span class="type">B</span>, f: (<span class="type">B</span>, <span class="type">A</span>) =&gt; <span class="type">B</span>): <span class="type">B</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">FoldLeft</span> </span>&#123;</span><br><span class="line">		<span class="keyword">implicit</span> <span class="keyword">val</span> <span class="type">FoldLeftList</span>: <span class="type">FoldLeft</span>[<span class="type">List</span>] = <span class="keyword">new</span> <span class="type">FoldLeft</span>[<span class="type">List</span>] &#123;</span><br><span class="line">		<span class="function"><span class="keyword">def</span> <span class="title">foldLeft</span></span>[<span class="type">A</span>, <span class="type">B</span>](xs: <span class="type">List</span>[<span class="type">A</span>], b: <span class="type">B</span>, f: (<span class="type">B</span>, <span class="type">A</span>) =&gt; <span class="type">B</span>) = xs.foldLeft(b)(f)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sum</span></span>[<span class="type">M</span>[_]: <span class="type">FoldLeft</span>, <span class="type">A</span>: <span class="type">Monoid</span>](xs: <span class="type">M</span>[<span class="type">A</span>]): <span class="type">A</span> = &#123;</span><br><span class="line">	<span class="keyword">val</span> m = implicitly[<span class="type">Monoid</span>[<span class="type">A</span>]]</span><br><span class="line">	<span class="keyword">val</span> fl = implicitly[<span class="type">FoldLeft</span>[<span class="type">M</span>]]</span><br><span class="line">	fl.foldLeft(xs, m.mzero, m.mappend)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sum1</span></span>[<span class="type">M</span>[_], <span class="type">A</span>](xs: <span class="type">M</span>[<span class="type">A</span>])(<span class="keyword">implicit</span> m: <span class="type">Monoid</span>[<span class="type">A</span>], f: <span class="type">FoldLeft</span>[<span class="type">M</span>]) =</span><br><span class="line">    f.foldLeft(xs, m.mzero, m.mappend)</span><br></pre></td></tr></table></figure>
+<p>这里使用了另外一种语法，用<code>implicitly</code>代替了<code>implicit</code>的参数，看起来更加的明确一点，函数接受一个可以在<code>Monoid</code>上可以<code>foldLeft</code>的类型，然后在<code>implicit view bound</code>里面获取实际的<code>foldLeft</code>，以及<code>Monoid</code>，然后，执行。这里面诸如<code>Monoid</code>和<code>FoldLeft</code>在Haskell称为<code>Typeclass</code>。而在Scala中，Scalaz提供了大量的typeclass，</p>
+<h4 id="method-injection">method injection</h4>
+<p>虽然像之前那样能完成目标，但是这样子，如果我们想单独使用一个加法的时候，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">plus</span></span>[<span class="type">A</span>: <span class="type">Monoid</span>](a: <span class="type">A</span>, b: <span class="type">A</span>): <span class="type">A</span> = implicity[<span class="type">Monoid</span>[<span class="type">A</span>]].mappend(a, b)</span><br><span class="line"></span><br><span class="line"><span class="comment">//使用的时候</span></span><br><span class="line">plus(<span class="string">"1"</span>,<span class="string">"2"</span>)</span><br></pre></td></tr></table></figure>
+<p>这样写起来很麻烦，明明是类型本身的操作，这样写感觉不好看。</p>
+<p>为了<code>elegant</code>!</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">MonoidOp</span>[<span class="type">A</span>] </span>&#123;</span><br><span class="line">    <span class="keyword">val</span> <span class="type">F</span>: <span class="type">Monoid</span>[<span class="type">A</span>]</span><br><span class="line">    <span class="keyword">val</span> value: <span class="type">A</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">|+|</span></span>(a2: <span class="type">A</span>) = <span class="type">F</span>.mappend(value, a2)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">toMonoidOp</span></span>[<span class="type">A</span>: <span class="type">Monoid</span>](a: <span class="type">A</span>): <span class="type">MonoidOp</span>[<span class="type">A</span>] = <span class="keyword">new</span> <span class="type">MonoidOp</span>[<span class="type">A</span>] &#123;</span><br><span class="line">    <span class="keyword">val</span> <span class="type">F</span> = implicitly[<span class="type">Monoid</span>[<span class="type">A</span>]]</span><br><span class="line">    <span class="keyword">val</span> value = a</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="number">1</span> |+| <span class="number">2</span></span><br><span class="line"><span class="string">"1"</span> |+| <span class="string">"2"</span></span><br></pre></td></tr></table></figure>
+<p>这样就把新方法注入到已有的类型中了，而且，想要加新的类型就去实现<code>Monoid</code>就有了。</p>
+<p>这部分是 <a href="http://eed3si9n.com/learning-scalaz/index.html" target="_blank" rel="noopener">Learning from Scalaz</a>的第0部分。也是为什么要用typeclass，要有方便的高阶类型的操作，为什么需要ScalaZ。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/12/29/VSADT/" rel="next" title="Very Simple Algebraic Data Types">
+                <i class="fa fa-chevron-left"></i> Very Simple Algebraic Data Types
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/14/scalazday1/" rel="prev" title="learning Scalaz-day1">
+                learning Scalaz-day1 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#什么是polymorphism"><span class="nav-number">1.</span> <span class="nav-text">什么是polymorphism</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#一个ad-hoc-polymorphism的例子"><span class="nav-number">2.</span> <span class="nav-text">一个ad-hoc polymorphism的例子</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#foldleft"><span class="nav-number">3.</span> <span class="nav-text">FoldLeft</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#method-injection"><span class="nav-number">4.</span> <span class="nav-text">method injection</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

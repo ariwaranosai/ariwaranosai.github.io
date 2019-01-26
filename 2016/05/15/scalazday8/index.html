@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="这一部分主要是Monad Transformers。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="learning Scalaz-day8">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/05/15/scalazday8/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="这一部分主要是Monad Transformers。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="learning Scalaz-day8">
+<meta name="twitter:description" content="这一部分主要是Monad Transformers。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/05/15/scalazday8/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>learning Scalaz-day8 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/05/15/scalazday8/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">learning Scalaz-day8
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-05-15 10:39:32" itemprop="dateCreated datePublished" datetime="2016-05-15T10:39:32+08:00">2016-05-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Scalaz翻译/" itemprop="url" rel="index"><span itemprop="name">Scalaz翻译</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这一部分主要是Monad Transformers。</p>
+<a id="more"></a>
+<h3 id="monad-transformers">Monad transformers</h3>
+<p>正如我们之前见到的很多类型并不是直接定义的而已通过定义对应的<code>类型名T</code>然后通过<code>type SomeMonad[T] = SomeMonadT[Id, T]</code>而产生的。对于已经存在的类型比如<code>Either</code>，<code>scalaz</code>也是先构造<code>\/</code>，然后又提供了<code>EitherT</code>这种形式的类型，就称为<code>Monad Transformer</code>。而简单来说，<code>Monad Transformer</code>就提供了<code>Monad</code>组合的能力。通过<code>Monad Transformer</code>组合出来的依旧是<code>Monad</code>而且是有多种功能。</p>
+<h4 id="id">Id</h4>
+<p>先来看一下这个<code>Id</code>类型到底是什么。其实猜也能猜出来，<code>scala</code>中<code>identity</code>这个函数代表没什么也不做即<code>x =&gt; x</code>，那<code>Id</code>这个类型应该就是什么也不做的类型。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">Id</span>[+<span class="type">X</span>] </span>= <span class="type">X</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">point</span></span>[<span class="type">A</span>](a: =&gt; <span class="type">A</span>): <span class="type">A</span> = a</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bind</span></span>[<span class="type">A</span>, <span class="type">B</span>](a: <span class="type">A</span>)(f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">B</span> = f(a)</span><br></pre></td></tr></table></figure>
+<p>可以看出来，<code>Id</code>这个类型并没有给作为参数的类型加入什么功能。就是一个什么也没做的类型。而且，它还是一个<code>Monad</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="type">Monad</span>[<span class="type">Id</span>].point(x) &gt;&gt;= f) assert_=== f(x) <span class="comment">//等价于 f(x)</span></span><br><span class="line">(<span class="type">Monad</span>[<span class="type">Id</span>].point(x) &gt;&gt;= <span class="type">Monad</span>[<span class="type">Id</span>].point) assert_=== <span class="type">Monad</span>[<span class="type">Id</span>].point(x) <span class="comment">//flatmap id等于id</span></span><br><span class="line">((<span class="type">Monad</span>[<span class="type">Id</span>].point(x) &gt;&gt;= f) &gt;&gt;= g) assert_===</span><br><span class="line">	<span class="type">Monad</span>[<span class="type">Id</span>].point(x) &gt;&gt;= (x =&gt; (f(x) &gt;&gt;=g))</span><br></pre></td></tr></table></figure>
+<p>这几条都显然成立。所以<code>Id</code>本身就像加法中的0，乘法中的1，在运算中不加入新的功能。</p>
+<h3 id="some-example">Some example</h3>
+<h4 id="readert">ReaderT</h4>
+<p>下面是一个ReaderT的例子</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">ReaderTOption</span>[<span class="type">A</span>, <span class="type">B</span>] </span>= <span class="type">ReaderT</span>[<span class="type">Option</span>, <span class="type">A</span>, <span class="type">B</span>]</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">ReaderTOption</span> <span class="keyword">extends</span> <span class="title">KleisliInstances</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>[<span class="type">A</span>, <span class="type">B</span>](f: <span class="type">A</span> =&gt; <span class="type">Option</span>[<span class="type">B</span>]): <span class="type">ReaderTOption</span>[<span class="type">A</span>, <span class="type">B</span>] = kleisli(f)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后为了使用这个东西，我们假设，我们要读一个配置的Map由于其中有可能有的项不存在，所以会失败。</p>
+<p>先实现获取一个项的函数。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">configure</span></span>(key: <span class="type">String</span>) = <span class="type">ReaderTOption</span>[<span class="type">Map</span>[<span class="type">String</span>, <span class="type">String</span>], <span class="type">String</span>] &#123;_.get(key)&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">goodConfig</span> </span>= <span class="type">Map</span> (</span><br><span class="line">	<span class="string">"user"</span> -&gt; <span class="string">"aaa"</span>,</span><br><span class="line">	<span class="string">"host"</span> -&gt; <span class="string">"locahost"</span>,</span><br><span class="line">	<span class="string">"password"</span> -&gt; <span class="string">"******"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">badConfig</span> </span>= <span class="type">Map</span>(</span><br><span class="line">	<span class="string">"user"</span> -&gt; <span class="string">"aaa"</span>,</span><br><span class="line">	<span class="string">"host"</span> -&gt; <span class="string">"localhost"</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>这样我们获取内容的时候，就不用每次都处理获取失败的情况了。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">setupConnection</span> </span>= <span class="keyword">for</span> &#123;</span><br><span class="line">  host &lt;- configure(<span class="string">"host"</span>)</span><br><span class="line">  user &lt;- configure(<span class="string">"user"</span>)</span><br><span class="line">  passwd &lt;- configure(<span class="string">"password"</span>)</span><br><span class="line">&#125; <span class="keyword">yield</span> (host, user, passwd)</span><br><span class="line"></span><br><span class="line">setupConnection(goodConfig)</span><br><span class="line"><span class="comment">// res0: Option[(String, String, String)] = Some((localhost,aaa,****))</span></span><br><span class="line">setupConnection(badConfig)</span><br><span class="line"><span class="comment">// res1: Option[(String, String, String)] = None</span></span><br></pre></td></tr></table></figure>
+<h3 id="write-your-monad-transformer">Write your Monad Transformer</h3>
+<h4 id="either-in-scalaz">Either in scalaz</h4>
+<p><code>scalaz</code>提供了自己实现的<code>Either</code>及<code>\/</code>。<code>Right</code>是<code>\/-</code>，<code>Left</code>是<code>-\/</code>。我们实现一个模拟登陆的代码，同时慢慢实现自己的<code>monad transformer</code>。</p>
+<p>首先，先定义登陆的错误，其中应该有email格式不合法。同时还要实现，判断的函数。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">LoginError</span></span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">object</span> <span class="title">InvalidEmail</span> <span class="keyword">extends</span> <span class="title">LoginError</span> </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">toString</span> </span>= <span class="string">"InvalidEmail"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getDomain</span></span>(email: <span class="type">String</span>): \/[<span class="type">LoginError</span>, <span class="type">String</span>] =</span><br><span class="line">        email.split('@') <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> x <span class="keyword">if</span> x.length == <span class="number">2</span> =&gt; x(<span class="number">1</span>).right</span><br><span class="line">            <span class="keyword">case</span> _ =&gt; <span class="type">InvalidEmail</span>.left</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>为了把结果打印出来，我们要使用<code>print</code>，这里应该使用<code>IO monad</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">printResult0</span></span>(domain: \/[<span class="type">LoginError</span>, <span class="type">String</span>]): <span class="type">IO</span>[<span class="type">Unit</span>] =</span><br><span class="line">        domain <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> \/-(text) =&gt; putStrLn(<span class="string">"Domain: "</span> + text)</span><br><span class="line">            <span class="keyword">case</span> -\/(<span class="type">InvalidEmail</span>) =&gt; putStrLn(<span class="string">"Error: Invalid domain"</span>)</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>最后返回的是<code>IO[Unit]</code>，测试的时候可以直接调用<code>IO monad</code>的<code>unsafePerformIO</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">printResult0(getDomain(<span class="string">"aaa@localhost.com"</span>)).unsafePerformIO()</span><br><span class="line"><span class="comment">// res: Domain: localhost.com</span></span><br></pre></td></tr></table></figure>
+<p>不过这里总写<code>match case</code>感觉不好看，<code>\/</code>提供了<code>fold</code>函数，第一个参数是<code>-\/ =&gt; C</code>，第二个参数是<code>\/- =&gt; C</code>。所以可以改写成</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">printResult</span></span>(domain: \/[<span class="type">LoginError</span>, <span class="type">String</span>]): <span class="type">IO</span>[<span class="type">Unit</span>] =</span><br><span class="line">        domain.fold(</span><br><span class="line">            y =&gt; <span class="type">IO</span>.putStrLn(y.toString),</span><br><span class="line">            x =&gt; <span class="type">IO</span>.putStrLn(<span class="string">"Domain: "</span> + x)</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+<h4 id="introducing-side-effects">introducing Side-Effects</h4>
+<p>现在把整个用户输入的逻辑串联起来由于需要同时封装<code>IO</code>和<code>异常</code>两个副作用，所以最后的返回值是<code>IO[LoginError \/ String]]</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getToken0</span></span>: <span class="type">IO</span>[\/[<span class="type">LoginError</span>, <span class="type">String</span>]] =</span><br><span class="line">        <span class="keyword">for</span> &#123;</span><br><span class="line">            _ &lt;- <span class="type">IO</span>.putStrLn(<span class="string">"Enter email address:"</span>)</span><br><span class="line">            email &lt;- <span class="type">IO</span>.readLn</span><br><span class="line">        &#125; <span class="keyword">yield</span> getDomain(email)</span><br></pre></td></tr></table></figure>
+<p>测试一下</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">getToken0.unsafePerformIO()</span><br><span class="line"><span class="comment">// Enter email address:</span></span><br><span class="line"><span class="comment">// res5: scalaz.\/[mt.LoginError,String] = \/-(gmailcom)</span></span><br></pre></td></tr></table></figure>
+<p>然后，我们扩充一下错误类型，并且提供邮箱和密码对应的用例。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> users = <span class="type">Map</span>(<span class="string">"example.com"</span>-&gt;<span class="string">"qwer"</span>, <span class="string">"localhost"</span>-&gt;<span class="string">"1234"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">sealed</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">LoginError</span></span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">object</span> <span class="title">InvalidEmail</span> <span class="keyword">extends</span> <span class="title">LoginError</span> </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">toString</span> </span>= <span class="string">"InvalidEmail"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">NoSuchUser</span> <span class="keyword">extends</span> <span class="title">LoginError</span> </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">toString</span> </span>= <span class="string">"NoSuchUser"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">WrongPassword</span> <span class="keyword">extends</span> <span class="title">LoginError</span> </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">toString</span> </span>= <span class="string">"WrongPassword"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后把整个输入的逻辑写出来</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">userLogin0</span></span>: <span class="type">IO</span>[\/[<span class="type">LoginError</span>, <span class="type">String</span>]] =</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        token &lt;- getToken0</span><br><span class="line">        x &lt;- token <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> \/-(domain) =&gt; &#123;</span><br><span class="line">                users.get(domain) <span class="keyword">match</span> &#123;</span><br><span class="line">                    <span class="keyword">case</span> <span class="type">Some</span>(userpw) =&gt; <span class="keyword">for</span> &#123;</span><br><span class="line">                        _ &lt;- putStrLn(<span class="string">"Enter password"</span>)</span><br><span class="line">                        passwd &lt;- readLn</span><br><span class="line">                    &#125; <span class="keyword">yield</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> (userpw == passwd) token <span class="keyword">else</span> <span class="type">WrongPassword</span>.left</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">case</span> <span class="type">None</span> =&gt; <span class="type">IO</span>(<span class="type">NoSuchUser</span>.left)</span><br><span class="line">                &#125;&#125;</span><br><span class="line">            <span class="keyword">case</span> left =&gt; <span class="type">IO</span>(left)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">yield</span> x</span><br></pre></td></tr></table></figure>
+<p>嗯，这段代码看起来有点乱。首先通过<code>getToken0</code>获取email，然后判断<code>token</code>，如果是正确的就是从user里面取出来<code>password</code>然后对比，不然就直接返回IO(left)。这段代码来起来乱的原因是，两个<code>monad</code>结合在一起的时候，有两层<code>for</code>两个<code>yield</code>再加上<code>match case</code>，这导致代码看起来有点乱。</p>
+<p>我们来慢慢简化。</p>
+<h4 id="we-can-make-our-own-monads">We can make our own Monads</h4>
+<p>为了解决同时使用两个<code>Monad</code>的尴尬，我们先构建一个新类型，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">EitherIO</span>[<span class="type">E</span>, <span class="type">A</span>](<span class="params">runEitherIO: <span class="type">IO</span>[\/[<span class="type">E</span>,<span class="type">A</span>]]</span>)</span></span><br></pre></td></tr></table></figure>
+<p>然后，将其实现为<code>Monad</code>。在<code>scalaz</code>中，实现<code>Monad</code>是通过提供<code>implicit</code>参数实现的。值得注意的是，我们实现的<code>Monad</code>类型其实是<code>EitherIO[E ,?]</code>而不是<code>EitherIO</code>。所以在声明的时候需要使用类型lambda。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">eitherIOFunctorInstance</span></span>[<span class="type">E</span>] = </span><br><span class="line">	<span class="keyword">new</span> <span class="type">Functor</span>[(&#123;<span class="class"><span class="keyword">type</span> <span class="title">l</span>[<span class="type">X</span>]  </span>= <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">X</span>]&#125;)# l] </span><br><span class="line">	<span class="keyword">with</span> <span class="type">Monad</span>[(&#123;<span class="class"><span class="keyword">type</span> <span class="title">l</span>[<span class="type">X</span>] </span>= <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">X</span>]&#125;)# l]&#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">point</span></span>[<span class="type">A</span>](a: =&gt; <span class="type">A</span>) = </span><br><span class="line">	        <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">A</span>](<span class="type">IO</span>(\/-(a)))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">A</span>, <span class="type">B</span>](em: <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">B</span>]  = &#123;</span><br><span class="line">            <span class="keyword">val</span> unwarpped = em.runEitherIO</span><br><span class="line">            <span class="keyword">val</span> fmapped = unwarpped.map(x =&gt; x.map(f))</span><br><span class="line">            <span class="type">EitherIO</span>(fmapped)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">bind</span></span>[<span class="type">A</span>, <span class="type">B</span>](em: <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">B</span>]): <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">B</span>] =</span><br><span class="line">            <span class="type">EitherIO</span>(em.runEitherIO.flatMap(_.fold(</span><br><span class="line">                (l:<span class="type">E</span>) =&gt; <span class="type">IO</span>(l.left),</span><br><span class="line">                (r:<span class="type">A</span>) =&gt; f(r).runEitherIO</span><br><span class="line">            )))</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>这里使用<code>({type l[X]  = EitherIO[E, X]})# l</code>表示<code>EitherIO[E, ?]</code>的类型，然后实现了对应的<code>fmap</code>以及<code>return</code>和<code>bind</code>函数。同时实现了<code>functor</code>以及<code>monad</code>这会使的<code>Monad[EithterIO]</code>获得<code>map</code>,<code>flatmap</code>等函数。</p>
+<p>然后我们使用<code>EitherIO</code>修改已有的代码，不过在此之前还有一些问题，我们要重写<code>getToken</code>函数，但是他的类型是<code>EitherIO[LoginError, String]</code>，所以我们需要一个能把<code>IO</code>变成<code>EitherIO</code>的函数，我们称为<code>liftIO</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">liftIO</span></span>[<span class="type">E</span>, <span class="type">A</span>](e :<span class="type">IO</span>[<span class="type">A</span>]): <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">A</span>] = <span class="type">EitherIO</span>(e.map(_.right))</span><br></pre></td></tr></table></figure>
+<p>而且，由于<code>getDomain</code>返回的是<code>\/[LoginError, String]</code>，所以还需要一个<code>IO[A] =&gt; EitherIO[E, A]</code>的函数。我们称为<code>liftEither</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">liftEither</span></span>[<span class="type">E</span>, <span class="type">A</span>](e: \/[<span class="type">E</span>, <span class="type">A</span>]): <span class="type">EitherIO</span>[<span class="type">E</span>, <span class="type">A</span>] = <span class="type">EitherIO</span>(<span class="type">IO</span>(e))</span><br></pre></td></tr></table></figure>
+<p>修改之后的代码变成</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getToken</span></span>: <span class="type">EitherIO</span>[<span class="type">LoginError</span>, <span class="type">String</span>] =</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        _ &lt;- liftIO[<span class="type">LoginError</span>, <span class="type">Unit</span>](putStrLn(<span class="string">"Enter email address:"</span>))</span><br><span class="line">        email &lt;- liftIO[<span class="type">LoginError</span>, <span class="type">String</span>](readLn)</span><br><span class="line">        m &lt;- liftEither[<span class="type">LoginError</span>, <span class="type">String</span>](getDomain(email))</span><br><span class="line">    &#125; <span class="keyword">yield</span> m</span><br></pre></td></tr></table></figure>
+<p>接着改写<code>userLogin</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">userLogin1</span></span>: <span class="type">EitherIO</span>[<span class="type">LoginError</span>, <span class="type">String</span>] =</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        token &lt;- getToken</span><br><span class="line">        userpw &lt;- users.get(token).fold(</span><br><span class="line">            liftEither[<span class="type">LoginError</span>, <span class="type">String</span>](<span class="type">InvalidEmail</span>.left)</span><br><span class="line">        )(</span><br><span class="line">            (x: <span class="type">String</span>) =&gt; <span class="type">EitherIO</span>[<span class="type">LoginError</span>, <span class="type">String</span>](<span class="type">IO</span>(x.right))</span><br><span class="line">        )</span><br><span class="line">        passwd &lt;- liftIO[<span class="type">LoginError</span>, <span class="type">String</span>](putStrLn(<span class="string">"Enter your password:"</span>) &gt;&gt; readLn)</span><br><span class="line">        m &lt;- <span class="keyword">if</span>(passwd != userpw)</span><br><span class="line">                liftEither[<span class="type">LoginError</span>, <span class="type">String</span>](-\/(<span class="type">WrongPassword</span>))</span><br><span class="line">             <span class="keyword">else</span></span><br><span class="line">                liftEither[<span class="type">LoginError</span>, <span class="type">String</span>](token.right)</span><br><span class="line">    &#125; <span class="keyword">yield</span> m</span><br></pre></td></tr></table></figure>
+<p>这样，这个代码就好看多了。不过由于<code>scala</code>类型推导的问题，<code>lift</code>函数的泛型参数有时候要写全，感觉有点烦。</p>
+<h4 id="going-general">Going General</h4>
+<p>其实我们注意到，这里的<code>IO</code>并没有引起太多的特殊处理，我们只要保证它是一个<code>Monad</code>，就能使用其<code>bind</code>和<code>point</code>，所以我们把它扩展一下。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">ExceptT</span> </span>&#123;</span><br><span class="line">  <span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">monadInstance</span></span>[<span class="type">E</span>, <span class="type">M</span>[_]](<span class="keyword">implicit</span> func: <span class="type">Monad</span>[<span class="type">M</span>]) = <span class="keyword">new</span> <span class="type">Monad</span>[(&#123;<span class="class"><span class="keyword">type</span> <span class="title">l</span>[<span class="type">A</span>] </span>= <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>]&#125;)# l] <span class="keyword">with</span> <span class="type">Functor</span>[(&#123;<span class="class"><span class="keyword">type</span> <span class="title">l</span>[<span class="type">A</span>] </span>= <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>]&#125;)# l]&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">point</span></span>[<span class="type">A</span>](a: =&gt; <span class="type">A</span>) = <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>](func.point(\/-(a)))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">A</span>, <span class="type">B</span>](et: <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">B</span>] = &#123;</span><br><span class="line">      <span class="keyword">val</span> fmapped = func.map(et.runExceptT)(x =&gt; x.map(f))</span><br><span class="line">      <span class="type">ExceptT</span>(fmapped)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">bind</span></span>[<span class="type">A</span>, <span class="type">B</span>](et: <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">B</span>]): <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">B</span>] =</span><br><span class="line">      <span class="type">ExceptT</span>(</span><br><span class="line">        et.runExceptT.flatMap(_.fold(</span><br><span class="line">          (l: <span class="type">E</span>) =&gt; func.point(l.left),</span><br><span class="line">          (r: <span class="type">A</span>) =&gt; f(r).runExceptT</span><br><span class="line">        ))</span><br><span class="line">      )</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">liftEither</span></span>[<span class="type">E</span>, <span class="type">M</span>[_], <span class="type">A</span>](et: \/[<span class="type">E</span>, <span class="type">A</span>])(<span class="keyword">implicit</span> m: <span class="type">Monad</span>[<span class="type">M</span>]): <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>] = <span class="type">ExceptT</span>(m.point(et))</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">lift</span></span>[<span class="type">E</span>, <span class="type">M</span>[_], <span class="type">A</span>](et: <span class="type">M</span>[<span class="type">A</span>])(<span class="keyword">implicit</span> m: <span class="type">Monad</span>[<span class="type">M</span>]): <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>] = <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>](m.map(et)(_.right[<span class="type">E</span>]))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>整体和之前的差不多，不过由于<code>scala</code>里面其实没有像<code>haskell</code>那种支持<code>type class</code>的方法，所以即不是用那种继承的语法（这个说法不太准确）来实现<code>type class</code>的，所以为了支持类型约束，依靠的是<code>implicit</code>的参数。所以每个需要约束<code>Monad</code>函数后面都跟一个<code>implicit m</code>。剩下的类型lambda都和之前一样。</p>
+<h4 id="catch">Catch</h4>
+<p>我们再看一下<code>liftEither</code>这个函数，这个函数的类型为<code>Either[Error, A] -&gt; ExceptT[Error, M, A]</code>，这是一个用来从错误产生<code>Except</code>的函数，也就是常见的<code>throw</code>。我们改名为<code>throwE</code>并且让它只接受<code>E</code>类型。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">throwE</span></span>[<span class="type">E</span>, <span class="type">M</span>[_], <span class="type">A</span>](e: <span class="type">E</span>)(<span class="keyword">implicit</span> m: <span class="type">Monad</span>[<span class="type">M</span>]): <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>] = liftEither(e.left[<span class="type">A</span>])</span><br></pre></td></tr></table></figure>
+<p>那么对称的就应该有<code>catch</code>咯。它应该是一个从给定<code>handler</code>函数，然后处理并且可以接续返回<code>ExceptT</code>的函数。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">catchE</span></span>[<span class="type">E</span>, <span class="type">M</span>[_], <span class="type">A</span>, <span class="type">C</span>](throwing: =&gt; <span class="type">ExceptT</span>[<span class="type">E</span>, <span class="type">M</span>, <span class="type">A</span>])(handler: <span class="type">E</span> =&gt; <span class="type">ExceptT</span>[<span class="type">C</span>, <span class="type">M</span>, <span class="type">A</span>])</span><br><span class="line">	(<span class="keyword">implicit</span> m: <span class="type">Monad</span>[<span class="type">M</span>]): <span class="type">ExceptT</span>[<span class="type">C</span>, <span class="type">M</span>, <span class="type">A</span>] =</span><br><span class="line">	<span class="type">ExceptT</span>(<span class="keyword">for</span> &#123;</span><br><span class="line">      x &lt;- throwing.runExceptT</span><br><span class="line">      r &lt;- (x: \/[<span class="type">E</span>, <span class="type">A</span>]) <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> \/-(success) =&gt; m.point(success.right[<span class="type">C</span>])</span><br><span class="line">        <span class="keyword">case</span> -\/(failure) =&gt; handler(failure).runExceptT</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">yield</span> r)</span><br></pre></td></tr></table></figure>
+<p>最后我们完成整个使用的函数。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">wrongPasswordHandler</span></span>(er: <span class="type">LoginError</span>): <span class="type">ExceptT</span>[<span class="type">LoginError</span>, <span class="type">IO</span>, <span class="type">String</span>] =</span><br><span class="line">    er <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">WrongPassword</span> =&gt; <span class="keyword">for</span> &#123;</span><br><span class="line">        _ &lt;- lift[<span class="type">LoginError</span>, <span class="type">IO</span>, <span class="type">Unit</span>](putStrLn(<span class="string">"Wrong password, one more chance"</span>))</span><br><span class="line">        x &lt;- userLogin</span><br><span class="line">      &#125; <span class="keyword">yield</span> x</span><br><span class="line"></span><br><span class="line">      <span class="keyword">case</span> err =&gt; throwE(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">printError</span></span>[<span class="type">A</span>](err: <span class="type">LoginError</span>): <span class="type">ExceptT</span>[<span class="type">LoginError</span>, <span class="type">IO</span>, <span class="type">A</span>] =</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">      _ &lt;- lift[<span class="type">LoginError</span>, <span class="type">IO</span>, <span class="type">Unit</span>] &#123;</span><br><span class="line">        putStrLn &#123;</span><br><span class="line">          err <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="type">WrongPassword</span> =&gt; <span class="string">"Wrong password. No more changes."</span></span><br><span class="line">            <span class="keyword">case</span> <span class="type">NoSuchUser</span> =&gt; <span class="string">"No user with that email exists."</span></span><br><span class="line">            <span class="keyword">case</span> <span class="type">InvalidEmail</span> =&gt; <span class="string">"Invalid email address entered."</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      x &lt;- throwE[<span class="type">LoginError</span>, <span class="type">IO</span>, <span class="type">A</span>](err)</span><br><span class="line">    &#125; <span class="keyword">yield</span> x</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">loginDialogue</span> </span>: <span class="type">ExceptT</span>[<span class="type">LoginError</span>, <span class="type">IO</span>, <span class="type">Unit</span>] =</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">      token &lt;- &#123;</span><br><span class="line">        <span class="keyword">val</span> retry = catchE(userLogin)(wrongPasswordHandler)</span><br><span class="line">        catchE(retry)(printError)</span><br><span class="line">      &#125;</span><br><span class="line">      x &lt;- lift[<span class="type">LoginError</span>, <span class="type">IO</span>, <span class="type">Unit</span>](putStrLn(<span class="string">"Logged in with token: "</span> + token))</span><br><span class="line">    &#125; <span class="keyword">yield</span> x</span><br></pre></td></tr></table></figure>
+<p>到这里，就完成整个<code>Monad Transformers</code>。</p>
+<h3 id="引用">引用</h3>
+<p>这部分基本是参考（翻译）了这个<a href="https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md" target="_blank" rel="noopener">Hasekll的教程</a>。</p>
+<p>代码在<a href="https://github.com/ariwaranosai/scalaLab/tree/master/src/main/scala/mt" target="_blank" rel="noopener">这里</a>。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/04/18/scalazday7/" rel="next" title="learning Scalaz-day7">
+                <i class="fa fa-chevron-left"></i> learning Scalaz-day7
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/06/17/scalazday9/" rel="prev" title="learning Scalaz-day9">
+                learning Scalaz-day9 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#monad-transformers"><span class="nav-number">1.</span> <span class="nav-text">Monad transformers</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#id"><span class="nav-number">1.1.</span> <span class="nav-text">Id</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#some-example"><span class="nav-number">2.</span> <span class="nav-text">Some example</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#readert"><span class="nav-number">2.1.</span> <span class="nav-text">ReaderT</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#write-your-monad-transformer"><span class="nav-number">3.</span> <span class="nav-text">Write your Monad Transformer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#either-in-scalaz"><span class="nav-number">3.1.</span> <span class="nav-text">Either in scalaz</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#introducing-side-effects"><span class="nav-number">3.2.</span> <span class="nav-text">introducing Side-Effects</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#we-can-make-our-own-monads"><span class="nav-number">3.3.</span> <span class="nav-text">We can make our own Monads</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#going-general"><span class="nav-number">3.4.</span> <span class="nav-text">Going General</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#catch"><span class="nav-number">3.5.</span> <span class="nav-text">Catch</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用"><span class="nav-number">4.</span> <span class="nav-text">引用</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

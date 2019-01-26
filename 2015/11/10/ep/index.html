@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="某师兄在临死（毕业）前，挖了个坑希望给他闲得XX疼的时候想出来的三硬币问题给出EM、Gibbs Sampling、VBEM、loop bp以及VBEP各种解法。现在他已经成为一名出色的sql工程师了。我算是给出这个Expectation Propagation解法，告慰他的在天之灵，少传播一点负能量。">
+<meta name="keywords" content="LDA,近似推断,PGM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="三硬币问题-Expectation Propagation解法">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/11/10/ep/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="某师兄在临死（毕业）前，挖了个坑希望给他闲得XX疼的时候想出来的三硬币问题给出EM、Gibbs Sampling、VBEM、loop bp以及VBEP各种解法。现在他已经成为一名出色的sql工程师了。我算是给出这个Expectation Propagation解法，告慰他的在天之灵，少传播一点负能量。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/ep-coins.png?imageView2/2/w/353">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="三硬币问题-Expectation Propagation解法">
+<meta name="twitter:description" content="某师兄在临死（毕业）前，挖了个坑希望给他闲得XX疼的时候想出来的三硬币问题给出EM、Gibbs Sampling、VBEM、loop bp以及VBEP各种解法。现在他已经成为一名出色的sql工程师了。我算是给出这个Expectation Propagation解法，告慰他的在天之灵，少传播一点负能量。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/ep-coins.png?imageView2/2/w/353">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/11/10/ep/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>三硬币问题-Expectation Propagation解法 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/11/10/ep/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">三硬币问题-Expectation Propagation解法
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-11-10 00:00:00" itemprop="dateCreated datePublished" datetime="2015-11-10T00:00:00+08:00">2015-11-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="http://crescentmoon.info/2014/12/12/variational-inference-3/" target="_blank" rel="noopener">某师兄</a>在临死（毕业）前，挖了个坑希望给他闲得XX疼的时候想出来的三硬币问题给出EM、Gibbs Sampling、VBEM、loop bp以及VBEP各种解法。现在他已经成为一名出色的sql工程师了。我算是给出这个Expectation Propagation解法，告慰他的在天之灵，少传播一点负能量。 <a id="more"></a></p>
+<h3 id="引言">引言</h3>
+<p>学习变分期望传播，好的材料还是看<a href="http://research.microsoft.com/en-us/um/people/minka/papers/ep/roadmap.html" target="_blank" rel="noopener">巨硬</a>的这个网站，上面列了一大堆东西，反正我是没看完，我的印象中这也确实是他们的人搞出来的算法。他们还有Infer.net这种黑科技。</p>
+<p>回到正题，EP可以看做一种<code>loopy belief propagation</code>的推广，他和VB不一样的地方在于变分推断中，我们是极小化<span class="math inline">\(KL(q||p)\)</span>，而EP则是直接极小化<span class="math inline">\(KL(p || Q)\)</span>。正片文章的推导过程参(chao)考(xi) <a href="http://research.microsoft.com/en-us/um/people/minka/papers/aspect/minka-aspect.pdf" target="_blank" rel="noopener">这篇论文</a>。</p>
+<h3 id="三硬币">三硬币</h3>
+<p>先来回顾一下这个问题，最初的问题是，三枚均匀程度未知硬币A、B和C，先投A如果是正面就投B，如果投反面就接着投C，我们只能看到最后B和C的结果，最终得到一个诸如<code>正反正反正正反</code>的这种序列，然后我们想知道每一个硬币的均匀程度以及每一次投的那个硬币。</p>
+<p>这其实是一个很典型的带有隐变量的问题，长得和LDA也很像，然后将这个问题再推广一下就变成A是有K面的色子，B、C等都是有T面的色子，画出下面这个生成模型。</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/ep-coins.png?imageView2/2/w/353" alt="生成模型"><figcaption>生成模型</figcaption>
+</figure>
+<p><span class="math inline">\(\alpha\)</span>为超参 每一次色子A以<span class="math inline">\(\pi\)</span>的概率生成<span class="math inline">\(Z\)</span>，然后<span class="math inline">\(Z\)</span>又会选择剩下的几个塞子中的一个，最后选择<span class="math inline">\(\theta_{kt}\)</span>的概率来生成展示的面<span class="math inline">\(w\)</span>。整个模型挺简单的。</p>
+<h3 id="求解">求解</h3>
+<h4 id="generative-aspect-model">Generative Aspect Model</h4>
+<p>这个模型求解的难处在于Z未知，所以求后验分布的时候需要遍历每一种Z的情况，这显然是不可能的，变分推断中，就是把<span class="math inline">\(\pi\)</span>和<span class="math inline">\(Z\)</span>之间的关系切断，然后进行近似。其实换个贝叶斯一点的观点，<span class="math inline">\(Z\)</span>我们观测不到，所以每一种<span class="math inline">\(Z\)</span>都是出现了的，只不过他都是以一定的概率存在的，那么相关联的概率分布<span class="math inline">\(\pi\)</span>的每一种结果也都出现了，所以我们干脆就放弃仔细刻画<span class="math inline">\(Z\)</span>转而直接去搞定<span class="math inline">\(\pi\)</span>和<span class="math inline">\(Z\)</span>两个变量分布结合以后的表现。也就是放弃<code>topic</code>，转向了<code>aspect</code>。</p>
+<h4 id="具体过程">具体过程</h4>
+<p>其实也不具体，因为打起来太麻烦。</p>
+<p>先写出联合分布 <span class="math display">\[\begin{split}
+p(w, \pi|\alpha) &amp;= P(\pi|\alpha)P(w|\pi) \\
+&amp;= p(\pi | \alpha) \prod_{n  = 1}^N p(w_n | \pi) \\
+&amp; = p(\pi| \alpha) \prod_{n = 1}^N(\sum_k \pi_k \theta_{ktn}) \\
+&amp; = p(\pi | \alpha) \prod_t(\sum_k \pi_k \theta_{kt})^{n_t}
+\end{split}\]</span></p>
+<p>这里就把Z放弃，然后直接用<span class="math inline">\(\pi\)</span>这个<span class="math inline">\(1 * K\)</span>K的概率向量和<span class="math inline">\(\theta\)</span>这个<span class="math inline">\(K * T\)</span>的矩阵的乘积代替。然后对于这个求不出来的<span class="math inline">\(p(w | \pi)\)</span>，与变分推断相似的我们使用分布<span class="math inline">\(Z(\pi)\)</span>代替。</p>
+<p>即使用多个<span class="math inline">\(z_t(\pi) = s_t \prod_k \pi^{\beta_{tk}}_k\)</span>代替<span class="math inline">\(p(w|\pi) = \sum_t \pi \theta_{tw}\)</span></p>
+<p>然后整个分布就可以展开成</p>
+<p><span class="math display">\[\begin{split}
+p(w,\pi|\alpha) &amp; \sim  p(\pi|\alpha)\prod_t(s_t \prod_k \pi_k^{\beta_{tk}})^{n_t} \\
+&amp; = \frac{\Gamma(\sum_k \alpha_k)}{\prod_k \Gamma(\alpha_k)}\prod_t s_t \prod_k \theta_k^{\alpha_k - 1 + \sum_t \beta_{tk}n_t}
+\end{split}\]</span></p>
+<p>然后提出来<span class="math inline">\(\gamma_k = \alpha_k + \sum_t \eta_{tk}n_t\)</span>就能得到</p>
+<p><span class="math display">\[p(w,\pi|\alpha)  \sim q(\theta) = \frac{\Gamma(\sum_k \alpha_k)}{\prod_k \Gamma(\alpha_k)}\prod_t s_t \prod_k \theta_k^{\gamma_k- 1 }\]</span></p>
+<p>得到了没有归一化的<span class="math inline">\(q(\pi)\)</span>之后，我们尝试归一化</p>
+<p><span class="math display">\[q(\pi) = \frac{\frac{\Gamma(\sum_k \alpha_k)}{\prod_k \Gamma(\alpha_k)}\prod_t s_t \prod_k \theta_k^{\gamma_k- 1 }}{\int \frac{\Gamma(\sum_k \alpha_k)}{\prod_k \Gamma(\alpha_k)}\prod_t s_t \prod_k \theta_k^{\gamma_k- 1 } d\pi}\]</span></p>
+<p>利用gamma函数的性质以及狄利克雷分布的性质，可以消掉积分号最后得到<span class="math inline">\(\frac{\Gamma(\sum_k \gamma_k)}{\prod_k \Gamma(\gamma_k)}\prod_k \theta_k^{\gamma_k- 1 }\)</span>。</p>
+<p>我们想要利用moment matching的方法优化的话，就要一步一步的走，像gibbs sampling一样，去掉其中的一个，然后接近真实分布，然后再去掉另一个，再走下一步，所以，还需要去掉某一个<span class="math inline">\(t\)</span>后的形式。 即 <span class="math display">\[q^{\backslash t}(\pi) = \frac{\Gamma(\sum_k(\gamma_k - \beta_{tk}))}{\prod_k \Gamma(\gamma_k - \beta_{tk})}\prod_k \theta_k^{\gamma^{\backslash t}_k - 1}\]</span></p>
+<p>其中 <span class="math inline">\(\gamma^{\backslash t} = \gamma_k - \beta_{tk}\)</span>。</p>
+<p>然后把这个塞回到之前的<span class="math inline">\(p(w|\pi)\)</span>里面，然后在归一化就得到完整的后验</p>
+<p><span class="math display">\[\hat{q}{\pi} = \frac{\sum_k \gamma_k^{\backslash t}}{\sum_k \theta_{kt} \gamma_k^{\backslash t}}(\sum_k \pi_k \theta_{kt})\frac{\Gamma(\sum_k \gamma_k^{\backslash t})}{\prod_k \Gamma(\gamma_k^{\backslash t})}\prod_k \pi_k^{\gamma_k^{\backslash w } - 1}\]</span></p>
+<p>然后就进入moment maching的阶段了 先求出来近似后验的一阶距为</p>
+<p><span class="math display">\[E_{\hat{q}}[\pi_k] = \frac{\sum_k \gamma_k^{\backslash t}}{\sum_k \theta_{kt} \gamma_k^{\backslash t}}\frac{\gamma_k^{\backslash t}}{\sum_k \gamma_k^{\backslash t}}\frac{\theta_{kt} + \sum_k \theta_{kt}\gamma_k^{\backslash t}}{\sum_k \gamma_k^{\backslash t} + 1}\]</span></p>
+<p>相似的计算二阶矩为</p>
+<p><span class="math display">\[
+E_{\hat{q}}[\pi_k^2] = \frac{\sum_k \gamma_k^{\backslash t}}{\sum_k \theta_{kt} \gamma_k^{\backslash t}}\frac{\gamma_k^{\backslash t}}{\sum_k \gamma_k^{\backslash t}}
+\frac{\gamma_k^{\backslash t} + 1}{\sum_k \gamma_k^{\backslash t} + 1}\frac{2\theta_{kt} + \sum_k \theta_{kt}\gamma_k^{\backslash t}}{\sum_k \gamma_k^{\backslash t} + 2}
+\]</span></p>
+<p>由于<span class="math inline">\(\theta\)</span>服从狄利克雷分布，则其一阶距应该为<span class="math inline">\(\frac{\gamma_k}{\sum_k \gamma_k}\)</span>，二阶矩应该为<span class="math inline">\(\frac{1}{k} \sum_k \frac{\gamma_k(\gamma_k + 1)}{\sum_k \gamma_k (\gamma_k + 1)}\)</span>。两种形式对应起来，就能真正的参数应该为</p>
+<p><span class="math display">\[\gamma_k = \frac{\sum_k (E_{\hat{q}}[\pi_k^2] - E_{\hat{q}}[\pi_k])}{\sum_k (E_{\hat{q}}[\pi_k]^2 - E_{\hat{q}}[\pi^2_k])}E_{\hat{q}[\pi_k]}\]</span></p>
+<p>求得了真实的<span class="math inline">\(\gamma\)</span>之后，就可以带回狄利克雷分布，由于我们假设了分布<span class="math inline">\(z\)</span>所以使用分布<span class="math inline">\(z\)</span>的<span class="math inline">\(\hat{q}\)</span>应该与<span class="math inline">\(Dir(\gamma)\)</span>相等。</p>
+<p>这样就可以解出了近似的参数</p>
+<p><span class="math display">\[\beta_{tk} = \gamma_k - \gamma_k^{\backslash w}\]</span> <span class="math display">\[s_w = \frac{\sum_k \theta_{kt} \gamma_k^{\backslash t}}{\sum_k \gamma_k^{\backslash t}} \frac{\Gamma(\Gamma(\gamma_k^{\backslash t}))}{\prod_k \Gamma(\gamma_k)}\frac{\prod_k \Gamma(\gamma_k^{\backslash t})}{\Gamma(\sum_k \gamma_k^{\backslash t})}\]</span></p>
+<p>然后不断迭代更新的那个t，直到收敛。</p>
+<p>其实从求解过程就能看到，EP依赖于共轭分布的性质，这样才能保证后验分布的形式已知，然后依赖于指数分布家族的性质，分布可以用一阶距、二阶矩准确描述。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/LDA/" rel="tag"># LDA</a>
+          
+            <a href="/tags/近似推断/" rel="tag"># 近似推断</a>
+          
+            <a href="/tags/PGM/" rel="tag"># PGM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/11/03/laplace/" rel="next" title="Laplace Approximation">
+                <i class="fa fa-chevron-left"></i> Laplace Approximation
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/18/future/" rel="prev" title="The Four Essential Effects In Programming">
+                The Four Essential Effects In Programming <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三硬币"><span class="nav-number">2.</span> <span class="nav-text">三硬币</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#求解"><span class="nav-number">3.</span> <span class="nav-text">求解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#generative-aspect-model"><span class="nav-number">3.1.</span> <span class="nav-text">Generative Aspect Model</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#具体过程"><span class="nav-number">3.2.</span> <span class="nav-text">具体过程</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="GLAD是Jacob Whitehill在2009年NIPS上提出了一个算法，其本质只是采用简化的Item Response Theory中的模型，利用EM算法求解隐含变量，得到题目正确的答案。">
+<meta name="keywords" content="EM,Crowdsourcing,GLAD">
+<meta property="og:type" content="article">
+<meta property="og:title" content="EM与GLAD">
+<meta property="og:url" content="http://ariwaranosai.xyz/2014/09/03/EM-and-GLAD/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="GLAD是Jacob Whitehill在2009年NIPS上提出了一个算法，其本质只是采用简化的Item Response Theory中的模型，利用EM算法求解隐含变量，得到题目正确的答案。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/GLAD.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/GLAD.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/GLAD-E.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/GLAD-M.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="EM与GLAD">
+<meta name="twitter:description" content="GLAD是Jacob Whitehill在2009年NIPS上提出了一个算法，其本质只是采用简化的Item Response Theory中的模型，利用EM算法求解隐含变量，得到题目正确的答案。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/GLAD.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2014/09/03/EM-and-GLAD/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>EM与GLAD | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2014/09/03/EM-and-GLAD/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">EM与GLAD
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2014-09-03 00:00:00" itemprop="dateCreated datePublished" datetime="2014-09-03T00:00:00+08:00">2014-09-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>GLAD</strong>是<code>Jacob Whitehill</code>在2009年NIPS上提出了一个算法，其本质只是采用简化的<code>Item Response Theory</code>中的模型，利用EM算法求解隐含变量，得到题目正确的答案。 <a id="more"></a></p>
+<p>先介绍<strong>GLAD</strong>要解决的问题，在处理多人图片标注数据时，只采用<code>Majority Vote</code>即认为大多数人选择的答案就是正确答案的方式在题目难度较大时并不能得到好的结果。所以采用Rasch模型来表示每个人回答正确的能力，以正确答案为隐含变量。</p>
+<p>形式化的定义这个问题，首先假设要处理的问题为<code>Y/N</code>的二值问题，存在<span class="math inline">\(N\)</span>个题目，第<span class="math inline">\(j\)</span>个题目正确答案为<span class="math inline">\(z_j\)</span>，存在<span class="math inline">\(M\)</span>个工作者，然后我们采用如下形式定义一个第<span class="math inline">\(i\)</span>个工作者答对第<span class="math inline">\(j\)</span>个题目的标记答案为<span class="math inline">\(L_{ij}\)</span>,其正确的概率为： <span class="math display">\[p(L_{ij}=Z_j|\alpha_i,\beta_j) = \dfrac{1}{1+e^{-\alpha_i\beta_j}}\]</span></p>
+<p>其中<span class="math inline">\(\alpha_i\)</span>为第i个工作者的能力其范围为<span class="math inline">\((-\infty,+\infty)\)</span>，而<span class="math inline">\(1/\beta_j\)</span>为第j个题目的难度其范围为<span class="math inline">\([0,\infty)\)</span>。 图模型为： <img src="http://nkssai.qiniudn.com/GLAD.png"> 我们观测到的标签是由真实标签在通过工作者判断函数后得到的结果，其中真实标签正是我们想要求的隐藏变量，其对数似然应该为 <span class="math display">\[p(L|\alpha,\beta)=\sum_i^M{\sum_j^N{\ln\{\sum_l^Kp(z_{l})p(L|\alpha,\beta,z_l)\}}}\]</span> 像常见的高斯混合模型一样，由于隐藏变量作为指示变量存在导致我们在直接使用极大似然的时候容易获得由于<span class="math inline">\(p(z_l)\)</span>趋向于<span class="math inline">\(\infty\)</span>而产生的极大值，这显然不是我们愿意见到的情况，何况<span class="math inline">\(z_j\)</span>的值是我们想要得到的信息。所以我们采用EM算法来解决这个问题。 我们之前遇到的问题是在隐藏变量存在的情况下，我们难以直接极大化似然，我们能不能换种方法直接极大化似然呢？ 我们用<span class="math inline">\(X\)</span>表示观察到变量，<span class="math inline">\(Z\)</span>表示隐藏变量，而<span class="math inline">\(\theta\)</span>表示参数，则我们想极大化的似然为 <span class="math display">\[p(X|\theta)=\sum_{Z}p(X,Z|\theta)\]</span> 我们先放弃直接优化，利用贝叶斯公式变形，取对数似然.由 <span class="math display">\[\ln p(X,Z|\theta)=\ln p(Z|X,\theta)+\ln p(X|\theta)\]</span> 得 <span class="math display">\[\ln p(X|\theta)=\ln p(X,Z|\theta)-\ln p(Z|X,\theta)\]</span> 然后我们取一个关于<span class="math inline">\(Z\)</span>分布<span class="math inline">\(q(Z)\)</span>，注意这里我们并不关心<span class="math inline">\(q(Z)\)</span>是什么样子，而不对它做任何假设。则上面的式子可以变成 <span class="math display">\[\begin{split}\ln p(X|\theta)=&amp; \ln p(X,Z|\theta)-\ln p(Z|X,\theta) \\=&amp;\ln p(X,Z|\theta)-\ln q(Z)-[\ln p(Z|X,\theta)-\ln q(Z)]\\=&amp; \ln \frac{ p(X,Z|\theta)}{q(Z)}-\ln \frac{ p(Z|X,\theta)}{q(Z)} \\\end{split}\]</span></p>
+<p>由于<span class="math inline">\(q(Z)\)</span>是关于<span class="math inline">\(Z\)</span>的分布所以应该有<span class="math inline">\(\sum_Z q(Z)=1\)</span>,而且<span class="math inline">\(Z\)</span>与已经将<span class="math inline">\(Z\)</span>积分掉的<span class="math inline">\(p(x|\theta)\)</span>独立，所以我们可以继续将上式先乘以<span class="math inline">\(q(Z)\)</span>然后对<span class="math inline">\(Z\)</span>求和。 <span class="math display">\[\sum_{z}q(Z) \ln p(X|\theta)=\sum_{z}[q(Z)(\ln \frac{ p(X,Z|\theta)}{q(Z)}-\ln \frac{ p(Z|X,\theta)}{q(Z)})]\]</span> <span class="math display">\[\ln p(X|\theta)=\sum_{z}q(Z)\ln \frac{ p(X,Z|\theta)}{q(Z)}-\sum_{z}q(Z)\ln \frac{ p(Z|X,\theta)}{q(Z)}\]</span> 即</p>
+<p><span class="math display">\[\ln p(X|\theta)=\mathcal{L}(q,\theta)+KL(q||p)\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[\mathcal{L}(q,\theta)=\sum_{z}q(Z)\ln \frac{ p(X,Z|\theta)}{q(Z)}\]</span> <span class="math display">\[KL(q||p)=\sum_{z}q(Z)\ln \frac{ q(Z)}{p(Z|X,\theta)}\]</span></p>
+<p>(很多推断算法中都有这个式子的身影) 现在再看这个式子，先看KL散度的部分，它描述了分布<span class="math inline">\(q(Z)\)</span>和<span class="math inline">\(p(X,Z|\theta)\)</span>的差距，如果当<span class="math inline">\(q(Z)\)</span>与<span class="math inline">\(P(Z|X,\theta)\)</span>像相似，我们不妨用<span class="math inline">\(P(Z|X,\theta)\)</span>来替换<span class="math inline">\(q(Z)\)</span>,为了区分我们把替换的分布写成<span class="math inline">\(p(Z|X,\theta^{old})\)</span>，于是我们可以把<span class="math inline">\(\mathcal{L}(q,\theta)\)</span>写成</p>
+<p><span class="math display">\[\mathcal{L}(q,\theta) = \mathcal{Q}(\theta,\theta^{old})+const\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[\begin{split} \mathcal{Q}(\theta,\theta^{old}) = &amp;\sum_zp(Z|X,\theta^{old})\ln p(X,Z|\theta)\\=&amp;E_z[\ln p(X,Z|\theta)]\end{split}\]</span> 这里<span class="math inline">\(E_Z[\ln p(X,Z|\theta)]是指在分布\)</span>q(Z)下<span class="math inline">\(\ln p(X,Z|\theta)\)</span>值的期望。 由于后面的一项只和<span class="math inline">\(q(Z)\)</span>有关所以置换为 <span class="math display">\[const=-\sum_Zp(Z|X,\theta^{old})\ln p(Z|X,\theta^{old})\]</span></p>
+<p>这里我们似乎找到了一种在分布<span class="math inline">\(q(Z)\)</span>和<span class="math inline">\(p(X,Z|\theta)\)</span>很小的情况下，利用<span class="math inline">\(\mathcal{L}(q,\theta)\)</span>（本质上是利用<span class="math inline">\(\mathcal{Q}(\theta,\theta^{old})\)</span>或者说<span class="math inline">\(E_z[\ln p(X,Z|\theta)]\)</span>）接近真实<span class="math inline">\(\ln p(X|\theta)\)</span>的方法。现在还差如何尽量减少<span class="math inline">\(KL(q||p)\)</span>的部分了。考虑到上面我们想到了固定<span class="math inline">\(Z\)</span>优化<span class="math inline">\(\theta\)</span>的方面，优化<span class="math inline">\(KL(q||p)\)</span>的过程其实就是固定<span class="math inline">\(\theta\)</span>优化<span class="math inline">\(Z\)</span>，由于KL散度的形式，其实就是优化<span class="math inline">\(p(Z|X,\theta)\)</span>，我们很高兴的发现这次问题简单了很多，由于我们处理的数据中<span class="math inline">\(X\)</span>中往往是包含独立同分布的<span class="math inline">\(\{x_n\}\)</span>，以及相互独立的指示变量<span class="math inline">\(\{z_n\}\)</span>，所以显然 <span class="math display">\[p(Z|X,\theta)=\frac{p(X|Z,\theta)}{\sum_Zp(X,Z|\theta)}=\frac{\prod_{n=1}^{N}p(x_n,z_n|\theta)}{\sum_Z\prod_{n=1}^{N}p(x_n,z_n|\theta)}=\prod^N_{n=1}p(z_n|x_n,\theta)\]</span></p>
+<p>即为了优化KL散度，我们只要让<span class="math inline">\(z_n\)</span>取在给定<span class="math inline">\(\theta,x_n\)</span>下的最优值就好了。</p>
+<p>至此，需要优化的参数都存在循环依赖，我们只要分步迭代优化就好了，这就是所谓的Expectation Maximization（期望极大化）算法。 （这里采用一个不怎么合理的顺序介绍了EM算法的原理与推导，我也不知道发明算法的是怎么发现这种方法的，不过这是我认为最好理解的顺序）</p>
+<p>总结一下，所谓的EM（Expectation Maximization）算法， E步：在给定<span class="math inline">\(\theta\)</span>的情况下，求得最优的<span class="math inline">\(\{z_n\}\)</span>，以求得<span class="math inline">\(E_z[\ln p(X,Z|\theta)]\)</span>。本质上也是减少KL的过程。 M步：优化<span class="math inline">\(\theta\)</span>，用来极大化期望<span class="math inline">\(E_z[\ln p(X,Z|\theta)]\)</span>，即极大化<span class="math inline">\(\mathcal{L}(q,\theta)\)</span>的过程。 《PRML》中的图很好的解释了这个过程。</p>
+<p>开始</p>
+<p><img src="http://nkssai.qiniudn.com/GLAD.png"></p>
+<p>E步</p>
+<p><img src="http://nkssai.qiniudn.com/GLAD-E.png"></p>
+<p>M步</p>
+<p><img src="http://nkssai.qiniudn.com/GLAD-M.png"></p>
+<p>了解了EM的原理，我们回到GLAD模型的求解问题，有了EM，求解GLAD模型变得十分简单， 在E步，我们要求解每一个<span class="math inline">\(p(z_j|l,\alpha,\beta)\)</span>，由于每个<span class="math inline">\(\{z_j\}\)</span>都是独立的，采用贝叶斯公式变形，则有 <span class="math display">\[\begin{split}p(z_j|l,\alpha,\beta)=&amp;p(z_j|l_j,\alpha,\beta_j) \\ \propto &amp;p(z_j|\alpha,\beta_j)p(l_j|z_j,\alpha,\beta_j)\\ \propto&amp;p(z_j)\prod_ip(l_{ij}|z_j,\alpha_i,\beta_j)\end{split}\]</span></p>
+<p>我们在式子中省略了归一化的项。这里也可以看出<span class="math inline">\(z_j\)</span>的值是所有完成第<span class="math inline">\(j\)</span>题的人的选项的在每个人作对概率上的期望。这也符合E步的意义。</p>
+<p>在M步中，对于<span class="math inline">\(Q\)</span>函数，有 <span class="math display">\[\begin{split}Q(\alpha,\beta)=&amp;E[\ln p(l,z|\alpha,\beta)]\\ =&amp; E[\ln\prod_j(p(z_j)\prod_i\ln p(l_{ij}|z_j,\alpha_i,\beta_j))] \\=&amp;\sum_jE[\ln p(z_j)]+\sum_{ij}E[\ln p(l_{ij}|z_j,\alpha_i,\beta_j)] \end{split}\]</span></p>
+<p>现在第一项与<span class="math inline">\(\alpha,\beta\)</span>无关，不是我们关心的，我们只要将最后一项展开，然后利用梯度下降的方法求得最优值就好了。</p>
+<p>至此，我们了解了EM算法以及GLAD模型的求解方法。</p>
+<p>针对GLAD模型，这是一个相当简单的假设，尤其是那个用户判断正确的模型十分实用，在很多复杂的模型中都使用过，但是GLAD模型在面对多分类的情况显得有些乏力，如果假设工作者在面对非正确答案时采取相同的概率选择答案，这样的假设显然并不合理，如果在不同选项中都加入相应的权值参数以改进效果，会导致参数个数随着工作者与答案选项个数增加的速度太快，这显然不是我们想见到的，所以这种情况下还有另外的建模方式，所谓的confuse matrix。</p>
+<p>针对EM算法，还有一些有用的地方。</p>
+<p>首先，一开始我们就指出我们要优化的是对数似然，其实在很多时候我们想要采用MAP（极大后验概率）的方式，即： <span class="math display">\[\begin{split}\ln p(\theta|X) =&amp; \ln p(\theta,X)-\ln p(X) \\
+=&amp;\mathcal{L}(q,\theta)+KL(q||p)-\ln p(X)\end{split}\]</span></p>
+<p>其中<span class="math inline">\(\ln p(X)\)</span>常数，考虑到<span class="math inline">\(q\)</span>其实只在<span class="math inline">\(\mathcal{L}\)</span>中存在，所以在E步上来说，MAP并没有很大的不同，M步由于存在<span class="math inline">\(\ln p(\theta)\)</span>，所以和普通EM差距也不大，实际在GLAD的也好像只是多了一个乘数项（很久之前推的，当时的推导找不到了，反正换成MAP之后，在它数据集上的效果基本没有提高）。</p>
+<p>另外一方面，我们意识到EM其实就是在E、M两个步骤分布优化的过程，普通的EM算法希望在M步中获取<span class="math inline">\(\mathcal{L}\)</span>的极大值，在<span class="math inline">\(\mathcal{L}\)</span>很复杂的时候，我们难以直接求最优解，此时，我们可以放弃求最优解，转而求较优解，甚至是将参数再分为几个子集，每一次M步骤中分别优化不同的子集，总之，只要我们保证每次迭代之后<span class="math inline">\(\mathcal{L}\)</span>都比开始接近似然就可以保证整体可以取得更优解。 于此相似的，E步我们也可以采用相似的策略，由于显然在<span class="math inline">\(mathcal{L}\)</span>取得局部最优解的情况下，<span class="math inline">\(\ln p(X|\theta)\)</span>显然也应该处于局部最优解，所以我们显然可以将数据集<span class="math inline">\({x_n}\)</span>分组，采用类似于随机梯度下降的方式迭代EM算法，尤其是在分布本身是指数家族的时候，在M步需要所有数据点的信息时，由于其分布可以通过充分统计量还原，仅仅采用充分统计量迭代往往有着更简单的形式。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/EM/" rel="tag"># EM</a>
+          
+            <a href="/tags/Crowdsourcing/" rel="tag"># Crowdsourcing</a>
+          
+            <a href="/tags/GLAD/" rel="tag"># GLAD</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/09/13/VB-LDA/" rel="prev" title="变分推断与LDA">
+                变分推断与LDA <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

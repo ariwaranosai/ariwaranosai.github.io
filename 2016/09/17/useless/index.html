@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="気分次第です僕は 敵を選んで戦う少年   叶えたい未来も無くて 夢に描かれるのを待ってた">
+<meta name="keywords" content="牢骚">
+<meta property="og:type" content="article">
+<meta property="og:title" content="写点代码相关的">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/09/17/useless/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="気分次第です僕は 敵を選んで戦う少年   叶えたい未来も無くて 夢に描かれるのを待ってた">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="写点代码相关的">
+<meta name="twitter:description" content="気分次第です僕は 敵を選んで戦う少年   叶えたい未来も無くて 夢に描かれるのを待ってた">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/09/17/useless/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>写点代码相关的 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/09/17/useless/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">写点代码相关的
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-09-17 15:39:20" itemprop="dateCreated datePublished" datetime="2016-09-17T15:39:20+08:00">2016-09-17</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/不正经的/" itemprop="url" rel="index"><span itemprop="name">不正经的</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>気分次第です僕は 敵を選んで戦う少年</p>
+</blockquote>
+<blockquote>
+<p>叶えたい未来も無くて 夢に描かれるのを待ってた</p>
+</blockquote>
+<a id="more"></a>
+<p>就让我再浪费一下午想一些没用的吧。成为最后几个没有offer的人，我的心态比想象当中好呢。</p>
+<p>『怎么去写代码』，让我好好去思考这个问题的语言是<code>Haskell</code>，虽然我从来没用<code>Haskell</code>去写过正经代码，也请允许我厚着脸皮说出这一句，而让我开始学着去实践这一点的是<code>Scala</code>。我自认为也接触（浅尝则止）了很多语言从<code>scheme</code>到<code>clojure</code>这些lisp系，在从<code>c++</code>到<code>go</code>、<code>rust</code>，从<code>sml</code>到<code>Haskell</code>，再从<code>python</code>到<code>R</code>这些动态类型语言。我只是在一个特殊的时候遇到了<code>Scala</code>，然后开始喜欢这种语言。我相信我应该没有『鼓吹』过<code>Scala</code>，因为我每次传销的时候都能记得<code>Scala</code>的一大堆缺点。</p>
+<ul>
+<li>较为复杂的语法。（别的不说，有C++在，我就只敢用较这个字）</li>
+<li>编译速度慢，而且二进制不兼容，启动速度慢，吃内存。(<a href="http://benchmarksgame.alioth.debian.org/u64/index.html" target="_blank" rel="noopener">Benchmarks</a>)</li>
+<li>泛型上要为JVM买单。本身类型推断也有一些坑。(比如<a href="https://issues.scala-lang.org/browse/SI-2712" target="_blank" rel="noopener">SI2712</a>)</li>
+<li>sbt难用。</li>
+<li>反射库以及宏不好用。（面向语法树编程，那个数据结构也是有点乱，反正我是看了一会就不想看了，研究scala编译器还好，期待scala.meta）</li>
+<li>...</li>
+</ul>
+<p>其中一些在马上要出来的<code>2.12</code>版本中会得到改善，另一些会在<code>DOT</code>中得到改善，剩下一些就只能慢慢等着了。</p>
+<p>除去这些剩下的，就是我在这姑且算是一年的接触<code>Scala</code>的过程中学到的，无关<code>OO</code>和<code>FP</code>，无关任何准则，我自己的感受。</p>
+<h3 id="库设计基本等价于编程语言的设计">库设计基本等价于编程语言的设计</h3>
+<p>忘了在什么地方看到的大概是这个意思的话，当然这是一句很不严谨的话，不过我认为去认同这句话倒也不是大问题。</p>
+<p>一般对于一门语言，我们在学习的时候，关注的主要在<code>Syntax</code>和<code>Semantic</code>，<code>Syntax</code>强调要以什么样子写代码，<code>Semantics</code>可以看做一是<code>type-checking</code>类型验证，另一方面<code>Evaluation</code>即程序会如何运行。至于语言的标准库，基本是语言设计者对于语言的实践的体现，标准库的风格基本与语言的风格重合。<code>Haskell</code>中在强调范畴的各种概念，<code>Scala</code>的标准库也和语言一样，同时提供<code>mutable</code>和<code>immutable</code>两种风格。</p>
+<p>而在库的设计上，同样存在相同的问题，语法和语义，库提供的功能应该是以尽可能简单的基本语义的基础上，通过可<code>first class</code>的对象<code>compose</code>得到的。这里强调的是<code>compose</code>的应该是类型。而不仅仅是函数或者对象。比如<code>react</code>之于传统的观察者模式，就在于其把<code>event</code>、<code>signal</code>提升为可组合的<code>first class</code>，并且定义了严格的<code>指称语义</code>。这样，我们在监视多个信号源的时候就可以摆脱维护复杂的状态变量。</p>
+<p>举个经典的例子，在面对gui的时候，我们需要同时监控鼠标和键盘的事件，只有鼠标位于某个范围内，键盘按下特定的按键，同时鼠标点击，才能出发技能，不过只是简单的注册事件回调的话，显然要依靠鼠标的回调函数中获取键盘的同时处于的状态（你可能还要反过来），这样在事件多的时候很容易混乱，而当<code>Event</code>变成<code>first class</code>并且是可组合的时候，只要诸如下面的代码</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(pressKey zip mouse).filter(e =&gt; e._1.<span class="type">KeyEvent</span> == <span class="type">Key</span> &amp;&amp; e._2.position in <span class="type">Windows</span>).foreach(x =&gt; do some thing)</span><br></pre></td></tr></table></figure>
+<p>就可以表达出逻辑。</p>
+<p>再到语法，我之前跟人家提起这个说法时，有人说过语法是语言规定的，你写个库也改变不了语法啊。其实我只能说，是也不是。我对语法的理解可大可小，小到<code>Java</code>常用的链式调用，大到宏、<code>template haskell</code>和<code>scala.meta</code>，再大到编译器插件。有很多角度可以做这种事。很多时候，人们喜欢谈<code>metaprograming</code>或者设计<code>DSL</code>。</p>
+<p><code>Ruby</code>喜欢谈<code>duck typing</code>，对于诸如<code>Ruby</code>、<code>Python</code>很多黑科技可以通过运行时修改内置数据结构来达到扩展语义的方法，比如通过修改<code>__call__</code>，<code>__getattr__</code>来实现<a href="https://gist.github.com/ariwaranosai/d65e86df85ab5e629fb07c8f496c1641" target="_blank" rel="noopener">动态捕获用户查询参数</a>。再到<code>Scalajs</code>通过使用插件，以及宏，提供了直接在<code>Scala</code>代码中写<code>Html</code>的能力，在配上<code>Intellij</code>的补全，基本是无缝衔接。而且，我们经常发现，提供方便的dsl语法和实现库功能两者是正交的，但都基于对业务逻辑在类型系统上的建模。至于再进一步，使用<code>free monad</code>或者<code>final tagless</code>又是另一种方法了。</p>
+<h3 id="承认你自己无时无刻都在写库">承认你自己无时无刻都在写库</h3>
+<p>这个完全是个人看法，只要你的代码有一丁点的可重用性，你就避免不了写一个库，而你在做的就是通过抽象和组合，尽可能把基本而繁琐的可能影响正常顺序逻辑的代码，隐藏在库当中，最后只剩下薄薄的一层，尽量没有副作用而且直观的代码，作为真正的业务逻辑。最后这一层的厚度应该是和库的厚度成正比的，库越厚，那你最后业务逻辑可以容忍的厚度也就越厚。</p>
+<p>这个例子很多，也往往是<code>Monad</code>出现的机会，这里以future为例子</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">ObjectRequestAsyncTest</span> <span class="keyword">extends</span> <span class="title">TestSuite</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@JsonCodec</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">kancolle</span>(<span class="params">name: <span class="type">String</span>, kid: <span class="type">String</span></span>)</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">  <span class="title">val</span> <span class="title">data</span> </span>= kancolle(<span class="string">"Murasame"</span>, <span class="number">81.</span>toString)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> tests = <span class="keyword">this</span> &#123;</span><br><span class="line">    <span class="symbol">'ObjectCreateAndGet</span> - &#123;</span><br><span class="line">      <span class="keyword">for</span> &#123;</span><br><span class="line">        response &lt;- <span class="type">ObjectCreateRequest</span>(<span class="string">"kancolle"</span>).run(data.asJson.noSpaces)</span><br><span class="line">        kan &lt;- <span class="type">ObjectGetRequest</span>(<span class="string">"kancolle"</span>, response.objectId).get[kancolle]()</span><br><span class="line">        _ &lt;- <span class="type">Future</span> &#123;</span><br><span class="line">          assert(kan.name == <span class="string">"Murasame"</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        _ &lt;- &#123;</span><br><span class="line">          <span class="keyword">val</span> newData = kancolle(<span class="string">"Murasameka"</span>, <span class="string">"81b"</span>)</span><br><span class="line">          <span class="type">ObjectUpdateRequest</span>(<span class="string">"kancolle"</span>, response.objectId)</span><br><span class="line">            .run(newData.asJson.noSpaces)</span><br><span class="line">        &#125;</span><br><span class="line">        nkan &lt;- <span class="type">ObjectGetRequest</span>(<span class="string">"kancolle"</span>, response.objectId).get[kancolle](<span class="string">""</span>)</span><br><span class="line">        _ &lt;- <span class="type">Future</span> &#123;</span><br><span class="line">          assert(nkan.name == <span class="string">"Murasameka"</span>)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      &#125; <span class="keyword">yield</span> ()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是我代码中粗糙的单测的一部分，所有的<code>XXXRequest</code>都是建立在<code>REST API</code>的通信商，所以，都可能有网络错误、服务器故障以及JSON返回错误，但是在这个工作流中，我们并没有不得不处理这些东西，但是我们并没有放弃处理这些异常，因为他们在最后返回的<code>Future[Unit]</code>中，中间一旦有一部分出现问题，接下来的部分其实并不会执行，你会得到你的第一错误，如果你直接用异常处理这些，将不可避免的让异常处理的代码打断你正常代码的逻辑。通过使用<code>Future</code>你可以获得异步的能力，同时在不抛弃特殊情况时不用分心去处理他们。而，业务逻辑最终这薄薄的一层就包裹在这个<code>for</code>里面。除此以外的都尽量是纯的，都是可以基于属性测试的。这种感觉在我用<code>IOMonad</code>中更为明显，就像多米诺骨牌，你做的只是推倒最后一张牌，剩下的都会绑定执行。所以，你一直都在写库，不过是给自己用。</p>
+<h3 id="its-all-about-datatypes">It's all about DataTypes</h3>
+<p><a href="https://en.wikipedia.org/wiki/Type_system" target="_blank" rel="noopener">类型系统</a>，越来越多的语言喜欢提这个词，我记得《Programming language pragmatics》这本书里面给出的定义应该是编程语言的基本类型以及类型的组合方式。</p>
+<p>记得我刚开始接触<code>SML</code>的时候，看到它<code>pair</code>的类型写成<code>int*int</code>这种样子，想了一句，这还真是乘法类型。不同语言提供的基本类型大致相似，但是组合方式却不尽相同。我们先摆脱这些术语，先看看常见的一种方式，<code>class</code>。定义一个<code>class</code>其实就是定义一个新的类型，而它应该是由其他基本类型产生的，就是常见的成语变量，此外应该还有绑定到类型上的操作，一般常见的就是成员函数。平时的设计我们希望增强类的可扩展性，这里其实又涉及<a href="https://userpages.uni-koblenz.de/~laemmel/TheEagle/resources/pdf/xproblem1.pdf" target="_blank" rel="noopener">expression problem</a>。以go为例子，go中的函数与类型的绑定是通过如</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Vertex <span class="keyword">struct</span> &#123;</span><br><span class="line">	X, Y <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v *Vertex)</span> <span class="title">Abs</span><span class="params">()</span> <span class="title">float64</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> math.Sqrt(v.X*v.X + v.Y*v.Y)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种语法绑定的，即为一个类型扩展操作并不需要打开这个类进行操作。其实了解<code>C++</code>实现也就知道成员函数并不在类里面，成员函数可以看成编译时传了一个this指针的函数，跟<code>Python</code>传<code>self</code>同样。两种不同的扩展方式，在面临<code>ep</code>的时候，有不同的取舍。由此产生了各种库以及设计模式。</p>
+<p>对于<code>type class</code>带来的方便的扩展能力，可以思考这个例子。对于一种数据结构，如果他本身满足二元操作上的结合律即<code>op(a, op(b, c)) == op(op(a, b), c)</code>始终成立，那么我们在一些遍历的情况下可以选择，</p>
+<ul>
+<li>op(a, op(b,op(c, d)))</li>
+<li>op(op(op(a, b), c), d)</li>
+<li>op(op(a, b), op(c, d))</li>
+</ul>
+<p>这三种组合方式，第三种因为可以并行化，所以更被我们所需要，对于已经存在的List类型，我们可以通过声明一个</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">listMonoid</span></span>[<span class="type">A</span>] = <span class="keyword">new</span> <span class="type">Monoid</span>[<span class="type">List</span>[<span class="type">A</span>]] &#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">op</span></span>(a1: <span class="type">List</span>[<span class="type">A</span>], a2: <span class="type">List</span>[<span class="type">A</span>]) = a1 ++ a2</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">zero</span> </span>= <span class="type">Nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后就可以获得</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foldMapV</span></span>[<span class="type">A</span>, <span class="type">B</span>](v: <span class="type">List</span>[<span class="type">A</span>], m: <span class="type">Monoid</span>[<span class="type">B</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">B</span></span><br></pre></td></tr></table></figure>
+<p>然后把<code>Monoid[List[A]]</code>变成<code>Monoid[Par[A]]</code>，从而自然而然的获得并行的能力。</p>
+<h4 id="使用高阶泛型类型以增强类型的表现力">使用高阶泛型类型以增强类型的表现力</h4>
+<p>谈论<code>Haskell</code>的<code>typeclass</code>给第一次接触的人解释的时候，总会说一句就像<code>Java</code>的<code>interface</code>除了一些地方不一样。这一些地方就有<code>kind</code>。<code>Kind</code>是比<code>type</code>更高阶一点的抽象。但是这个在<code>Scala</code>里面的支持不是很友好。索性，不妨碍使用诸如此类的概念建模。</p>
+<p>为什么要尽可能的增强类型系统，从<code>Haskell</code>到<code>Idirs</code>，从<code>F#</code>到<code>F*</code>，为的就是一句话尽量让错误在编译时暴露。</p>
+<p>静态类型语言的优势在于编译保证了很大一部分的程序的正确性，我相信很多人在写单测的时候会有一个直观的感受，想要达到一样的安心程度，动态类型语言的单测数目要比静态类型多几倍，并且不可避免使用诸如<code>typeof</code>或者<code>isInstanceof</code>这种语句来确定类型（当然我个人是不同意动态类型语言不适合写大项目的这个观点的）。所以，合理使用类型系统有利于提高代码的健壮性。其中一个例子就是<code>effect system</code>，比如<a href="https://wiki.haskell.org/Monad/ST" target="_blank" rel="noopener"><code>STRef</code></a>把变量的可变性限制在一个固定的作用域。这样你在其它地方改变它的时候就会报编译错误。</p>
+<p>再或者，类型协变逆变的标示，用来保证你的泛型在继承体系上位置的正确性。还有之前写过的<code>parser</code>的例子，通过高阶类型来提供<code>parser</code>、<code>error</code>上的灵活性，诸如<code>Parsers[ParseError, Parser[+_]]</code>的这种类型，其实就是我们通过填入不同的类型，实现了不同parser的注入，而且，这个例子也能看出来协变逆变的重要性。</p>
+<p>其实利用枚举来代替数字就是一个简单的利用类型来减少错误的例子，如果只用数字做参数，那么输入<code>-1</code>这种未期望的数字就是要到运行时才能检查，而通过声明枚举类型，就限制了能输入的数字的范围（在编译时），同时实际实现也只是使用数字，不没带来太大的运行时损失。进一步，用接口类型，代替函数指针等，其实这种思想和语言都无关。</p>
+<h4 id="fp-or-oo">FP or OO</h4>
+<p>两边我都没怎么写过正经代码，但是FP和OO在很多情况下是正交的东西，我见过最多的对这两者的误解就是</p>
+<ul>
+<li>FP和OO是冲突的</li>
+<li>FP就是纯函数</li>
+<li>不按OO的库没法用</li>
+<li>FP效率低</li>
+</ul>
+<p>FP和OO是不是冲突的，我相信<code>Scala</code>、<code>OCaml</code>以及<code>F#</code>这些语言已经证明了，很多情况下，两者并不冲突，之前面临的很多问题其实在于『常见』的OO在实现时，没有把对应的点变成<code>first class</code>，这个大多是限制于机器环境、效率等方面的问题。class不就是数据成员加上绑定的函数嘛。那种语言不是这么搞的？就因为长得不太一样，取舍不一样就『非我族类，必有异心』了。</p>
+<p>FP就是纯函数，<code>immutable</code>，这个误解我真是见了不知道多少遍了，我第一次接触<code>FP</code>这个概念是<code>erlang</code>，当时我也感觉没有变量很神奇，其实那种<code>actor</code>模型，就是尽量用状态机，单次响应无状态，写起来自然对变量的需求小啊。但是这不是全部，为什么可以没有变量？因为函数式语言再设计库以及一些数据结构的时候，把常见的会耽误你正常思绪的那部分封装起来，让你看到不到了，你不用考虑出错，自然不用抛异常啊。纯函数、<code>immutable</code>只是个喜人的结果。</p>
+<p>封装不按OO的样子没法用。恩，这种观点我也见过，这又是个典型认为自己见到的就是全世界的心理。你用OO库怎么写代码？难道真的是输入个<code>.</code>，然后等补全嘛？不看文档嘛？那些复杂的继承体系真的更省心嘛？如<code>Haskell</code>这种语言，确实不能像一般常见的OO语言那样看文档，有时候称为『面向函数类型编程』，为什么<code>Hoogle</code>会提供按照函数类型查询这种功能？因为你只要想我要一个什么样的类型函数，查一下，用了就好，因为没有副作用，所以一般不用担心那么多，要先用什么在用什么才不会出问题。最后，你看<code>Scala</code>的<code>implicit</code>+<code>typeclass</code>不是也能搞出来像OO的语法嘛。</p>
+<p>FP效率低，这个我持保留意见。你说吃内存，我认同，和<code>c</code>或者<code>c++</code>这种选手比是这样，不过剩下的就不好说了吧。大家都用gc，编程方式不同，所以gc的风格也不同，一般FP会有更多的闭包，甚至还有<code>Haskell</code>这种全都是<code>lazy</code>的，代码量不大的时候，感觉可能比较明显。不过，FP的数据结构，也不能这么说毕竟<code>immutable</code>的数据结构大家都在用了，本身在设计上就有很多的优化，就比如说<code>Scala</code>的<code>Vector</code>其实是32分的前缀树，均摊的效率并不低，又照顾了<code>head</code>、<code>tail</code>这种操作。</p>
+<p>已经乱七八糟写了很多没用的东西了，也不是什么新东西，但是都是我在使用<code>Scala</code>时才开始认真注意到的东西。最后，给那些据守一种语言的人，一句话，很多时候，你感觉没有用只不过是因为你根本不懂而已，不去学习就连否定的资本都没有。就算不喜欢，不用，那种用无脑吹吹嘘的东西打无脑吹的脸的感觉不是。</p>
+<p>哦，说好的年中<code>Release</code> 2.12呢。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/牢骚/" rel="tag"># 牢骚</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/29/tesis/" rel="next" title="Towards an Effect System in Scala">
+                <i class="fa fa-chevron-left"></i> Towards an Effect System in Scala
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/01/akka-stream/" rel="prev" title="Akka Custom stream processing">
+                Akka Custom stream processing <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#库设计基本等价于编程语言的设计"><span class="nav-number">1.</span> <span class="nav-text">库设计基本等价于编程语言的设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#承认你自己无时无刻都在写库"><span class="nav-number">2.</span> <span class="nav-text">承认你自己无时无刻都在写库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#its-all-about-datatypes"><span class="nav-number">3.</span> <span class="nav-text">It&#39;s all about DataTypes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用高阶泛型类型以增强类型的表现力"><span class="nav-number">3.1.</span> <span class="nav-text">使用高阶泛型类型以增强类型的表现力</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fp-or-oo"><span class="nav-number">3.2.</span> <span class="nav-text">FP or OO</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

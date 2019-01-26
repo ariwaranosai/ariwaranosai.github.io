@@ -1,0 +1,60 @@
+body{
+	-ms-text-size-adjust: 100%;
+	-webkit-text-size-adjust: 100%;
+	font-family: 'Open Sans','Helvetica Neue','Helvetica',Arial,'Hiragino Sans GB', 'Microsoft YaHei','SimSun','Droid Sans Fallback',sans-serif;
+	background: url(http://nkssai.qiniudn.com/front9a8ad2c7.swirl.png) #417fd1
+}
+
+.container{
+	padding-top: 15px;
+}
+
+.container .jumbotron{
+	margin-top: 40px;
+	border-radius: 0px;
+	background-color: transparent;
+	color: #fbfffd;
+	/*text-shadow: 1px 1px 5px #222;*/
+}
+
+a {
+	color: #fafdff
+}
+
+h2 {
+    font-size: 2.5vw;
+}
+
+.element{
+	display: inline;
+}
+
+/*typed cursor*/
+#typed-cursor{
+    opacity: 1;
+    font-weight: 100;
+    font-size: 30px;
+    -webkit-animation: blink 0.7s infinite;
+    -moz-animation: blink 0.7s infinite;
+    -ms-animation: blink 0.7s infinite;
+    -o-animation: blink 0.7s infinite;
+    animation: blink 0.7s infinite;
+}
+
+@keyframes blink{
+    0% { opacity:1; }
+    50% { opacity:0; }
+    100% { opacity:1; }
+}
+
+@-webkit-keyframes blink{
+    0% { opacity:1; }
+    50% { opacity:0; }
+    100% { opacity:1; }
+}
+
+@-moz-keyframes blink{
+    0% { opacity:1; }
+    50% { opacity:0; }
+    100% { opacity:1; }
+}

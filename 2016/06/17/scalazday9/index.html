@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="这一节主要是关于free monad。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="learning Scalaz-day9">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/06/17/scalazday9/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="这一节主要是关于free monad。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="learning Scalaz-day9">
+<meta name="twitter:description" content="这一节主要是关于free monad。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/06/17/scalazday9/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>learning Scalaz-day9 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/06/17/scalazday9/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">learning Scalaz-day9
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-06-17 14:31:14" itemprop="dateCreated datePublished" datetime="2016-06-17T14:31:14+08:00">2016-06-17</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Scalaz翻译/" itemprop="url" rel="index"><span itemprop="name">Scalaz翻译</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这一节主要是关于<code>free monad</code>。</p>
+<a id="more"></a>
+<h3 id="初见free-monad">初见Free Monad</h3>
+<p>这一节的内容也是基于<a href="http://www.haskellforall.com/2012/06/you-could-have-invented-free-monads.html" target="_blank" rel="noopener">Why free monads matter</a>。</p>
+<blockquote>
+<p>Let’s try to come up with some sort of abstraction that represents the essence of a syntax tree. … Our toy language will only have three commands:</p>
+</blockquote>
+<p>先看一个具体语法的例子</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Toy</span> b next = </span></span><br><span class="line">		<span class="type">Output</span> b next</span><br><span class="line">		|<span class="type">Bell</span> next</span><br><span class="line">		| <span class="type">Done</span></span><br></pre></td></tr></table></figure>
+<p>翻译成<code>Scala</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">Toy</span>[+<span class="type">A</span>, +<span class="type">Next</span>]</span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">class</span> <span class="title">Output</span>[<span class="type">A</span>, <span class="type">Next</span>](<span class="params">a: <span class="type">A</span>, next: <span class="type">Next</span></span>) <span class="keyword">extends</span> <span class="title">Toy</span>[<span class="type">A</span>, <span class="type">Next</span>]</span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">class</span> <span class="title">Bell</span>[<span class="type">Next</span>](<span class="params">next: <span class="type">Next</span></span>) <span class="keyword">extends</span> <span class="title">Toy</span>[<span class="type">Nothing</span>, <span class="type">Next</span>]</span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">class</span> <span class="title">Done</span>(<span class="params"></span>) <span class="keyword">extends</span> <span class="title">Toy</span>[<span class="type">Nothing</span>, <span class="type">Nothing</span>]</span></span><br></pre></td></tr></table></figure>
+<p>这样有一个问题，每一次添加一个命令都要改变一个类型。在haskell里面更明显。</p>
+<h4 id="fix来救场">Fix来救场</h4>
+<p>我们找一个类型把他们包起来</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Fix</span> f = <span class="type">Fix</span> (<span class="title">f</span> (<span class="type">Fix</span> <span class="title">f</span>))</span></span><br></pre></td></tr></table></figure>
+<p>这个形式是不是挺眼熟。 写成<code>scala</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Fix</span>[<span class="type">F</span>[_]](<span class="params">f: <span class="type">F</span>[<span class="type">Fix</span>[<span class="type">F</span>]]</span>)</span></span><br><span class="line"><span class="class"><span class="title">object</span> <span class="title">Fix</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">fix</span></span>[<span class="type">A</span>](toy: <span class="type">Toy</span>[<span class="type">A</span>, <span class="type">Fix</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?]]]) = <span class="type">Fix</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?]](toy)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以简单的试一下，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fix[<span class="type">String</span>](<span class="type">Output</span>(<span class="string">"S"</span>, fix(<span class="type">Done</span>())))</span><br><span class="line"><span class="comment">// res0: Fix[[β$1$]Toy[String,β$1$]] = Fix(Output(S,Fix(Done())))</span></span><br></pre></td></tr></table></figure>
+<h4 id="fixe">FixE</h4>
+<p>既然是解析语法，有一个明显的问题就是如果语法错了呢？比如，根本不存在一个<code>Done</code>，程序不会终止。</p>
+<p>我们改进刚才的设计，得到<code>FixE</code></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">FixE</span> f e = <span class="type">Fix</span> (<span class="title">f</span> (<span class="type">FixE</span> <span class="title">f</span> <span class="title">e</span>)) | <span class="type">Throw</span> e</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">FixE</span>[<span class="type">F</span>[_], <span class="title">E</span>]</span></span><br><span class="line"><span class="class"><span class="title">object</span> <span class="title">FixE</span> </span>&#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Fix</span>[<span class="type">F</span>[_], <span class="title">E</span>](<span class="params">f: <span class="type">F</span>[<span class="type">FixE</span>[<span class="type">F</span> ,<span class="type">E</span>]]</span>) <span class="keyword">extends</span> <span class="title">FixE</span>[<span class="type">F</span>, <span class="type">E</span>]</span></span><br><span class="line"><span class="class">    <span class="title">case</span> <span class="title">class</span> <span class="title">Throwy</span>[<span class="type">F</span>[_], <span class="title">E</span>](<span class="params">e: <span class="type">E</span></span>) <span class="keyword">extends</span> <span class="title">FixE</span>[<span class="type">F</span>, <span class="type">E</span>]</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">fix</span>[<span class="type">A</span>, <span class="type">E</span>](<span class="params">toy: <span class="type">Toy</span>[<span class="type">A</span>, <span class="type">FixE</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">E</span>]]</span>)</span>: <span class="type">FixE</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">E</span>]</span><br><span class="line">        = <span class="type">Fix</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">E</span>](toy)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">throwy</span></span>[<span class="type">F</span>[_], <span class="type">E</span>](e: <span class="type">E</span>): <span class="type">FixE</span>[<span class="type">F</span>, <span class="type">E</span>] = <span class="type">Throwy</span>(e)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">catchy</span></span>[<span class="type">F</span>[_]: <span class="type">Functor</span>, <span class="type">E1</span>, <span class="type">E2</span>](ex: =&gt; <span class="type">FixE</span>[<span class="type">F</span>, <span class="type">E1</span>])</span><br><span class="line">        (f: <span class="type">E1</span> =&gt; <span class="type">FixE</span>[<span class="type">F</span>, <span class="type">E2</span>]): <span class="type">FixE</span>[<span class="type">F</span>, <span class="type">E2</span>] = ex <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Fix</span>(x) =&gt; <span class="type">Fix</span>[<span class="type">F</span>, <span class="type">E2</span>](<span class="type">Functor</span>[<span class="type">F</span>].map(x) &#123; catchy(_)(f)&#125;)</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Throwy</span>(e) =&gt; f(e)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，我们把<code>Toy</code>声明成<code>Functor</code>，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">ToyFunctor</span></span>[<span class="type">Y</span>]: <span class="type">Functor</span>[<span class="type">Toy</span>[<span class="type">Y</span>, ?]] = <span class="keyword">new</span> <span class="type">Functor</span>[<span class="type">Toy</span>[<span class="type">Y</span>, ?]] &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">Toy</span>[<span class="type">Y</span>, <span class="type">A</span>])(f: (<span class="type">A</span>) =&gt; <span class="type">B</span>): <span class="type">Toy</span>[<span class="type">Y</span>, <span class="type">B</span>] =</span><br><span class="line">        fa <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> o: <span class="type">Output</span>[<span class="type">Y</span>, <span class="type">A</span>] =&gt; <span class="type">Output</span>(o.a, f(o.next))</span><br><span class="line">            <span class="keyword">case</span> b: <span class="type">Bell</span>[<span class="type">A</span>] =&gt; <span class="type">Bell</span>(f(b.next))</span><br><span class="line">            <span class="keyword">case</span> <span class="type">Done</span>() =&gt; <span class="type">Done</span>()</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，我们写个例子看看（写到这我已经忍不住吐槽scala语法了，实在不太适合写这种东西，到处都是类型，由于不如haskell那样自然处理kind，所以写起来很难看）</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">IncompleteException</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="class"><span class="title">def</span> <span class="title">subroutine</span> </span>= <span class="type">FixE</span>.fix[<span class="type">Char</span>, <span class="type">IncompleteException</span>](</span><br><span class="line">    <span class="type">Output</span>('<span class="type">A</span>',</span><br><span class="line">        <span class="type">FixE</span>.throwy[<span class="type">Toy</span>[<span class="type">Char</span>, ?], <span class="type">IncompleteException</span>](<span class="type">IncompleteException</span>())))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">program</span> </span>= <span class="type">FixE</span>.catchy[<span class="type">Toy</span>[<span class="type">Char</span>, ?], <span class="type">IncompleteException</span>, <span class="type">Nothing</span>](subroutine) &#123; _ =&gt;</span><br><span class="line">    <span class="type">FixE</span>.fix[<span class="type">Char</span>, <span class="type">Nothing</span>](<span class="type">Bell</span>(<span class="type">FixE</span>.fix[<span class="type">Char</span>, <span class="type">Nothing</span>](<span class="type">Done</span>())))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="free-monad-part-1">Free Monad part 1</h3>
+<p>其实<code>free monad</code>已经存在了。</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Free</span> f r = <span class="type">Free</span> (<span class="title">f</span> (<span class="type">Free</span> <span class="title">f</span> <span class="title">r</span>)) | <span class="type">Pure</span> r</span></span><br></pre></td></tr></table></figure>
+<p>而且，他在<code>f</code>是<code>Functor</code>的时候是一个<code>Monad</code></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">instance</span> (<span class="type">Functor</span> <span class="title">f</span>) =&gt; <span class="type">Monad</span> (<span class="type">Free</span> <span class="title">f</span>) <span class="keyword">where</span></span></span><br><span class="line">    return = <span class="type">Pure</span></span><br><span class="line">    (<span class="type">Free</span> x) &gt;&gt;= f = <span class="type">Free</span> (fmap (&gt;&gt;= f) x)</span><br><span class="line">    (<span class="type">Pure</span> r) &gt;&gt;= f = f r</span><br></pre></td></tr></table></figure>
+<p>其中<code>return</code>就是<code>throw</code>，而<code>pure</code>就是<code>catch</code>。而在<code>Scala</code>中，对应的是<code>Free[S[+_], +A]</code>，<code>return</code>对应<code>Free.point</code>，<code>&gt;&gt;=</code>就是<code>flatMap</code>。</p>
+<p>我们看看用<code>scalaz</code>来实现。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">output</span></span>[<span class="type">A</span>](a: <span class="type">A</span>): <span class="type">Free</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>] =</span><br><span class="line">    <span class="type">Free</span>.roll[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>](<span class="type">Output</span>(a, <span class="type">Free</span>.pure[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>](())))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bell</span></span>[<span class="type">A</span>]: <span class="type">Free</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>] =</span><br><span class="line">    <span class="type">Free</span>.roll(<span class="type">Bell</span>(<span class="type">Free</span>.point[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>](())))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">done</span></span>[<span class="type">A</span>]: <span class="type">Free</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>] = <span class="type">Free</span>.roll[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>](<span class="type">Done</span>())</span><br></pre></td></tr></table></figure>
+<p>但是这里有点太麻烦了，我们可以完全可以直接使用liftF。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">Toy</span> </span>&#123;</span><br><span class="line">    <span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">ToyFunctor</span></span>[<span class="type">Y</span>]: <span class="type">Functor</span>[<span class="type">Toy</span>[<span class="type">Y</span>, ?]] = <span class="keyword">new</span> <span class="type">Functor</span>[<span class="type">Toy</span>[<span class="type">Y</span>, ?]] &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">Toy</span>[<span class="type">Y</span>, <span class="type">A</span>])(f: (<span class="type">A</span>) =&gt; <span class="type">B</span>): <span class="type">Toy</span>[<span class="type">Y</span>, <span class="type">B</span>] =</span><br><span class="line">            fa <span class="keyword">match</span> &#123;</span><br><span class="line">                <span class="keyword">case</span> o: <span class="type">Output</span>[<span class="type">Y</span>, <span class="type">A</span>] =&gt; <span class="type">Output</span>(o.a, f(o.next))</span><br><span class="line">                <span class="keyword">case</span> b: <span class="type">Bell</span>[<span class="type">A</span>] =&gt; <span class="type">Bell</span>(f(b.next))</span><br><span class="line">                <span class="keyword">case</span> <span class="type">Done</span>() =&gt; <span class="type">Done</span>()</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span></span>[<span class="type">A</span>](a: <span class="type">A</span>): <span class="type">Free</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>] =</span><br><span class="line">        <span class="type">Free</span>.liftF[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>](<span class="type">Output</span>(a, ()))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">bell</span></span>[<span class="type">A</span>]: <span class="type">Free</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>] =</span><br><span class="line">        <span class="type">Free</span>.liftF[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>](<span class="type">Bell</span>())</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">done</span></span>[<span class="type">A</span>]: <span class="type">Free</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>] = <span class="type">Free</span>.liftF[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">Unit</span>](<span class="type">Done</span>())</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不过这个程序感觉没什么效果，我们搞一个能把它打印出来的。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">showProgram</span></span>[<span class="type">R</span>: <span class="type">Show</span>, <span class="type">A</span>: <span class="type">Show</span>](p: <span class="type">Free</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">R</span>]): <span class="type">String</span> =</span><br><span class="line">    p.resume.fold(&#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Output</span>(a, next) =&gt;</span><br><span class="line">            <span class="string">"output "</span> + <span class="type">Show</span>[<span class="type">A</span>].shows(a) + <span class="string">"\n"</span> + showProgram(next)</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Bell</span>(next) =&gt;</span><br><span class="line">            <span class="string">"bell "</span> + <span class="string">"\n"</span> + showProgram(next)</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Done</span>() =&gt;</span><br><span class="line">            <span class="string">"done\n"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;r: <span class="type">R</span> =&gt; <span class="string">"return"</span> + <span class="type">Show</span>[<span class="type">R</span>].shows(r) + <span class="string">"\n"</span>&#125;)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">pretty</span></span>[<span class="type">R</span>: <span class="type">Show</span>, <span class="type">A</span>: <span class="type">Show</span>](p: <span class="type">Free</span>[<span class="type">Toy</span>[<span class="type">A</span>, ?], <span class="type">R</span>]) = print(showProgram(p))</span><br><span class="line"></span><br><span class="line">pretty(program)</span><br><span class="line"><span class="comment">// output A</span></span><br><span class="line">bell </span><br><span class="line">done</span><br><span class="line">res0: <span class="type">Unit</span> = ()</span><br></pre></td></tr></table></figure>
+<h4 id="free-monad-and-list">free monad and List</h4>
+<p>其实对比<code>List</code>和<code>Free</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">data <span class="type">Free</span> f r = <span class="type">Free</span> (f (<span class="type">Free</span> f r)) | <span class="type">Pure</span> r</span><br><span class="line">data <span class="type">List</span> a = <span class="type">Cons</span> a (<span class="type">List</span> a) | <span class="type">Nil</span></span><br></pre></td></tr></table></figure>
+<p>可以把<code>Free</code>自己看成一个<code>functor</code>的<code>list</code>，<code>Free</code>本身可以看做一个<code>Cons</code>。</p>
+<p>很多地方都是说<code>Free Monad</code>其实就是<code>AST+Interpreter</code>，其实这种时候看看<code>Haskell</code>就比<code>Scala</code>清晰多了。通过类型建立<code>ADT</code>，（话说这个在写《TAPL》第一章那个无类型的lambda验算的时候就感觉很方便），然后通过lift把对应的<code>functor</code>升级成<code>Free Monad</code>，最后定义个<code>Interpreter</code>，针对不同的<code>lift</code>之前的类型进行处理就行了。</p>
+<p>其实这个倒是写了很长时间，但是感觉自己理解的差了不少，也没结束，正好最近在知乎上看到了<a href="https://zhuanlan.zhihu.com/p/21291746?refer=c_30885403" target="_blank" rel="noopener">大神的解释</a>。其中对<code>CoYoneda</code>的介绍很实用。即，<code>ADT</code>不满足<code>Functor</code>的时候通过实现<code>Coyoneda</code>来构造一个<code>Functor</code>。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/15/scalazday8/" rel="next" title="learning Scalaz-day8">
+                <i class="fa fa-chevron-left"></i> learning Scalaz-day8
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/15/ty-level3/" rel="prev" title="Type-Level Programming in Scala-HList">
+                Type-Level Programming in Scala-HList <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#初见free-monad"><span class="nav-number">1.</span> <span class="nav-text">初见Free Monad</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#fix来救场"><span class="nav-number">1.1.</span> <span class="nav-text">Fix来救场</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fixe"><span class="nav-number">1.2.</span> <span class="nav-text">FixE</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#free-monad-part-1"><span class="nav-number">2.</span> <span class="nav-text">Free Monad part 1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#free-monad-and-list"><span class="nav-number">2.1.</span> <span class="nav-text">free monad and List</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

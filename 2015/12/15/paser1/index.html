@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="最近有写个Parser的需求，回想起《Real World Haskell》以及《Functional Programming in Scala》各种书里面其实都有这个内容。Parser Combinators也并不是函数式语言的特例，java的ANTLR4也是composable的。不过这确实是个内部DSL-Domain Specific Language的好例子，简单的例子难度也不高。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="写个小Parser Combinators (1)">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/12/15/paser1/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="最近有写个Parser的需求，回想起《Real World Haskell》以及《Functional Programming in Scala》各种书里面其实都有这个内容。Parser Combinators也并不是函数式语言的特例，java的ANTLR4也是composable的。不过这确实是个内部DSL-Domain Specific Language的好例子，简单的例子难度也不高。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="写个小Parser Combinators (1)">
+<meta name="twitter:description" content="最近有写个Parser的需求，回想起《Real World Haskell》以及《Functional Programming in Scala》各种书里面其实都有这个内容。Parser Combinators也并不是函数式语言的特例，java的ANTLR4也是composable的。不过这确实是个内部DSL-Domain Specific Language的好例子，简单的例子难度也不高。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/12/15/paser1/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>写个小Parser Combinators (1) | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/12/15/paser1/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">写个小Parser Combinators (1)
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-12-15 11:17:32" itemprop="dateCreated datePublished" datetime="2015-12-15T11:17:32+08:00">2015-12-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/不会写代码/" itemprop="url" rel="index"><span itemprop="name">不会写代码</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近有写个<code>Parser</code>的需求，回想起《Real World Haskell》以及《Functional Programming in Scala》各种书里面其实都有这个内容。<code>Parser Combinators</code>也并不是函数式语言的特例，<code>java</code>的<code>ANTLR4</code>也是<code>composable</code>的。不过这确实是个内部<code>DSL-Domain Specific Language</code>的好例子，简单的例子难度也不高。</p>
+<a id="more"></a>
+<p><code>Scala</code>的语法本来也算是比较容易理解的，一些语法特性我也会介绍。不过，熟悉<code>Haskell</code>等语言的人可能会感觉<code>Scala</code>做这种事情，语法有些啰嗦了。整体文章是从<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.142.5002&amp;rep=rep1&amp;type=cpdf" target="_blank" rel="noopener">这篇文章</a>抄袭而来，为了保证完全跑起来改了一些东西。完整的代码在<a href="https://github.com/ariwaranosai/scalaLab/tree/master/src/main/scala/parsercombinators" target="_blank" rel="noopener">这里</a>。关于<code>Monadic Parser Combinators</code>还可以看<a href="http://www.cs.nott.ac.uk/~pszgmh/monparsing.pdf" target="_blank" rel="noopener">Erik Meijer的论文</a>。</p>
+<h4 id="什么是parser">什么是Parser</h4>
+<p>我们什么时候需要一个Parser，首先第一个编译器肯定是需要parser的，为了生成抽象语法树就需要Parser，然后对于一些和编译前端很像的任务也需要Parser，比如解析<code>JSON</code>、<code>XML</code>或者一些奇奇怪怪的配置文件（这些其实可以看做外部DSL）。</p>
+<p>首先是有个<a href="https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form" target="_blank" rel="noopener">EBNF</a>，然后按照他弄出来个<code>Parser</code>，而我们的目的就是简化这个过程。编译里面会教你推LL或者LR的表，然后每次查表就可以了，但是总不能每次都这样吧。</p>
+<p>要实现一个Parser首先要看看他是干什么的。那么对于Parser的输入是什么？字符串？输出呢？任意类型？比如处理<code>JSON</code>就是输入一个<code>json string</code>然后返回一个<code>json object</code>，处理<code>xml</code>就是输入一个<code>xml string</code>返回一个<code>xml object</code>。这样我们就得到了现在认为的Parser类型，<code>String =&gt; T</code>。我这里使用这种方式表达类型，<code>=&gt;</code>可以看做给前面类型的输入，然后返回后面类型的输出。<code>String =&gt; T</code>就是代表给<code>String</code>类型的输入，就返回一个<code>T</code>类型，当然这里<code>T</code>是用来当做泛型的参数。</p>
+<p>不过这个结果明显不太对。先考虑输出，很明显，并不是每个输入都能被<code>Parser</code>成正确的结果，一个不对的输入返回什么呢？抛个异常？哦不！这可不行，不要忘了，我们的目的不止是一个<code>Parser</code>而是<code>Parser Combinators</code>。直接抛异常是不能够<code>Combinator</code>的。原因很简单，如果依靠异常来处理失败的情况，那么整个过程就很难流方便的组合起来了。</p>
+<p>举个例子，编译里面常见的的EBNF还记得吧！<code>A := B | C</code>，（好吧！我不记得符号了，反正应该看得懂），这代表非终结符<code>A</code>可以展开为非终结符<code>B</code>或者<code>C</code>，如果Parser不对了就报异常，那么我们在parser <code>B</code>失败了换成<code>C</code>的操作难道在异常里面写嘛。</p>
+<p>所以，返回值的类型要改。输入呢？更是要改啊，你看看就算是编译器里，也是先进行词法分析然后给Parser的吧，那输入是个元组的序列，像<code>[(int, type),(a, identifier),(9, Number)]</code>这种。</p>
+<p>所以要改就彻底的改，改成<code>Input =&gt; Result[T]</code>类型，这下好了，输入类型不确定，输出类型可以辨识失败。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">SimpleResults</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">Input</span></span></span><br><span class="line"><span class="class">  <span class="title">trait</span> <span class="title">Result</span>[+<span class="type">T</span>] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">next</span></span>: <span class="type">Input</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Success</span>[+<span class="type">T</span>](<span class="params">result: <span class="type">T</span>, next: <span class="type">Input</span></span>) <span class="keyword">extends</span> <span class="title">Result</span>[<span class="type">T</span>]</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">  <span class="title">case</span> <span class="title">class</span> <span class="title">Failure</span>(<span class="params">msg: <span class="type">String</span>, next: <span class="type">Input</span></span>) <span class="keyword">extends</span> <span class="title">Result</span>[<span class="type">Nothing</span>]</span></span><br><span class="line"><span class="class">&#125;</span></span><br></pre></td></tr></table></figure>
+<p><code>trait</code>可以看做抽象类或者可以有具体内容的接口（这不是java8加进去的特性嘛），不过它还支持一种<code>mixin</code>。这不是我们关注的内容就不管了。<code>type</code>定义了一种类型不过这种类型，可以看做<code>typedef</code>但是这里只是声明了没有赋值，留给实现的时候赋值。<code>case class</code>可以先看做普通的<code>class</code>，不过在模式匹配的时候，会导出构造函数。泛型参数的<code>+</code>表示协变。</p>
+<p><code>Result</code>的含义很简单，给一个<code>Input</code>，然后Parser掉其中满足的一部分，成功的话就返回Parser的结果以及剩下的一部分，失败的话就给个原因（万一这个是最后一个parser，识别不出来要报错呢），以及接下来要parser的内容（想想之前那个<code>A:= B | C</code>的例子）。</p>
+<p>这样就可以写出来第一个简单的Parser了。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">XParser</span> <span class="keyword">extends</span> <span class="title">SimpleResults</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">Input</span> </span>= <span class="type">String</span></span><br><span class="line">  <span class="keyword">val</span> accept: <span class="type">Input</span> =&gt; <span class="type">Result</span>[<span class="type">Char</span>] = &#123; (in: <span class="type">String</span>) =&gt;</span><br><span class="line">  <span class="keyword">if</span> (in.<span class="type">CharAt</span>(<span class="number">0</span>) == 'x') <span class="type">Success</span>('x', in.substring(<span class="number">1</span>))</span><br><span class="line">  <span class="keyword">else</span> <span class="type">Failure</span>(<span class="string">"expect an x"</span>, in) </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个Parser只能用来parser一个<code>x</code>。不过马上就可以更复杂了。</p>
+<h4 id="来个简单的parser">来个简单的Parser</h4>
+<p>回到刚才的那个例子改一点，<code>A := Bd | C</code>，这下我们得到两个希望有的功能，即可以把Parser连接起来处理一个序列，又可以在第一个失败的时候继续处理下一个。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">SimpleParsers</span> <span class="keyword">extends</span> <span class="title">SimpleResults</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">trait</span> <span class="title">Parser</span>[+<span class="type">T</span>] <span class="keyword">extends</span> (<span class="params"><span class="type">Input</span> ⇒ <span class="type">Result</span>[<span class="type">T</span>]</span>) </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(in: <span class="type">Input</span>): <span class="type">Result</span>[<span class="type">T</span>]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">|</span> </span>[<span class="type">U</span> &gt;: <span class="type">T</span>](p: ⇒ <span class="type">Parser</span>[<span class="type">U</span>]): <span class="type">Parser</span>[<span class="type">U</span>]</span><br><span class="line">    = <span class="keyword">new</span> <span class="type">Parser</span>[<span class="type">U</span>]&#123; <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(in: <span class="type">Input</span>) =</span><br><span class="line">    <span class="type">Parser</span>.<span class="keyword">this</span>(in) <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Failure</span>(_, _) ⇒ p(in)</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Success</span>(x, n) ⇒ <span class="type">Success</span>(x, n)</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">~</span> </span>[<span class="type">U</span>](p: ⇒ <span class="type">Parser</span>[<span class="type">U</span>]): <span class="type">Parser</span>[([<span class="type">T</span>, <span class="type">U</span>])]</span><br><span class="line">    = <span class="keyword">new</span> <span class="type">Parser</span>[<span class="type">Pair</span>[<span class="type">T</span>, <span class="type">U</span>]]&#123; <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(in: <span class="type">Input</span>) =</span><br><span class="line">    <span class="type">Parser</span>.<span class="keyword">this</span>(in) <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Success</span>(x, next) ⇒ p(next) <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Success</span>(x2, next2) ⇒ <span class="type">Success</span>((x, x2), next2)</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Failure</span>(m, n) ⇒ <span class="type">Failure</span>(m, n)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Failure</span>(m, n) ⇒ <span class="type">Failure</span>(m, n)</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先解释一下语法，首先，<code>Scala</code>里面其实没有什么运算符重载的概念，大家都是一样的函数就是你用字母取名，我用符号取名而已，然后在<code>|</code>这个函数的参数是<code>p: =&gt; Parser[U]</code>，这个含义是<code>call by name</code>，只有用到这个变量的时候才会计算。对于<code>apply</code>函数，可以看做一个语法糖。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">add</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(a: <span class="type">Int</span>, b: <span class="type">Int</span>): <span class="type">Int</span> = a + b</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">add(<span class="number">1</span>,<span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+<p>即在用函数的方式调用<code>object</code>时，会隐式的调用其<code>apply</code>函数。而一个Parser其实就是一个函数类型为<code>Input =&gt; Result[T]</code>，在<code>apply</code>函数中实现。<code>match</code>是模式匹配，在<code>Haskell</code>、<code>OCaml</code>里面都有，据说<code>C#</code>也要加。之前也提过<code>case class</code>就是为了<code>pattern matching</code>提供方便的。</p>
+<p>这里的逻辑比较简单，无非就是前面匹配对了，就直接返回，不对继续下一个。不过这个抽象类太抽象了。来个具体的</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">StringParsers</span> <span class="title">extend</span> <span class="title">SimpleParsers</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">Input</span> </span>= <span class="type">String</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> <span class="type">EOI</span> = <span class="number">0.</span>toChar</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">accept</span></span>(expect: <span class="type">Char</span>) = <span class="keyword">new</span> <span class="type">Parser</span>[<span class="type">Char</span>] &#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(in: <span class="type">String</span>) = </span><br><span class="line">    <span class="keyword">if</span> (in = <span class="string">""</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (expected = <span class="type">EOI</span>)</span><br><span class="line">      <span class="type">Success</span>(expected, <span class="string">""</span>)</span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">      <span class="type">Failure</span>(<span class="string">"no more input"</span>, in);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (in.charAt(<span class="number">0</span>) == expected)</span><br><span class="line">    <span class="type">Success</span>(expected, in.substring(<span class="number">1</span>))</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    <span class="type">Failure</span>(<span class="string">"expected \'"</span> + expected + <span class="string">"\'"</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">accept</span></span>(e: <span class="type">Char</span>): <span class="type">Parser</span>[<span class="type">Char</span>] = accept(e)</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">eoi</span> </span>= accept(<span class="type">EOI</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后具体写一个parser</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">OXOParser</span> <span class="keyword">extends</span> <span class="title">StringParsers</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">oxo</span> </span>= 'o' ~ 'x' ~ 'o'</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">oxos</span> </span>= (oxo ~ ' ' ~ oxo) | oxo</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里利用accept来实现隐式类型转换，这个也算是<code>scala</code>实现DSL的重要功能之一了，在对象<code>OXOParser</code>里面，虽然<code>Char</code>类型的<code>o</code>没有函数<code>~</code>但是，通过搜索隐式类型转换找了<code>Char =&gt; Parser[Char]</code>类型的函数，所以写的时候就可以直接用了。这样是不是写起来就简单多了，而且<code>~</code>和<code>|</code>弄得和EBNF逐渐接近。这种设计api的方式就可以叫做实现<code>DSL</code>。</p>
+<h4 id="改进一点代码">改进一点代码</h4>
+<p>不过到这里，还有一点问题。<code>Parser</code>里面有太多显示的<code>match</code>，不好看，也不方便扩展，为了解决这个问题，我们需要<code>Result</code>里面提供更多的高阶函数。到底需要哪些高阶函数呢？首先需要一个能把两个不同的Result组合的功能，比如，在<code>|</code>中，我们希望把两个结果组合起来，哪个能用就用哪个的结果。而且，两个Result的泛型参数还不一定是一个类型的。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">append</span></span>[<span class="type">U</span> &gt;: <span class="type">T</span>](alt: =&gt; <span class="type">Result</span>[<span class="type">U</span>]) = ???</span><br></pre></td></tr></table></figure>
+<p>这里<code>[u &gt;: T]</code>是为了保证U是T的子类。为了满足协变。</p>
+<p>还需要一个可以两个Parser的结果连接起来的功能。所以<code>Result</code>里面也要有相应的支持，即对于前一个结果以及剩下的内容，可以处理完，然后把连起来的结果返回出来。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">flatMapWithNext</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">Input</span> =&gt; <span class="type">Result</span>[<span class="type">U</span>]) = ???</span><br></pre></td></tr></table></figure>
+<p>另外，如果Parser希望对已经Parser出来的结果进行处理的话，还需要一个可以把Parser结果打开处理完，然后包回去的函数即map。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">U</span>](f: <span class="type">U</span> =&gt; <span class="type">T</span>): <span class="type">Result</span>[<span class="type">U</span>]</span><br></pre></td></tr></table></figure>
+<p>具体实现挺简单的</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">SimpleResults</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">Input</span></span></span><br><span class="line"><span class="class"> </span></span><br><span class="line"><span class="class">  <span class="title">trait</span> <span class="title">Result</span>[+<span class="type">T</span>] </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">next</span></span>: <span class="type">Input</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">U</span>): <span class="type">Result</span>[<span class="type">U</span>]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">flatMapWithNext</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">Input</span> =&gt; <span class="type">Result</span>[<span class="type">U</span>]): <span class="type">Result</span>[<span class="type">U</span>]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">append</span></span>[<span class="type">U</span> &gt;: <span class="type">T</span>](alt: =&gt; <span class="type">Result</span>[<span class="type">U</span>]): <span class="type">Result</span>[<span class="type">U</span>]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">flatMap</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">Result</span>[<span class="type">U</span>]): <span class="type">Result</span>[<span class="type">U</span>]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Success</span>[+<span class="type">T</span>](<span class="params">result: <span class="type">T</span>, next: <span class="type">Input</span></span>) <span class="keyword">extends</span> <span class="title">Result</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">U</span>) = <span class="type">Success</span>(f(result), next)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">flatMapWithNext</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">Input</span> =&gt; <span class="type">Result</span>[<span class="type">U</span>]) = f(result)(next)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">append</span></span>[<span class="type">U</span> &gt;: <span class="type">T</span>](alt: =&gt; <span class="type">Result</span>[<span class="type">U</span>]) = <span class="keyword">this</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">flatMap</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">Result</span>[<span class="type">U</span>]): <span class="type">Result</span>[<span class="type">U</span>] = f(result)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Failure</span>(<span class="params">msg: <span class="type">String</span>, next: <span class="type">Input</span></span>) <span class="keyword">extends</span> <span class="title">Result</span>[<span class="type">Nothing</span>] </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">U</span>](f: <span class="type">Nothing</span> =&gt; <span class="type">U</span>) = <span class="keyword">this</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">flatMapWithNext</span></span>[<span class="type">U</span>](f: <span class="type">Nothing</span> =&gt; <span class="type">Input</span> =&gt; <span class="type">Result</span>[<span class="type">U</span>]) = <span class="keyword">this</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">append</span></span>[<span class="type">U</span>](alt: =&gt; <span class="type">Result</span>[<span class="type">U</span>]) = alt</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">flatMap</span></span>[<span class="type">U</span>](f: <span class="type">Nothing</span> =&gt; <span class="type">Result</span>[<span class="type">U</span>]): <span class="type">Result</span>[<span class="type">U</span>] = <span class="keyword">this</span></span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后修在<code>Parser</code>里面的内容</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">Parser</span></span>[<span class="type">T</span>](f: <span class="type">Input</span> =&gt; <span class="type">Result</span>[<span class="type">T</span>]) = </span><br><span class="line">    <span class="keyword">new</span> <span class="type">Parser</span>[<span class="type">T</span>]&#123; <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(in: <span class="type">Input</span>) = f(in) &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">flatMap</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">Parser</span>[<span class="type">U</span>]): <span class="type">Parser</span>[<span class="type">U</span>]</span><br><span class="line">      = <span class="type">Parser</span> &#123; in =&gt; <span class="type">Parser</span>.<span class="keyword">this</span>(in).flatMapWithNext(f)&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">U</span>](f: <span class="type">T</span> =&gt; <span class="type">U</span>): <span class="type">Parser</span>[<span class="type">U</span>] = <span class="type">Parser</span> &#123; </span><br><span class="line">    in =&gt; <span class="type">Parser</span>.<span class="keyword">this</span>(in).map(f)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">|</span> </span>[<span class="type">U</span> &gt;: <span class="type">T</span>](p: =&gt; <span class="type">Parser</span>[<span class="type">U</span>]): <span class="type">Parser</span>[<span class="type">U</span>] = <span class="type">Parser</span> &#123; </span><br><span class="line">    in =&gt; <span class="type">Parser</span>.<span class="keyword">this</span>(in).append(p(in)) </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">~</span> </span>[<span class="type">U</span>](p: =&gt; <span class="type">Parser</span>[<span class="type">U</span>]): <span class="type">Parser</span>[(<span class="type">T</span>, <span class="type">U</span>)] =  <span class="keyword">for</span> &#123;</span><br><span class="line">      x &lt;- <span class="keyword">this</span></span><br><span class="line">      y &lt;- p</span><br><span class="line">    &#125; <span class="keyword">yield</span> (x, y)</span><br></pre></td></tr></table></figure>
+<p>这里的<code>for</code>也是个语法糖，对于</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">  x &lt;- a</span><br><span class="line">  y &lt;- b</span><br><span class="line">  z &lt;- c</span><br><span class="line">&#125; <span class="keyword">yield</span>(x + y + z)</span><br></pre></td></tr></table></figure>
+<p>可以看成</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a.flatMap(x =&gt; b.flatMap(y =&gt; c.map(z =&gt; (x + y + z))))</span><br></pre></td></tr></table></figure>
+<p>先使用Parser函数，简化了构件Parser的语法，然后使用高阶函数，又是代码简洁了不少。</p>
+<p>现在，parser其实已经有一定的描述能力了，但是还是有一些重要的功能没有，比如正则里面的<code>a+b</code>对于这样的重复不能处理，这些功能，下一篇里面在考虑。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/12/07/lagrangian/" rel="next" title="拉格朗日乘子法以及 Minimax Entropy in Crowdsourcing">
+                <i class="fa fa-chevron-left"></i> 拉格朗日乘子法以及 Minimax Entropy in Crowdsourcing
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/12/21/parser2/" rel="prev" title="写个小Parser Combinators (2)">
+                写个小Parser Combinators (2) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#什么是parser"><span class="nav-number">1.</span> <span class="nav-text">什么是Parser</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#来个简单的parser"><span class="nav-number">2.</span> <span class="nav-text">来个简单的Parser</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#改进一点代码"><span class="nav-number">3.</span> <span class="nav-text">改进一点代码</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

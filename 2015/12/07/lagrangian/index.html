@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="虽然被发配出来开题报告估计是不用写了，不过之前的论文还是要看的，顺便回顾一下用的经典算法，推推式子。">
+<meta name="keywords" content="EM,crowdsourcing">
+<meta property="og:type" content="article">
+<meta property="og:title" content="拉格朗日乘子法以及 Minimax Entropy in Crowdsourcing">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/12/07/lagrangian/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="虽然被发配出来开题报告估计是不用写了，不过之前的论文还是要看的，顺便回顾一下用的经典算法，推推式子。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/entropy%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-12-07%20%E4%B8%8A%E5%8D%8810.18.40.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/entropy%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-12-07%20%E4%B8%8A%E5%8D%8810.29.15.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/entropy%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-12-07%20%E4%B8%8A%E5%8D%8810.36.08.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="拉格朗日乘子法以及 Minimax Entropy in Crowdsourcing">
+<meta name="twitter:description" content="虽然被发配出来开题报告估计是不用写了，不过之前的论文还是要看的，顺便回顾一下用的经典算法，推推式子。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/entropy%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-12-07%20%E4%B8%8A%E5%8D%8810.18.40.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/12/07/lagrangian/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>拉格朗日乘子法以及 Minimax Entropy in Crowdsourcing | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/12/07/lagrangian/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">拉格朗日乘子法以及 Minimax Entropy in Crowdsourcing
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-12-07 00:00:00" itemprop="dateCreated datePublished" datetime="2015-12-07T00:00:00+08:00">2015-12-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>虽然被发配出来开题报告估计是不用写了，不过之前的论文还是要看的，顺便回顾一下用的经典算法，推推式子。</p>
+<a id="more"></a>
+<p>其实，<code>crowdsourcing</code>或者<code>multi-source truth finder</code>这个方向使用的方法还是挺广的，首先使用的以概率图模型为主，各种大神在自己的数据集上用新的生成模型灌水，剩下的各种方法也不少，比如用的NMF或者概率矩阵分解来做矩阵填充的，更有甚者用张量分解来求隐变量的。还有一派就是用Minmax Entropy来解释的，求解方法自然就是拉格朗日乘子法。老规矩，先放大神的<a href="http://blog.pluskid.org/?p=702" target="_blank" rel="noopener">链接</a>。</p>
+<h3 id="对偶函数">对偶函数</h3>
+<p>对于一个常见的优化问题</p>
+<p><span class="math display">\[
+\begin{align} &amp;\operatorname{minimize}&amp; &amp; f_0(x) \\ &amp;\operatorname{subject\;to}&amp; &amp;f_i(x) \leq 0, \quad i = 1,\dots,m \\ &amp; &amp; &amp;h_i(x) = 0, \quad i = 1,\dots,p  \end{align}
+\]</span></p>
+<p>称为约束最优化问题。然后引入广义拉格朗日函数<code>generalized Lagrange function</code></p>
+<p><span class="math display">\[
+L(x,\lambda,\nu) = f_0(x) + \sum_{i=1}^m \lambda_i f_i(x) + \sum_{i=1}^p \nu_i h_i(x)
+\]</span></p>
+<p>其中<span class="math inline">\(\lambda \geq 0\)</span>和<span class="math inline">\(\nu\)</span>称为拉格朗日乘子<code>Lagrange multiplier vectors</code>或者叫对偶变量<code>dual variables</code>。那对偶这个名字从什么地方来的呢？</p>
+<h4 id="对偶函数-1">对偶函数</h4>
+<p>定义对偶函数如下</p>
+<p><span class="math display">\[
+g(\lambda,\nu) = \inf_{x\in\mathcal{D}} L(x,\lambda,\nu) = \inf_{x\in\mathcal{D}} \left ( f_0(x) + \sum_{i=1}^m \lambda_i f_i(x) + \sum_{i=1}^p \nu_i h_i(x) \right )
+\]</span></p>
+<p>即对偶函数是以对偶变量为自变量的函数，这个函数是拉格朗日函数的下届。仔细看一下这个式子，取<span class="math inline">\(f^*\)</span>为原问题的最优解，由于<span class="math inline">\(\lambda \geq 0\)</span>所以显然应该有<span class="math inline">\(g(\lambda, \nu) \leq f^*\)</span>。此外，还有一个重要的结论是，不论原函数是不是凸的，其对偶函数总是凹的。这个又和另外两个结论有关，一个问题如果能表示成一族仿射函数的逐点上确界，则其一定是一个凸的，如果一个问题能表示成一族仿射函数的逐点下确界，则其一定是一个凹的。具体可以看<a href="https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf" target="_blank" rel="noopener">Convex optimization</a>。</p>
+<h3 id="对偶问题">对偶问题</h3>
+<p>之前已经提过，由于<span class="math inline">\(\lambda \geq 0\)</span>的存在，导致<span class="math inline">\(g(\lambda, \nu) \leq f^*\)</span>成立，既然已经知道了对偶函数是原函数最优解<span class="math inline">\(f^*\)</span>的下界估计，就可以用转化原问题了。</p>
+<p><span class="math display">\[
+\begin{align} &amp;\operatorname{maximize}&amp; &amp; g(\lambda,\nu) \\ &amp;\operatorname{subject\;to}&amp; &amp;\lambda \succeq 0  \end{align}
+\]</span></p>
+<p>这个就是原问题的对偶问题。由于对偶问题一定是凸的，所以，这个问题总是一个凸优化问题。</p>
+<p>但是这样就引来另一个问题，等号是不是能取到。</p>
+<h4 id="弱对偶性">弱对偶性</h4>
+<p>令<span class="math inline">\(g^*\)</span>表示对偶问题的最优解，对于在原问题<span class="math inline">\(f(x)\)</span>上的任意一个可行解<span class="math inline">\(\hat(x)\)</span>则由于<span class="math inline">\(\lambda \geq 0\)</span>所以</p>
+<p><span class="math display">\[
+\sum_{i=1}^m \lambda_i f_i(\hat{x}) + \sum_{i=1}^p \nu_i h_i(\hat{x}) \leq 0
+\]</span></p>
+<p>则</p>
+<p><span class="math display">\[\begin{split}
+g(\lambda,\nu) = \inf_{x\in\mathcal{D}} L(x,\lambda,\nu) \leq L(\hat{x},\lambda,\nu) \leq f^*
+\end{split}\]</span></p>
+<p>即<span class="math inline">\(g^* \leq f^*\)</span>。</p>
+<p>这称为弱对偶性，即对偶问题的最优解不大于原问题的最优解。</p>
+<h4 id="强对偶性">强对偶性</h4>
+<p>当原问题和对偶问题的最优解相等，即<span class="math inline">\(f^* == g^*\)</span>的时候，称其为满足强对偶性。</p>
+<p><code>Slater's Theorem</code>提供了一个强对偶的充分条件：</p>
+<blockquote>
+<p>若存在一点<span class="math inline">\(x \in relint \ D(D的相对内点集)\)</span>满足 <span class="math inline">\(f_i(x) &lt; 0, i = 1,...,m, \ \ Ax = b\)</span>成立，且原问题是凸优化问题时，则强对偶性成立。</p>
+</blockquote>
+<p>不过这个条件并不是常用来计算的条件。</p>
+<h4 id="松弛互补">松弛互补</h4>
+<p>这个结论也很直观，而且在SVM的推导中都能注意到，假设已经有强对偶成立。同时最优解分别为<span class="math inline">\(x^*\)</span>和<span class="math inline">\((\lambda^*, \nu^*)\)</span>。则</p>
+<p><span class="math display">\[
+\begin{split} f_0(x^\ast) = &amp; g(\lambda^\ast,\nu^\ast) \\ = &amp; \inf_{x} \left( f_0(x) + \sum_{i=1}^m \lambda_i^\ast f_i(x) + \sum_{i=1}^p \nu_i^\ast h_i(x) \right) \\ \leq &amp; f_0(x^\ast) + \sum_{i=1}^m \lambda_i^\ast f_i(x^\ast) + \sum_{i=1}^p \nu_i^\ast h_i(x^\ast) \\ \leq &amp; f_0(x^\ast) \end{split}
+\]</span></p>
+<p>因此，中间所有的不等号都可以取到等号。所以其中的项，$_{i=1}^m _i<sup>f_i(x</sup>) <span class="math inline">\(应该为0，这就意味着，当\)</span>_i<sup><em><span class="math inline">\(不为0的时候，\)</span>f_i(x^</em>)<span class="math inline">\(应该为0，而\)</span>f_i(x</sup>*)<span class="math inline">\(不为0的时候，\)</span>_i^*$应该为0。这就称之为互补松弛条件。</p>
+<h3 id="kkt条件">KKT条件</h3>
+<p>KKT条件为</p>
+<p><span class="math display">\[
+\begin{split} f_i(x^\ast) \leq &amp; 0, \quad i=1,\dots,m \\ h_i(x^\ast) = &amp; 0, \quad i=1,\dots,p  \\ \lambda_i^\ast \geq &amp; 0, \quad i=1,\dots,m \\ \lambda_i^\ast f_i(x^\ast) = &amp; 0, \quad i=1,\dots,m \\ \nabla f_0(x^\ast)+\sum_{i=1}^m \lambda_i^\ast\nabla f_i(x^\ast)+\sum_{i=1}^p \nu_i^\ast\nabla h_i(x^\ast) = &amp; 0 \end{split}
+\]</span></p>
+<p>假设所有函数<span class="math inline">\(f_0,...,f_m\)</span>以及<span class="math inline">\(h_1,...,h_p\)</span>都是一阶可微的，并且其定义域为开集。则KKT条件为取得强对偶的充分必要条件。</p>
+<p>这一结论其实也挺直观的，前面三个式子都是约束条件，第四个是之前提到了互补松弛条件，而最后一项，说明了<span class="math inline">\(\nabla f_0\)</span>应该是<span class="math inline">\(\nabla f_i\)</span>与<span class="math inline">\(\nabla h_i\)</span>的线性组合，也是由于在每个算子和<span class="math inline">\(x\)</span>方向上的梯度都优化到了0，所以，应该是最优的。</p>
+<h3 id="minimax-entropy-in-crowdsourcing">Minimax Entropy in Crowdsourcing</h3>
+<p><a href="http://papers.nips.cc/paper/4490-learning-from-the-wisdom-of-crowds-by-minimax-entropy.pdf" target="_blank" rel="noopener">这篇</a>是2012年NIPS上的论文，之后他们有继续提出了<code>Conditional Entropy</code>等方法。</p>
+<p><code>CrowdSourcing</code>本质上，很大一部分在估计题目的难度，用户在不同题目上的正确率以及正确答案。</p>
+<p><img src="http://nkssai.qiniudn.com/entropy%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-12-07%20%E4%B8%8A%E5%8D%8810.18.40.png"></p>
+<p>上图中，<span class="math inline">\(z_{ij}\)</span>为第<span class="math inline">\(i\)</span>个人为第<span class="math inline">\(j\)</span>个题给的标签，而<span class="math inline">\(\pi_{ij}\)</span>则是给这个标签的概率，由于概率应该为1则，<span class="math inline">\(\sum_k \pi_{ijk} = 1\)</span>。论文中提出一个观点，即每个人的判断概率<span class="math inline">\(\pi_{ij}\)</span>应该服从最大熵原则。传统的<code>majority voting</code>方法假设每个题的做对的概率应该是一致的即难的题做对的少，简单的题作对的多，并用<span class="math inline">\(\sum_i z_{ijk}\)</span>来模拟<span class="math inline">\(\sum_i \pi_{ijk}\)</span>，而<code>Dawid and Skene's method</code>任务，每个人在不同分类上的错误应该是有规律的，即每个人在把某一类型错判为另一类型的概率应该是有规律的，并用<span class="math inline">\(\sum_j y_{jl}z_{ijk}\)</span>来模拟<span class="math inline">\(\sum_k y_{jl}\pi_{ijk}\)</span>。同时，考虑这两点，然后用最大熵原则。得到</p>
+<p><img src="http://nkssai.qiniudn.com/entropy%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-12-07%20%E4%B8%8A%E5%8D%8810.29.15.png"></p>
+<p>进一步，由于我们关系的是真实标签<span class="math inline">\(y_{jl}\)</span>，所以，我们应该选择能使最大熵最小的那个值，原文中用的词是<code>peaky</code>，即选择<span class="math inline">\(y\)</span>使得<span class="math inline">\(\pi\)</span>的波动范围最小，这个有点像频率学派的<code>minmax risk</code>。</p>
+<p>所以目标函数加个最小化的目标，然后约束项应该还有对于<span class="math inline">\(\sum_l y_{jl} = 1\)</span>的约束。得到，</p>
+<p><img src="http://nkssai.qiniudn.com/entropy%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-12-07%20%E4%B8%8A%E5%8D%8810.36.08.png"></p>
+<p>考虑到，这样形式并不好解，同时带有<span class="math inline">\(min\)</span>和<span class="math inline">\(max\)</span>，要先去掉一个，假设，已知真实的分布<span class="math inline">\(\pi^*_{ijk}\)</span>这样为了接近极大熵的分布，只要加一个<span class="math inline">\(\sum_ i\pi_{ijk} = \sum_i \pi_{ijk}^*\)</span>就行了，然后同时也应该有<span class="math inline">\(\sum_j y_{jl}\pi_{ijk} = \sum_j y_{jl} \pi_{ijk}^*\)</span>。</p>
+<p>然后，用拉格朗日乘子法可得拉格朗日函数为</p>
+<p><span class="math display">\[\begin{split}
+L =  - &amp; \sum_{i = 1}^m \sum_{j = 1}^n \sum_{k - 1}^c\pi_{ijk}\ln\pi_{ijk} \\
+&amp; + \sum_i^m \sum_j^n \lambda_{ij}(\sum_k^c \pi_{ijk} - 1)  \\
+&amp; + \sum_j^n \sum_k^c \tau_{jk} \sum_i^m (\pi_{ijk} - \pi_{ijk}^*) \\
+&amp; + \sum_i^m \sum_k^c \sum_l^c \sigma _{ikl} \sum_j y_{jl} (\pi_{ijk} - \pi_{ijk}^*)
+\end{split}\]</span></p>
+<p>然后根据KKT条件，求偏导然后令其等于0。最终可以解得</p>
+<p><span class="math display">\[
+\pi_{ijk} = \frac{exp \sum_{l=1}^c y_{jl}(\tau_{jk} + \sigma_{ikl})}{\sum_{s = 1}^c exp \sum_{l = 1}^c y_{jl}(\tau_{js} + \sigma_{isl})}
+\]</span></p>
+<p>然后，像EM算法一样，每次分别迭代<span class="math inline">\(\tau_{jk}\)</span>和<span class="math inline">\(\sigma_{ijl}\)</span>然后在更新隐变量<span class="math inline">\(y_{jl}\)</span>就行了。</p>
+<p>当然，这里直接要求用户的判断分布<span class="math inline">\(\pi_{ijk}\)</span>和<span class="math inline">\(z_{ijk}\)</span>完全吻合太过强硬了，可以加入一些松弛因子即不要求完全相等将<span class="math inline">\(\sum_i \pi_{ijk} = \sum_i z_{ijk}\)</span>改成<span class="math inline">\(\sum_i (\pi_{ijk} - z_{ijk}) = \epsilon_{jk}\)</span>，然后将<span class="math inline">\(-\sum_j \sum_c \epsilon^2_{jk}/ 2\alpha_j\)</span>正则项加入目标函数，这也是中常用的套路，防止过拟合。</p>
+<p>话说这周事情好烦，弄得我现在连式子都懒得打了。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/EM/" rel="tag"># EM</a>
+          
+            <a href="/tags/crowdsourcing/" rel="tag"># crowdsourcing</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/11/30/mh/" rel="next" title="Rejection Sampling and Metropolis Hastings">
+                <i class="fa fa-chevron-left"></i> Rejection Sampling and Metropolis Hastings
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/12/15/paser1/" rel="prev" title="写个小Parser Combinators (1)">
+                写个小Parser Combinators (1) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#对偶函数"><span class="nav-number">1.</span> <span class="nav-text">对偶函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#对偶函数-1"><span class="nav-number">1.1.</span> <span class="nav-text">对偶函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对偶问题"><span class="nav-number">2.</span> <span class="nav-text">对偶问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#弱对偶性"><span class="nav-number">2.1.</span> <span class="nav-text">弱对偶性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#强对偶性"><span class="nav-number">2.2.</span> <span class="nav-text">强对偶性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#松弛互补"><span class="nav-number">2.3.</span> <span class="nav-text">松弛互补</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kkt条件"><span class="nav-number">3.</span> <span class="nav-text">KKT条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#minimax-entropy-in-crowdsourcing"><span class="nav-number">4.</span> <span class="nav-text">Minimax Entropy in Crowdsourcing</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

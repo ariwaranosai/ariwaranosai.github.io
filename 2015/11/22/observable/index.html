@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="以下内容依旧是是抄袭《Principles of Reactive Programming》中Erik Meijer的课程内容，想好好学习请转战公开课，或者看reactivex的文档或者微软rx.net的文档。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Four Essential Effects In Programming II">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/11/22/observable/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="以下内容依旧是是抄袭《Principles of Reactive Programming》中Erik Meijer的课程内容，想好好学习请转战公开课，或者看reactivex的文档或者微软rx.net的文档。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/RAC%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-11-17%20%E4%B8%8B%E5%8D%881.24.04.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/Obfilter.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/Obmap.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/ObflatMap.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/Obmerge.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/Obconcat.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Four Essential Effects In Programming II">
+<meta name="twitter:description" content="以下内容依旧是是抄袭《Principles of Reactive Programming》中Erik Meijer的课程内容，想好好学习请转战公开课，或者看reactivex的文档或者微软rx.net的文档。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/RAC%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-11-17%20%E4%B8%8B%E5%8D%881.24.04.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/11/22/observable/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>The Four Essential Effects In Programming II | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/11/22/observable/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">The Four Essential Effects In Programming II
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-11-22 00:00:00" itemprop="dateCreated datePublished" datetime="2015-11-22T00:00:00+08:00">2015-11-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/不会写代码/" itemprop="url" rel="index"><span itemprop="name">不会写代码</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>以下内容依旧是是抄袭《Principles of Reactive Programming》中Erik Meijer的课程内容，想好好学习请转战<a href="https://class.coursera.org/reactive-002/" target="_blank" rel="noopener">公开课</a>，或者看reactivex的文档或者微软rx.net的文档。 <a id="more"></a></p>
+<p>接着回来看这张图，</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/RAC%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202015-11-17%20%E4%B8%8B%E5%8D%881.24.04.png" alt="e"><figcaption>e</figcaption>
+</figure>
+<p>上一篇见识了前面的两个，而<code>Iterable</code>其实大家都很熟悉，关键就在最后的<code>Observable</code>上。课上还讲了一些关于类型的对偶。</p>
+<p>回忆<code>future</code>的定义</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Future</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">onComplete</span></span>(callback: <span class="type">Try</span>[<span class="type">T</span>] =&gt; <span class="type">Unit</span>)</span><br><span class="line">		(<span class="keyword">implicit</span> executor: <span class="type">ExecutionContext</span>): <span class="type">Unit</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>忽略中间隐式的参数其实可以把其类型看成<code>(Try[T] =&gt; Unit) =&gt; Unit</code>然后把它翻过来，就是<code>Unit =&gt; (Unit =&gt; Try[T])</code>，简化之后就只有<code>Try[T]</code>了。这种关系称为<code>Dual</code>，详细可以看<a href="https://en.wikipedia.org/wiki/Dual_%28category_theory%29" target="_blank" rel="noopener">这里</a>。</p>
+<p>然后，再看看<code>Iterator</code>，他大概可以这样定义</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Iterable</span>[<span class="type">T</span>]</span>&#123; </span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">iterator</span></span>(): <span class="type">Iterator</span>[<span class="type">T</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Iterator</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">hasNext</span></span>: <span class="type">Boolean</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">next</span></span>(): <span class="type">T</span> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后就能写出来<code>Iterator</code>的类型，<code>Iterator</code>可以看成一个可以有无限长的流，每次调用<code>next</code>都会取出来新的元素。所以，在一些lazy的地方，经常会用到迭代器</p>
+<p><code>Iterator</code>的类型可以写成<code>Unit =&gt; (Unit =&gt; Try[Option[T]])</code>，然后反转过来，<code>(Try[Option[T]] =&gt; Unit) =&gt; Unit</code>，然后把异常处理的部分分开，对于<code>Try[Option[T]]</code>有三种情况，正确得出结果<code>T =&gt; Unit</code>，发生异常<code>Throwable =&gt; Unit</code>，还有空<code>Unit=&gt; Unit</code>，然后写出来<code>(Throwable =&gt; Unit, () =&gt; Unit, T =&gt; Unit) =&gt; Unit</code>,这个就是<code>Observable[T]</code>。然后我们像<code>Iterator</code>一样丰富起来，首先应该区分<code>Observer</code>和<code>Obserable</code>，然后把三种情况分开，最后把内容展开。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Observer</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">onError</span></span>(e: <span class="type">Throwable</span>): <span class="type">Unit</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">onCompleted</span></span>(): <span class="type">Unit</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">onNext</span></span>(value: <span class="type">T</span>): <span class="type">Unit</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Obserable</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">subscible</span></span>(observer: <span class="type">Observer</span>[<span class="type">T</span>]): <span class="type">Unit</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，考虑到我们还需要能移除这种关注关系的方法，所以，还需要一种可以取消的结构<code>Subscription</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Observer</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">onError</span></span>(e: <span class="type">Throwable</span>): <span class="type">Unit</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">onCompleted</span></span>(): <span class="type">Unit</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">onNext</span></span>(value: <span class="type">T</span>): <span class="type">Unit</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Obserable</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">subscible</span></span>(observer: <span class="type">Observer</span>[<span class="type">T</span>]): <span class="type">Subscription</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Subscription</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">unsubscribe</span></span>(): <span class="type">Unit</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">isUnsubscribed</span></span>: <span class="type">Boolean</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Observable</code>其实是代表了异步事件流，Rx中实现了相应的内容，这部分可以看<a href="https://github.com/ReactiveX/RxJava/wiki" target="_blank" rel="noopener">wiki</a>。在Reactive Programming，将之前要处理的<code>data flow</code>，统一抽象出一种数据结构，同时这种数据结构其实也是<code>monad</code>。或者换个说法，Python的Rx库的介绍上有</p>
+<blockquote>
+<p>Rx = Observables + LINQ + Schedulers</p>
+</blockquote>
+<p>在Rx中，使用<code>Observables</code>表示异步数据流（或者说event stream是first class的，这也是为什么Rx不是FRP的原因，感兴趣可以看<a href="http://conal.net/papers/icfp97/icfp97.pdf" target="_blank" rel="noopener">原论文</a>），使用LINQ作为其上的操作（定义在其上的大量的高阶函数），使用<code>Schedulers</code>来调度异步数据流。这里我还是想把这句话放上来</p>
+<blockquote>
+<p>Your mouse is a database.<br>
+-- Erik Meijer</p>
+</blockquote>
+<h3 id="observable">Observable</h3>
+<p>在GUI的世界里，应该尽力避免block的，会阻塞的事件注册在应该在后台，等到完成在通过回调的方式完成，但是单纯的回调问题很明显，假设我们需要对Botton的点击的事件进行相应，最简单的方法应该是直接在onclick上填一个回调函数处理，但是这样，如果我们有更多的事件要添加的话就有更改onclick上的赋值，每一次都要把前一个时间留下来，然后加个新的代码进去，然后重新付回去，这显然是不能接受的。所以，我们可能想到了把这个封装一下，每次注册事件的回调，都是把函数<code>append</code>进事件队列里，这样一方面就不用修改之前的代码。这样的缺点依然很明显，我们缺少控制我们到底关心什么事件的能力，当我们不再关心Botton的点击的时候，我们希望有简单的办法取消关注。这也是一个很明显的生产者消费者的模型。</p>
+<p>先看个简单的例子</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> rx.lang.scala.&#123;<span class="type">Subscription</span>, <span class="type">Observable</span>, <span class="type">Observer</span>&#125;</span><br><span class="line"><span class="keyword">import</span> scala.swing._</span><br><span class="line"><span class="keyword">import</span> scala.swing.event._</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">ButtonSwing</span> <span class="keyword">extends</span> <span class="title">SimpleSwingApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">top</span> </span>= <span class="keyword">new</span> <span class="type">MainFrame</span> &#123;</span><br><span class="line">        title = <span class="string">"Swing Observables"</span></span><br><span class="line">        <span class="keyword">val</span> button = <span class="keyword">new</span> <span class="type">Button</span> &#123;</span><br><span class="line">            text = <span class="string">"Click"</span></span><br><span class="line">        &#125;</span><br><span class="line">        contents = button</span><br><span class="line">        <span class="keyword">val</span> buttonClick = <span class="type">Observable</span>[<span class="type">Button</span>](&#123;</span><br><span class="line">            obs =&gt;  &#123;</span><br><span class="line">                button.reactions += &#123;</span><br><span class="line">                    <span class="keyword">case</span> <span class="type">ButtonClicked</span>(_) =&gt; obs.onNext(button)</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="type">Subscription</span>()</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> obs = <span class="type">Observer</span>[<span class="type">Button</span>](_ =&gt; println(<span class="string">"click"</span>))</span><br><span class="line"></span><br><span class="line">        buttonClick.subscribe(obs)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里给<code>Button</code>绑定了一个Observer，每click一次都会输出一个。</p>
+<p>正如这个例子，一个<code>Observable</code>可以通过一个<code>observer =&gt; Subscription</code>建立然后返回一个<code>Observable</code>。每当我们在调用这个<code>Observable</code>的<code>subscribe</code>上时，就会调用这个函数，然后返回一个<code>Subscription</code>。在我们不关心<code>Observable</code>的时候，就可以调用这个<code>Subscription</code>的<code>unsubscribe</code>。</p>
+<p><code>Observable</code>上定义了很多高阶函数，<code>Marble Diagrams</code>可以很清楚的表示函数的功能。</p>
+<p><code>filter</code>函数过滤每一个<code>event</code>，生成一个新的<code>Observable</code>。 <img src="http://nkssai.qiniudn.com/Obfilter.png" alt="filter"></p>
+<p><code>map</code>函数对每一个<code>event</code>进行映射。 <img src="http://nkssai.qiniudn.com/Obmap.png" alt="map"></p>
+<p><code>flatMap</code>函数将一个事件映射成一个或多个<code>event</code>。 <img src="http://nkssai.qiniudn.com/ObflatMap.png" alt="flatMap"></p>
+<p>这些都是常见的高阶函数。一些还有面对多个<code>Observable</code>函数，他们有面对多个<code>Observable</code>的语义。</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/Obmerge.png" alt="merge"><figcaption>merge</figcaption>
+</figure>
+<figure>
+<img src="http://nkssai.qiniudn.com/Obconcat.png" alt="concat"><figcaption>concat</figcaption>
+</figure>
+<p>还可以看<a href="http://reactivex.io/rxscala/scaladoc/index.html#%20rx.lang.scala.Observable" target="_blank" rel="noopener">这里</a>，这些图也是从文档里面找到的，需要注意的一点是多个流在处理的时候，他们的顺序可能是和自己想的不一样。</p>
+<p>这是一个简单的<code>merge</code>的例子。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> rx.lang.scala._</span><br><span class="line"><span class="keyword">import</span> scala.concurrent.duration._</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">example</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">main</span></span>(args: <span class="type">Array</span>[<span class="type">String</span>]) &#123;</span><br><span class="line">        <span class="keyword">val</span> obsTwo: <span class="type">Observable</span>[<span class="type">Long</span>] = <span class="type">Observable</span>.interval(<span class="number">2</span> second)</span><br><span class="line">        <span class="keyword">val</span> obsThree: <span class="type">Observable</span>[<span class="type">Long</span>] = <span class="type">Observable</span>.interval(<span class="number">3</span> second)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> twoSecond: <span class="type">Observable</span>[<span class="type">String</span>] = obsTwo.map(<span class="string">"1 second: "</span> + _.toString)</span><br><span class="line">        <span class="keyword">val</span> threeSecond: <span class="type">Observable</span>[<span class="type">String</span>] = obsThree.map(<span class="string">"2 second: "</span> + _.toString)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">val</span> mergeed = twoSecond.merge(threeSecond)</span><br><span class="line">        <span class="keyword">val</span> s = mergeed.subscribe(println(_))</span><br><span class="line">        readLine()</span><br><span class="line">        s.unsubscribe()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>考虑一个复杂一点的情况，我们从一个信号源获得数据之后还要去第二信号源查询相应的数据，就像视频中给的</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getGeocode</span></span>(c: <span class="type">Geo</span>): <span class="type">Future</span>[<span class="type">Country</span>] = &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> withCountry: <span class="type">Observable</span>[<span class="type">Observable</span>[(<span class="type">EarthQuake</span>, <span class="type">Country</span>)] = earthQuakeObservable().</span><br><span class="line">    map( quake =&gt; &#123;</span><br><span class="line">	<span class="keyword">val</span> country: <span class="type">Future</span>[<span class="type">Country</span>] = getGeocode(quake.location)</span><br><span class="line">	<span class="type">Observable</span>.from(country.map(country =&gt; (quake.country)))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> c: <span class="type">Observable</span>[(<span class="type">EarthQuake</span>, <span class="type">Country</span>)] = withCountry.concat()</span><br></pre></td></tr></table></figure>
+<p>这里，对于来的每一个地震信息，都要反查一下对应的位置信息，这里使用<code>from</code>函数可以从<code>future</code>构件一个<code>observable</code>，如果使用<code>flatten</code>，会按照完成的顺序，有可能后面发生的地震会在查询的时候更快，导致最后的<code>Observable</code>中的顺序和第一个不一致，所以这个时候应该用<code>concat</code>。</p>
+<h3 id="subscription">Subscription</h3>
+<p>回忆一下<code>Subscription</code>。它用来表示对<code>Observable</code>的一种对应关系。</p>
+<p>简单来说，<code>Observable</code>分为两种一种称为<code>Cold</code>另一种称为<code>Hot</code>。<code>Cold Observable</code>为每一个<code>Observer</code>提供一份单独的内容，也就是说对它的<code>subscribe</code>是有副作用的，但是这种模式是很有用的，如果你关注一个产生随机内容的<code>Observable</code>，有可能你希望你自己的随机序列和其他的<code>Observer</code>是不一样的。与之相对应的，<code>Hot Observable</code>就是对于所有的<code>Observer</code>都提供同一样的内容。所以，一个值得注意的地方是<code>unsubscribe</code>并不意味着<code>cancel</code>。</p>
+<p><code>Subscription</code>本身也有很多类型，比如<code>CompositeSubcription</code>，它可以同时组合多个<code>Subscription</code>，而且它也重载了<code>+=</code>、<code>-=</code>方便组合。要注意，对已经<code>unsubscribe</code>的<code>CompositeSubcription</code>加入新的<code>Subscription</code>，会使新加的<code>Subscription</code>马上<code>unsubscribe</code>。<code>MultiAssignmentSubscription</code>可以多次进行赋值，但是每次只保存一个<code>Subscription</code>。<code>SerialSubscription</code>也可以进行多次赋值，但是它在付新值的时候会把旧的<code>Subscription</code>进行<code>unsubscribe</code>。</p>
+<h3 id="subjects">Subjects</h3>
+<p>在<code>Future</code>中，我们可以使用<code>Promise</code>简化逻辑，同时获取<code>Future</code>中间的值。在<code>Observable</code>中也有对应的概念。对于<code>Promise</code>其实就是一个盒子，隐式的包含一个<code>future</code>，通过<code>success</code>将内容放到<code>future</code>里面，然后通过<code>future</code>获取返回的内容。</p>
+<p>相似的，我们还有<code>Subject</code>，它也可以通过<code>onNext</code>、<code>onCompleted</code>、<code>onError</code>来把值扔进去，然后通过<code>Observable</code>获取其中的值。</p>
+<p>看个简单的例子</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> rx.lang.scala.subjects.<span class="type">PublishSubject</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">example</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">main</span></span>(args: <span class="type">Array</span>[<span class="type">String</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">        <span class="keyword">val</span> channel = <span class="type">PublishSubject</span>[<span class="type">Int</span>]() <span class="comment">//构造一个新的subject</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> a = channel.subscribe(x =&gt; println(<span class="string">s"a: <span class="subst">$x</span>"</span>))</span><br><span class="line">        <span class="keyword">val</span> b = channel.subscribe(x =&gt; println(<span class="string">s"b: <span class="subst">$x</span>"</span>))</span><br><span class="line"></span><br><span class="line">        channel.onNext(<span class="number">42</span>) </span><br><span class="line">        a.unsubscribe()</span><br><span class="line"></span><br><span class="line">        channel.onNext(<span class="number">4711</span>)</span><br><span class="line"></span><br><span class="line">        channel.onCompleted()</span><br><span class="line">        <span class="keyword">val</span> c = channel.subscribe(x =&gt; println(<span class="string">s"c: <span class="subst">$x</span>"</span>))</span><br><span class="line">        channel.onNext(<span class="number">13</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的使用了一个<code>PublishSubject</code>，其实<code>Subject</code>也有很多种，<code>subscribe</code>到<code>PublishSubject</code>上，并不能获得之前已经<code>publish</code>的值，也就是<code>PublishSubject</code>不保存自己之前的值。如果想要每个观察者都能得到所有的值，应该使用<code>ReplaySubject</code>。才外还有，<code>AsyncSubject</code>它会保存最终一个值，而<code>BehaviorSubject</code>会保存最近的一个值。</p>
+<h3 id="others">Others</h3>
+<p>一个简单的<code>Observable</code>可以这样实现</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">Observable</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>[<span class="type">T</span>](f: <span class="type">Future</span>[<span class="type">T</span>]): <span class="type">Observable</span>[<span class="type">T</span>] = &#123;</span><br><span class="line">		<span class="keyword">val</span> subject = <span class="type">AsyncSubject</span>[<span class="type">T</span>]()</span><br><span class="line">		f onComplete &#123;</span><br><span class="line">			<span class="keyword">case</span> <span class="type">Failure</span>(e) =&gt; &#123; subject.onError(e) &#125;</span><br><span class="line">			<span class="keyword">case</span> <span class="type">Success</span>(t) =&gt; &#123;</span><br><span class="line">				subject.onNext(t)</span><br><span class="line">				subject.onCompleted()</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		subject</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它将一个<code>Future</code>变成<code>Observable</code>，由于我们希望可以保留最后一个值，所以使用的是<code>AsyncSubject</code>。</p>
+<p>另外，对比<code>Future</code>的实现，其异常有<code>Try</code>，对应的<code>Observable</code>也有<code>Notification</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Notification</span>[+<span class="type">T</span>]</span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">class</span> <span class="title">OnNext</span>[<span class="type">T</span>](<span class="params">elem: <span class="type">T</span></span>) <span class="keyword">extends</span> <span class="title">Notification</span>[<span class="type">T</span>]</span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">class</span> <span class="title">OnError</span>(<span class="params">t: <span class="type">Throwable</span></span>) <span class="keyword">extends</span> <span class="title">Notification</span>[<span class="type">Nothing</span>]</span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">object</span> <span class="title">OnCompleted</span> <span class="keyword">extends</span> <span class="title">Notification</span>[<span class="type">Nothing</span>]</span></span><br></pre></td></tr></table></figure>
+<p>另外还有一个<code>materialize</code>可以把一般的<code>Obervable[T]</code>变成<code>Observable[Notification[T]]</code>。</p>
+<p>当你为了调试想要阻塞直到执行完了为止，<code>Observable</code>自带<code>toBlocking</code>函数。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> xs: <span class="type">Observable</span>[<span class="type">Long</span>] = <span class="type">Observable</span>.interval(<span class="number">1</span> second).take(<span class="number">5</span>)</span><br><span class="line"><span class="keyword">val</span> ys: <span class="type">List</span>[<span class="type">Long</span>] = xs.toBlocking.toList</span><br><span class="line"></span><br><span class="line">println(y)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> zs: <span class="type">Observable</span>[<span class="type">Long</span>] = xs.sum</span><br><span class="line"><span class="keyword">val</span> s: <span class="type">Long</span> = zs.toBlocking.single</span><br><span class="line"></span><br><span class="line">println(s)</span><br></pre></td></tr></table></figure>
+<p><code>Observable</code>也可以从<code>Iterable</code>构建。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">from</span></span>[<span class="type">T</span>](ts: <span class="type">Iterable</span>[<span class="type">T</span>]): <span class="type">Observable</span>[<span class="type">T</span>] = <span class="type">Observable</span> ( s =&gt; &#123;</span><br><span class="line">	ts.foreach(t =&gt; &#123;</span><br><span class="line">		<span class="keyword">if</span> (s.isUnsubscribed) &#123;<span class="keyword">break</span>&#125;</span><br><span class="line">		s.onNext(t)</span><br><span class="line">	&#125;)</span><br><span class="line">	s.onCompleted()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>更多的文档可以看<a href="https://github.com/ReactiveX/RxJava/wiki" target="_blank" rel="noopener">这里</a>。</p>
+<h3 id="example">example</h3>
+<p>最后看一个经典的例子，魂斗罗想要30条命需要先输入秘籍上下上下左右左右ba。这里就模拟这个行动。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.awt.<span class="type">BorderLayout</span></span><br><span class="line"><span class="keyword">import</span> java.awt.event.<span class="type">KeyEvent</span></span><br><span class="line"><span class="keyword">import</span> javax.swing.<span class="type">JFrame</span></span><br><span class="line"><span class="keyword">import</span> javax.swing.<span class="type">JLabel</span></span><br><span class="line"><span class="keyword">import</span> javax.swing.<span class="type">SwingConstants</span></span><br><span class="line"><span class="keyword">import</span> rx.lang.scala.<span class="type">Observable</span></span><br><span class="line"><span class="keyword">import</span> rx.observables.<span class="type">SwingObservable</span></span><br><span class="line"><span class="keyword">import</span> rx.lang.scala.<span class="type">JavaConversions</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Win1</span> <span class="keyword">extends</span> <span class="title">JFrame</span> </span>&#123;</span><br><span class="line">    <span class="keyword">val</span> label = <span class="keyword">new</span> <span class="type">JLabel</span>(<span class="string">""</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span> </span>= &#123;</span><br><span class="line">        initLayout()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> konami = <span class="type">Observable</span>.just(</span><br><span class="line">            <span class="number">38</span>, <span class="comment">// up</span></span><br><span class="line">            <span class="number">38</span>, <span class="comment">// up</span></span><br><span class="line">            <span class="number">40</span>, <span class="comment">// down</span></span><br><span class="line">            <span class="number">40</span>, <span class="comment">// down</span></span><br><span class="line">            <span class="number">37</span>, <span class="comment">// left</span></span><br><span class="line">            <span class="number">39</span>, <span class="comment">// right</span></span><br><span class="line">            <span class="number">37</span>, <span class="comment">// left</span></span><br><span class="line">            <span class="number">39</span>, <span class="comment">// right</span></span><br><span class="line">            <span class="number">66</span>, <span class="comment">// b</span></span><br><span class="line">            <span class="number">65</span>  <span class="comment">// a</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> pressedKeys = <span class="type">JavaConversions</span></span><br><span class="line">            .toScalaObservable(<span class="type">SwingObservable</span>.fromKeyEvents(<span class="keyword">this</span>))</span><br><span class="line">            .filter(_.getID == <span class="type">KeyEvent</span>.<span class="type">KEY_RELEASED</span>)</span><br><span class="line">            .map(_.getKeyCode()) <span class="comment">//获取按键码</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> bingo = pressedKeys.sliding(<span class="number">10</span>, <span class="number">1</span>)</span><br><span class="line">            .flatMap(window =&gt; (window zip konami).forall(p =&gt; p._1 == p._2))</span><br><span class="line">            .filter(identity) <span class="comment">//每10个按键emit一个window，满足条件的留下</span></span><br><span class="line"></span><br><span class="line">        bingo.subscribe(_ =&gt; label.setText(label.getText + <span class="string">" KONAMI "</span>))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">initLayout</span></span>() = &#123;</span><br><span class="line">        setLayout(<span class="keyword">new</span> <span class="type">BorderLayout</span>)</span><br><span class="line">        label.setHorizontalAlignment(<span class="type">SwingConstants</span>.<span class="type">CENTER</span>)</span><br><span class="line">        add(label, <span class="type">BorderLayout</span>.<span class="type">CENTER</span>)</span><br><span class="line">        setSize(<span class="number">400</span>, <span class="number">400</span>)</span><br><span class="line">        setResizable(<span class="literal">false</span>)</span><br><span class="line">        setTitle(<span class="string">"Enter the Konami Code!"</span>)</span><br><span class="line">        setVisible(<span class="literal">true</span>)</span><br><span class="line">        setDefaultCloseOperation(<span class="type">JFrame</span>.<span class="type">EXIT_ON_CLOSE</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">Konami</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">main</span></span>(args: <span class="type">Array</span>[<span class="type">String</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">        javax.swing.<span class="type">SwingUtilities</span>.invokeLater(<span class="keyword">new</span> <span class="type">Runnable</span> &#123;</span><br><span class="line">            <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="type">Win1</span>().run</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/11/18/future/" rel="next" title="The Four Essential Effects In Programming">
+                <i class="fa fa-chevron-left"></i> The Four Essential Effects In Programming
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/30/mh/" rel="prev" title="Rejection Sampling and Metropolis Hastings">
+                Rejection Sampling and Metropolis Hastings <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#observable"><span class="nav-number">1.</span> <span class="nav-text">Observable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#subscription"><span class="nav-number">2.</span> <span class="nav-text">Subscription</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#subjects"><span class="nav-number">3.</span> <span class="nav-text">Subjects</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#others"><span class="nav-number">4.</span> <span class="nav-text">Others</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#example"><span class="nav-number">5.</span> <span class="nav-text">example</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

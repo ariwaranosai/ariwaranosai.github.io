@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="有两种ADT一种是abstract data types，另一种叫algebraic data types，前者常常在OO的语言出现，一般是各种泛型，比如一些容器类。而后者代数数据类型则是来自函数式编程。">
+<meta name="keywords" content="Haskell,不懂PLT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Very Simple Algebraic Data Types">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/12/29/VSADT/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="有两种ADT一种是abstract data types，另一种叫algebraic data types，前者常常在OO的语言出现，一般是各种泛型，比如一些容器类。而后者代数数据类型则是来自函数式编程。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Very Simple Algebraic Data Types">
+<meta name="twitter:description" content="有两种ADT一种是abstract data types，另一种叫algebraic data types，前者常常在OO的语言出现，一般是各种泛型，比如一些容器类。而后者代数数据类型则是来自函数式编程。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/12/29/VSADT/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Very Simple Algebraic Data Types | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/12/29/VSADT/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Very Simple Algebraic Data Types
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-12-29 14:17:30" itemprop="dateCreated datePublished" datetime="2015-12-29T14:17:30+08:00">2015-12-29</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/不会写代码/" itemprop="url" rel="index"><span itemprop="name">不会写代码</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>有两种<code>ADT</code>一种是<code>abstract data types</code>，另一种叫<code>algebraic data types</code>，前者常常在OO的语言出现，一般是各种泛型，比如一些容器类。而后者代数数据类型则是来自函数式编程。</p>
+<a id="more"></a>
+<p>正如其名，代数数据类型代表相应的数据结构应该满足一定的数学属性，利用相应的关系，我们可以用来证明类型实现的正确定，进一步证明程序的正确性。另一方法，它鼓励合理利用<code>composition</code>去构建更复杂的数据结构和算法。</p>
+<p>不要看下去了，去看大神的<a href="http://bartoszmilewski.com/2015/01/13/simple-algebraic-data-types/" target="_blank" rel="noopener">博客</a>吧。</p>
+<h3 id="product-types-and-sum-types">Product Types and Sum Types</h3>
+<p>有两中基本的方法可以<code>combining types</code>，即<code>product</code>和<code>coproduct</code>。基本类型的组合有着重要的意义，一方面可以方便的构造新的类型，另一方面可以直接获得诸如<code>equality</code>，<code>toString</code>这种函数。</p>
+<h4 id="product-types">Product Types</h4>
+<p>一个常见的典型的<code>product type</code>就是<code>pair</code>。在Haskell和Scala都是原生支持<code>(Int, Bool)</code>这种写法，在C++里面，stl中也有<code>Pair</code>。</p>
+<p>在Scala里面，大多数情况下，<code>case class</code>都是<code>product types</code>。比如定义一个<code>Person</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span>(<span class="params">name: <span class="type">Name</span>, age: <span class="type">Age</span></span>)</span></span><br></pre></td></tr></table></figure>
+<p>这样你得到的可能的<code>Person</code>的数目应该是<code>Name</code>类型实例的个数乘上<code>Age</code>类型实例的个数。既然是乘法，那么就应该有<code>0</code>和<code>1</code>。实际上我们有<code>()</code>或者叫<code>Unit</code>包含0个元素。比较一下下面这个类型。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">unitTimesPerson</span>(<span class="params">name: <span class="type">Name</span>, age: <span class="type">Age</span>, <span class="type">Unit</span></span>)</span></span><br></pre></td></tr></table></figure>
+<p>我们好像并没有获得更多的<code>Person</code>，这就像乘上了一。对于这两种类型，可以称为<code>isomorphic</code>即同构的。 至于0，其实有0个元素就意味着无法实例化，而在Scala中正有一个无法实例化的类型<code>Nothing</code>。具体<code>Nothing</code>的实现也很有意思。可以看由于为了实现<code>ADT</code>很多时候都需要<code>Nothing</code>类型，即需要一个是所有类的子类的类。比如</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">List</span>[+<span class="type">A</span>] </span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">object</span> <span class="title">Nil</span> <span class="keyword">extends</span> <span class="title">List</span>[<span class="type">Nothing</span>] </span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">class</span> <span class="title">Cons</span>[+<span class="type">A</span>](<span class="params">head: <span class="type">A</span>, tail: <span class="type">List</span>[<span class="type">A</span>]</span>) <span class="keyword">extends</span> <span class="title">List</span>[<span class="type">A</span>]</span></span><br></pre></td></tr></table></figure>
+<p>这里定义了<code>List</code>类型，首先<code>List</code>类型应该满足协变，即A是B的子类，那么<code>List[A]</code>也可以看做<code>List[B]</code>的子类。然后空的<code>List</code>，即<code>Nil</code>应该是任何<code>List[A]</code>的子类，因为它可以被接在任何类型的<code>List</code>类型的后面，即<code>Cons(anyList, Nil)</code>，都应该是合法的。</p>
+<p>与之相对的，在Haskell里面也有类似的语法，相对来说更简单</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Pair</span> a b = <span class="type">P</span> a b</span></span><br></pre></td></tr></table></figure>
+<p>这里定义了一个类型<code>Pair</code>，以<code>a</code>和<code>b</code>两个类型参数，P是<code>data constructor</code>的名字。然后你就可以通过P来生成一个<code>Pair</code>了。</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">stmt</span> :: <span class="type">Pair</span> <span class="type">String</span> <span class="type">Bool</span> </span><br><span class="line"><span class="title">stmt</span> = <span class="type">P</span> <span class="string">"This statements is"</span> <span class="type">False</span></span><br></pre></td></tr></table></figure>
+<p>第一句是声明类型，第二行则利用<code>P</code>生成了相应的类型。</p>
+<h4 id="sum-types">Sum Types</h4>
+<p><code>Sum Types</code>的一个典型的例子是<code>Enumeration</code>，对于枚举值由于是无序的所以加入新的值也只是增加了一个值而已。</p>
+<p>另一个常见的类型在Haskell里面是</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">Either</span> a b = <span class="type">Left</span> a | <span class="type">Right</span></span></span><br></pre></td></tr></table></figure>
+<p>或者在Scala里面</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">Either</span>[+<span class="type">E</span>,+<span class="type">A</span>] </span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">class</span> <span class="title">Left</span>[+<span class="type">E</span>](<span class="params">get: <span class="type">E</span></span>) <span class="keyword">extends</span> <span class="title">Either</span>[<span class="type">E</span>,<span class="type">Nothing</span>]</span></span><br><span class="line"><span class="class"><span class="title">case</span> <span class="title">class</span> <span class="title">Right</span>[+<span class="type">A</span>](<span class="params">get: <span class="type">A</span></span>) <span class="keyword">extends</span> <span class="title">Either</span>[<span class="type">Nothing</span>,<span class="type">A</span>]</span></span><br></pre></td></tr></table></figure>
+<p>显然每一个类型只对应一个<code>data constructor</code>，所以它们其实是可交换的。而<code>Nothing</code>则是其中的0，考虑</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Either</span>[<span class="type">Nothing</span>, <span class="type">A</span>]</span><br></pre></td></tr></table></figure>
+<p>其和A本身应该是<code>isomorphic</code>的，因为这样你就只能构造<code>Right A</code>而无法构造<code>Left Nothing</code>。<code>c++</code>中的</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> &#123; Red, Green, Blue&#125;;</span><br></pre></td></tr></table></figure>
+<p>也是相似的意思。值得注意的是，之前举例看到的<code>List</code>本身也是<code>sum types</code>。把它翻译成c++就是</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">A</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">List</span> &#123;</span></span><br><span class="line">	Node&lt;A&gt; *_head;</span><br><span class="line">	List(): _head(<span class="literal">nullptr</span>) &#123;&#125; <span class="comment">//这里可以看做Nil</span></span><br><span class="line">	List(A a, List&lt;A&gt; tail) <span class="comment">// 这里可以看做Cons</span></span><br><span class="line">		: _head(<span class="keyword">new</span> Node&lt;A&gt;(a, tail))&#123;&#125;/</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="properties-of-algebraic-data-types">Properties Of Algebraic Data Types</h4>
+<p>简单来说，一个<code>algebraic</code>可以通过下面这三个方面定义：</p>
+<ol type="1">
+<li><p>A set of objects: 这个<code>objects</code>不是OO的那个对象，完全不是同一维度的东西。有时候也有人叫<code>symbols</code>.</p></li>
+<li><p>A set of operations:其中元素是怎么组合构件新的元素的。其实从这篇文章能看出来，这里的<code>Operations</code>并不是常见的函数，所有的<code>Type constructors</code>都可以是<code>Operation</code>。A category consists of objects and arrow that go between them.然后在此之上，可以定义出对偶的<code>products</code>以及<code>coproducts</code>。然后，<code>products</code>导致了<code>product types</code>，<code>coproducts</code>导致了<code>sum types</code>。什么鬼！</p></li>
+<li><p>A set of laws: 这些<code>laws</code>定义了<code>objects</code>以及<code>operations</code>应该满足的规则。</p></li>
+</ol>
+<p>像交换律等常见的规律都是很容易证明的，我们先详细看看分配律<code>distributive law</code>。</p>
+<p><code>a * (b + c) = a * b + a * c</code></p>
+<p>转换成我们的类型应该是<code>(a, Either b c) = Either (a, b) (a, c)</code>。</p>
+<p>我们可以实现一个函数</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">prodToSum</span> :: (a, <span class="type">Either</span> b c) -&gt; <span class="type">Either</span> (a, b) (a, c)</span><br><span class="line"><span class="title">prodToSum</span> (x, e) = </span><br><span class="line">	<span class="keyword">case</span> e <span class="keyword">of</span> </span><br><span class="line">		<span class="type">Left</span> y -&gt; <span class="type">Left</span> (x, y)</span><br><span class="line">		<span class="type">Right</span> z -&gt; <span class="type">Right</span> (x, z)</span><br></pre></td></tr></table></figure>
+<p>回顾离散数学里面的内容，如果一个集合定义了加法和乘法，但是没有减法，我们就可以叫它半环。</p>
+<p>这篇东拼西凑的文章写出来，其实发现有更多的问题。ADT是FP组织代码形式，<code>Category Theory</code>用个不恰当的比如可以看做OO的设计模式。 在库的设计上有着重要的作用，最近也在看一些库设计方面的论文，好吧，我很不务正业。之后趁着元旦的时候尽量整理一个靠谱一点的。（明天开会，我还是没干什么活</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Haskell/" rel="tag"># Haskell</a>
+          
+            <a href="/tags/不懂PLT/" rel="tag"># 不懂PLT</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/12/21/parser2/" rel="next" title="写个小Parser Combinators (2)">
+                <i class="fa fa-chevron-left"></i> 写个小Parser Combinators (2)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/09/scalazday0/" rel="prev" title="learning Scalaz-day0">
+                learning Scalaz-day0 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#product-types-and-sum-types"><span class="nav-number">1.</span> <span class="nav-text">Product Types and Sum Types</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#product-types"><span class="nav-number">1.1.</span> <span class="nav-text">Product Types</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sum-types"><span class="nav-number">1.2.</span> <span class="nav-text">Sum Types</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#properties-of-algebraic-data-types"><span class="nav-number">1.3.</span> <span class="nav-text">Properties Of Algebraic Data Types</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

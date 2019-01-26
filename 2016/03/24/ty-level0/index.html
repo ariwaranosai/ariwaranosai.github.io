@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="这本来是我在挖shapeless实现的时候，发现的Rúnar大神的旧博客中的内容，其中介绍了Nat和HList等结构在scala中的简单实现，不过是10年的内容，有点旧了，而且他一开始就假设读者对dependent type什么的都熟悉。我自己整理一下。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Type-Level Programming in Scala-0">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/03/24/ty-level0/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="这本来是我在挖shapeless实现的时候，发现的Rúnar大神的旧博客中的内容，其中介绍了Nat和HList等结构在scala中的简单实现，不过是10年的内容，有点旧了，而且他一开始就假设读者对dependent type什么的都熟悉。我自己整理一下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Type-Level Programming in Scala-0">
+<meta name="twitter:description" content="这本来是我在挖shapeless实现的时候，发现的Rúnar大神的旧博客中的内容，其中介绍了Nat和HList等结构在scala中的简单实现，不过是10年的内容，有点旧了，而且他一开始就假设读者对dependent type什么的都熟悉。我自己整理一下。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/03/24/ty-level0/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Type-Level Programming in Scala-0 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/03/24/ty-level0/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Type-Level Programming in Scala-0
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-03-24 15:39:20" itemprop="dateCreated datePublished" datetime="2016-03-24T15:39:20+08:00">2016-03-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Scala/" itemprop="url" rel="index"><span itemprop="name">Scala</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这本来是我在挖<code>shapeless</code>实现的时候，发现的<code>Rúnar</code>大神的<a href="https://apocalisp.wordpress.com/" target="_blank" rel="noopener">旧博客</a>中的内容，其中介绍了<code>Nat</code>和<code>HList</code>等结构在<code>scala</code>中的简单实现，不过是10年的内容，有点旧了，而且他一开始就假设读者对<code>dependent type</code>什么的都熟悉。我自己整理一下。</p>
+<a id="more"></a>
+<h3 id="dependent-types">Dependent Types</h3>
+<p>在诸如<code>Java</code>这样的语言中，<code>type</code>和<code>value</code>是完全分离，我们用<code>type</code>去标记一个<code>value</code>，为其添加约束，而且，我们往往是要预先定义它。</p>
+<p><a href="https://en.wikipedia.org/wiki/Dependent_type" target="_blank" rel="noopener"><code>Dependent Types</code></a>沟通了两个世界，<code>Wikipedia</code>上有</p>
+<blockquote>
+<p>a dependent type is a type whose definition depends on a value. A "string" is a type. A "fixed-length string of length 5" is a dependent type because of the dependence on a value.</p>
+</blockquote>
+<p>也就是说，<code>dependent types</code>是指<code>type</code>依赖于具体的<code>value</code>。通过加入这种功能，我们获得了</p>
+<ul>
+<li><p>由于类型依赖于具体的值，这就意味着，我们可以像计算值一样计算类型。</p></li>
+<li><p>我们可以构造出对值的类型的更强大更灵活的约束。</p></li>
+</ul>
+<h4 id="example-from-idris">Example from Idris</h4>
+<p>如果你去看<code>Idris</code>的官网，能看到它的标志下面大大的<code>A Language with Dependent Types</code>。它自称</p>
+<blockquote>
+<p>In Idris, types are a first class language construct, meaning that they can be computed and manipulated (and passed to functions) just like any other language construct.</p>
+</blockquote>
+<p>看一个栗子</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">isSingleton</span> : <span class="type">Bool</span> -&gt; <span class="type">Type</span></span><br><span class="line"><span class="title">isSingleton</span> <span class="type">True</span> = <span class="type">Nat</span></span><br><span class="line"><span class="title">isSingleton</span> <span class="type">False</span> = <span class="type">List</span> <span class="type">Nat</span></span><br></pre></td></tr></table></figure>
+<p>恩，长得和<code>Haskell</code>差不多，这个函数接受<code>Bool</code>返回<code>Type</code>，但是其实他会返回<code>Nat</code>和<code>List[Nat]</code>两种不同的结果，也就是我们一般的函数是<code>take a value and return a value</code>，但是这种函数会<code>take a value and return a type dependent with value</code>。下面一个应用的栗子</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">mkSingle</span> : (x : <span class="type">Bool</span>) -&gt; isSingleton x</span><br><span class="line"><span class="title">mkSingle</span> <span class="type">True</span> = <span class="number">0</span></span><br><span class="line"><span class="title">mkSingle</span> <span class="type">False</span> = []</span><br></pre></td></tr></table></figure>
+<p>这里，<code>mkSingle</code>函数利用<code>isSingleton</code>函数通过x计算类型，当<code>x</code>为<code>True</code>时，类型签名为<code>Bool -&gt; Nat</code>，当<code>x</code>为<code>False</code>时，类型签名为<code>Bool -&gt; List[Nat]</code>。我们在类型声明的时候也可以做类型计算。</p>
+<p>下面看一个利用<code>dependent types</code>来定义更强的类型约束的例子。</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(++) : <span class="type">Vect</span> n a -&gt; <span class="type">Vect</span> m a -&gt; <span class="type">Vect</span> (n + m) a</span><br><span class="line">(++) <span class="type">Nil</span> ys = ys</span><br><span class="line">(++) (x :: xs) ys = x :: xs ++ ys</span><br></pre></td></tr></table></figure>
+<p>这里定义了<code>++</code>函数用来做<code>Vector</code>的加法，<code>Vector</code>有两个参数，第一个是长度，第二个是元素类型，也就是说，我们通过类型签名，不仅限制了实现返回的类型，还限制了返回的值的语义，这样编译器的编译的时候也会检查实现，是不是能满足这个要求了。是不是感觉很强大。</p>
+<h4 id="path-dependent-types-in-scala">Path Dependent Types in Scala</h4>
+<p><code>Scala</code>并是像<code>Idris</code>那样的<code>full dependently typed language</code>，只支持一定形式的<code>dependent types</code>。</p>
+<p><code>Path Dependent Types</code>是指我们可以定义<code>nested components</code>。比如在一个<code>trait</code>里面定义<code>class</code>等等。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Bar</span></span></span><br><span class="line"><span class="class">&#125;</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">val</span> <span class="title">foo1</span> </span>= <span class="keyword">new</span> <span class="type">Foo</span></span><br><span class="line"><span class="keyword">val</span> foo2 = <span class="keyword">new</span> <span class="type">Foo</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> a: <span class="type">Foo</span># <span class="type">Bar</span> = <span class="keyword">new</span> foo1.<span class="type">Bar</span></span><br><span class="line"><span class="keyword">val</span> b: <span class="type">Foo</span># <span class="type">Bar</span> = <span class="keyword">new</span> foo2.<span class="type">Bar</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> c: foo1.<span class="type">Bar</span> = <span class="keyword">new</span> foo1.<span class="type">Bar</span></span><br><span class="line"><span class="comment">// raise error</span></span><br><span class="line"><span class="keyword">val</span> d: foo2.<span class="type">Bar</span> = <span class="keyword">new</span> foo1.<span class="type">Bar</span></span><br></pre></td></tr></table></figure>
+<p>这里我们在<code>Foo</code>里面声明了<code>Bar</code>，我们有两种方法获取<code>Foo</code>中的<code>Bar</code>类型，通过<code>Foo# Bar</code>或者通过具体的实例中<code>foo1.Bar</code>，并且，不同<code>Foo</code>实例中的<code>Bar</code>是不同的。</p>
+<h3 id="parameter-dependent-types-in-scala">Parameter Dependent Types in Scala</h3>
+<p>利用这种方法，我们也可以在一定程度上实现返回值类型依赖参数的效果。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">trait</span> <span class="title">Bar</span></span></span><br><span class="line"><span class="class">	<span class="title">def</span> <span class="title">value</span></span>: <span class="type">Bar</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foo</span></span>(f: <span class="type">Foo</span>): f.<span class="type">Bar</span> = f.value</span><br></pre></td></tr></table></figure>
+<p>再看一个，对泛型参数依赖要求的栗子。</p>
+<p><code>Scala</code>的标准库中有<code>CanBuildFrom</code>这个东西，大概长成下面的样子</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">CanBuildFrom</span>[<span class="type">From</span>, <span class="type">Elem</span>, <span class="type">To</span>] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">apply</span> ...</span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>它表达的是集合类<code>To</code>关于元素类型<code>Elem</code>是不是可以从<code>From</code>这个集合类型构建。</p>
+<p>对于一个可以包含任意类型的集合，他应该是由</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">regularCanBuildFrom</span></span>[<span class="type">CC</span>[_], <span class="type">A</span>] = </span><br><span class="line">	<span class="keyword">new</span> <span class="type">CanBuildFrom</span>[<span class="type">CC</span>[_], <span class="type">A</span>, <span class="type">CC</span>[<span class="type">A</span>]] &#123;</span><br><span class="line">		<span class="function"><span class="keyword">def</span> <span class="title">apply</span> ...</span></span><br><span class="line"><span class="function">	&#125;</span></span><br></pre></td></tr></table></figure>
+<p>我们可以在console里面试一下</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> scala.collection.generic._</span><br><span class="line"></span><br><span class="line"><span class="comment">// right</span></span><br><span class="line">implicitly[<span class="type">CanBuildFrom</span>[<span class="type">List</span>[<span class="type">Int</span>], <span class="type">String</span>, <span class="type">List</span>[<span class="type">String</span>]]]</span><br><span class="line"></span><br><span class="line"><span class="comment">// error</span></span><br><span class="line">implicitly[<span class="type">CanBuildFrom</span>[<span class="type">List</span>[<span class="type">String</span>], <span class="type">Int</span>, <span class="type">List</span>[<span class="type">Double</span>]]]</span><br></pre></td></tr></table></figure>
+<p>这里就能看出来，其实类型参数的最后一个参数是由前两个参数决定的，而这种实现方式就是通过提供隐式类型转化。</p>
+<p>下面用矩阵的乘法做个例子。</p>
+<p>我们都知道矩阵相乘应该有。</p>
+<blockquote>
+<p>Matrix * Matrix =&gt; Matrix</p>
+</blockquote>
+<blockquote>
+<p>Matrix * Vector =&gt; Vector</p>
+</blockquote>
+<blockquote>
+<p>Matrix * Int =&gt; Matrix</p>
+</blockquote>
+<blockquote>
+<p>Int * Matrix =&gt; Matrix</p>
+</blockquote>
+<p>不可能出现</p>
+<blockquote>
+<p>Matrix * Vector =&gt; Matrix</p>
+</blockquote>
+<p>这种情况下，可以这样搞</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Matrix</span> <span class="title">//</span> <span class="title">Dummy</span> <span class="title">definitions</span> <span class="title">for</span> <span class="title">expository</span> <span class="title">purposes</span></span></span><br><span class="line"><span class="class"><span class="title">trait</span> <span class="title">Vector</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">trait</span> <span class="title">MultDep</span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>]</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">implicit</span> <span class="title">object</span> <span class="title">mmm</span> <span class="keyword">extends</span> <span class="title">MultDep</span>[<span class="type">Matrix</span>, <span class="type">Matrix</span>, <span class="type">Matrix</span>]</span></span><br><span class="line"><span class="class"><span class="title">implicit</span> <span class="title">object</span> <span class="title">mvv</span> <span class="keyword">extends</span> <span class="title">MultDep</span>[<span class="type">Matrix</span>, <span class="type">Vector</span>, <span class="type">Vector</span>]</span></span><br><span class="line"><span class="class"><span class="title">implicit</span> <span class="title">object</span> <span class="title">mim</span> <span class="keyword">extends</span> <span class="title">MultDep</span>[<span class="type">Matrix</span>, <span class="type">Int</span>, <span class="type">Matrix</span>]</span></span><br><span class="line"><span class="class"><span class="title">implicit</span> <span class="title">object</span> <span class="title">imm</span> <span class="keyword">extends</span> <span class="title">MultDep</span>[<span class="type">Int</span>, <span class="type">Matrix</span>, <span class="type">Matrix</span>]</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">def</span> <span class="title">mult</span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>](<span class="params">a: <span class="type">A</span>, b: <span class="type">B</span></span>)</span></span><br><span class="line"><span class="class">                 (<span class="params">implicit instance: <span class="type">MultDep</span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>]</span>)</span>: <span class="type">C</span> =</span><br><span class="line">    sys.error(<span class="string">"TODO"</span>)</span><br></pre></td></tr></table></figure>
+<p>这样，每次在调用函数的时候，都回去寻找对应的<code>implicit instance</code>这个参数，不过我们不定义对应的类型，就不可能通过编译。保证了函数的安全。然后我们在诸如<code>imm``mim</code>中提供真正的计算过程，然后在<code>mult</code>中调用。看起来是不是很靠谱。</p>
+<p>到这里可能有人会说，这东西直接重载不就好了，重载了对应的类型，没有重载函数当然就不能通过编译了。</p>
+<p>恩，对于有同时具有<code>OO</code>中常见的重载以及<code>FP</code>特性的<code>Scala</code>来说，这种写法确实没有那么明细的优势，尤其是当类型推断坑爹的时候。不过，回想之前那个<code>Idris</code>的例子，如果，我们对于矩阵和向量的长度也做要求呢？希望形状不对应的矩阵不能相乘，一般的矩阵库这都会是运行时错误，我们有办法把它提到编译时，在类型参数也加上一个<code>Nat</code>就行了。而，<code>shapeless</code>库就提供了这些功能。也是我们真正感兴趣的部分。不过，我们还需要更多的基础知识。</p>
+<h4 id="abstract-types">Abstract Types</h4>
+<p><code>scala</code>中在实现<code>Parametric polymorphism</code>的时候，不只可以像<code>C++</code>，<code>Java</code>一样在类型声明上写，还可以在类型中声明</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Foo</span>[<span class="type">T</span>]</span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">foo</span></span>: <span class="type">T</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Foo1</span> </span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">type</span> <span class="title">T</span></span></span><br><span class="line"><span class="class">	<span class="title">def</span> <span class="title">foo</span></span>: <span class="type">T</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>考虑到之前<code>Dependent Types</code>的写法</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">T</span></span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">value</span></span>: <span class="type">T</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">FooString</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">T</span> </span>= <span class="type">String</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">value</span></span>: <span class="type">T</span> = <span class="string">"hehe"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">FooInt</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">T</span> </span>= <span class="type">Int</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">value</span></span>: <span class="type">T</span> = <span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getValue</span></span>(f: <span class="type">Foo</span>): f.<span class="type">T</span> = f.value</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> fs: <span class="type">String</span> = getValue(<span class="type">FooString</span>)</span><br><span class="line"><span class="keyword">val</span> fi: <span class="type">Int</span> = getValue(<span class="type">FooInt</span>)</span><br></pre></td></tr></table></figure>
+<p>这种写法，在之前的那个<a href="http://ariwaranosai.xyz/2015/12/15/paser1/">Parser</a>的例子中就见过，利用这种方法在子类中填充<code>Input</code>和<code>Elem</code>的具体类型，在父类中实现统一的方法。这个例子更明显的体现了用处，<code>getValue</code>的类型签名是写不出来的。通过具体的参数才会具体化。</p>
+<p>这里要强调的一点是<code>type is not an alias</code>，这并不像是<code>c++</code>的<code>typedef</code>那种。常见的一种用途，就是在<code>Scalaz</code>里面见到</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">Result</span>[<span class="type">T</span>] </span>= <span class="type">Either</span>[<span class="type">String</span>, <span class="type">T</span>]</span><br></pre></td></tr></table></figure>
+<p>这样就可以把这个类型扔给诸如</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get</span></span>[<span class="type">T</span>](<span class="type">Monad</span>[<span class="type">T</span>]): <span class="type">T</span></span><br></pre></td></tr></table></figure>
+<p>这种类型的函数去了。</p>
+<h4 id="infix-operator">Infix Operator</h4>
+<p>这个只能算是<code>Scala</code>语法的一个<code>Tip</code>。<code>Scala</code>中可以省略括号</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">bar</span></span>(s: <span class="type">String</span>) = println(s)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">Foo</span>.bar(<span class="string">"Hello"</span>)</span><br><span class="line"><span class="type">Foo</span> bar <span class="string">"Hello"</span></span><br></pre></td></tr></table></figure>
+<p>对于类型也是一样，之前在<a href="http://ariwaranosai.xyz/2015/12/29/VSADT/">ADT</a>这一篇里面见识过，一个代数类型可以看做作为其参数的基本类型的函数，返回新的类型。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Foo</span>[<span class="type">A</span>, <span class="type">B</span>]</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">Foo</span>[<span class="type">Int</span>, <span class="type">String</span>]</span></span><br><span class="line"><span class="class"><span class="title">Int</span> <span class="title">Foo</span> <span class="title">String</span></span></span><br></pre></td></tr></table></figure>
+<p>同时，我们知道<code>Scala</code>中符号可以用来定义变量，同样符号也可以用来定义类型，并且两者没有冲突。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> </span>::[<span class="type">A</span>, <span class="type">B</span>]</span><br><span class="line"></span><br><span class="line">::[<span class="type">Int</span>, <span class="type">String</span>]</span><br><span class="line"><span class="type">Int</span> :: <span class="type">String</span></span><br></pre></td></tr></table></figure>
+<p>这里是不是看出来了点<code>Heterogeneous Lists</code>的影子。</p>
+<h4 id="phantom-types">Phantom Types</h4>
+<p><code>Phantom Types</code>我们在之前已经见识过了，所谓的<code>Phantom</code>就是指它没有实例化，我们只是借用这个类型表达一些语义，之前的<code>Matrix</code>和<code>CanBuildFrom</code>都是很好的例子。</p>
+<p>这里再看一个简单的例子</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Status</span></span></span><br><span class="line"><span class="class"><span class="title">trait</span> <span class="title">Open</span> <span class="keyword">extends</span> <span class="title">Status</span></span></span><br><span class="line"><span class="class"><span class="title">trait</span> <span class="title">Closed</span> <span class="keyword">extends</span> <span class="title">Status</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">trait</span> <span class="title">Door</span>[<span class="type">S</span> &lt;: <span class="type">Status</span>]</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">object</span> <span class="title">Door</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>[<span class="type">S</span> &lt;: <span class="type">Status</span>] = <span class="keyword">new</span> <span class="type">Door</span>[<span class="type">S</span>]&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">open</span></span>[<span class="type">S</span> &lt;: <span class="type">Closed</span>](d: <span class="type">Door</span>[<span class="type">S</span>]) = <span class="type">Door</span>[<span class="type">Open</span>]</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">close</span></span>[<span class="type">S</span> &lt;: <span class="type">Open</span>](d: <span class="type">Door</span>[<span class="type">S</span>]) = <span class="type">Door</span>[<span class="type">Closed</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> closedDoor = <span class="type">Door</span>[<span class="type">Closed</span>]</span><br><span class="line"><span class="keyword">val</span> openDoor = <span class="type">Door</span>.open(closedDoor)</span><br><span class="line"><span class="keyword">val</span> closedAgainDoor = <span class="type">Door</span>.close(openDoor)</span><br></pre></td></tr></table></figure>
+<p>这里利用<code>Open</code>和<code>Closed</code>来保证，我们只能打开已经关上的门，和只能关上已经打开的门，而且是在__编译时__，而不是在运行时返回错误甚至是抛异常。</p>
+<h4 id="implicit-parameters-and-implicit-conversions">Implicit Parameters and Implicit Conversions</h4>
+<p>这个在之前那个矩阵的例子中，就是利用隐式参数，来实现约束的，这个套路在很多地方都使用，比如在<code>Future</code>的实现中，就是依靠隐式参数指定<code>ExecutionContext</code>的。</p>
+<p>看个小例子</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Resolver</span>[<span class="type">T</span>, <span class="type">R</span>] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">resolve</span></span>(t: <span class="type">T</span>): <span class="type">R</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">Resolver</span> </span>&#123;</span><br><span class="line">  <span class="keyword">implicit</span> <span class="keyword">val</span> ib: <span class="type">Resolver</span>[<span class="type">Int</span>, <span class="type">Boolean</span>] = <span class="keyword">new</span> <span class="type">Resolver</span>[<span class="type">Int</span>, <span class="type">Boolean</span>] &#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">resolve</span></span>(i :<span class="type">Int</span>): <span class="type">Boolean</span> = i &gt; <span class="number">1</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">implicit</span> <span class="keyword">val</span> sd: <span class="type">Resolver</span>[<span class="type">String</span>, <span class="type">Double</span>] = <span class="keyword">new</span> <span class="type">Resolver</span>[<span class="type">String</span>, <span class="type">Double</span>] &#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">resolve</span></span>(i :<span class="type">String</span>): <span class="type">Double</span> = i.length.toDouble</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foo</span></span>[<span class="type">T</span>, <span class="type">R</span>](t: <span class="type">T</span>)(<span class="keyword">implicit</span> p: <span class="type">Resolver</span>[<span class="type">T</span>, <span class="type">R</span>]): <span class="type">R</span> = p.resolve(t)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> res1: <span class="type">Boolean</span> = foo(<span class="number">3</span>)</span><br><span class="line"><span class="keyword">val</span> res2: <span class="type">Double</span> = foo(<span class="string">"ciao"</span>)</span><br></pre></td></tr></table></figure>
+<p>这就是像我在<code>Matrix</code>中说的，利用隐式参数在编译时选择合适的方法。不过这个例子展示了在部分类型已知的情况下的隐式参数。</p>
+<h4 id="type-classes">Type Classes</h4>
+<p>这个直接看<a href="https://ropas.snu.ac.kr/~bruno/papers/TypeClasses.pdf" target="_blank" rel="noopener">原论文</a>吧。</p>
+<p>还有这篇<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.135.575&amp;rep=rep1&amp;type=pdf" target="_blank" rel="noopener">Generics of a Higher Kind</a>。</p>
+<h4 id="implicitly-and-type-equality">Implicitly and Type Equality</h4>
+<p>类型同样是可以进行比较的，</p>
+<p>比较两个类型相同很简单，就是<code>=:=</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">implicitly[<span class="type">Int</span> == <span class="type">Int</span>]</span><br></pre></td></tr></table></figure>
+<p>对于继承关系的约束可以通过<code>&lt;:&lt;</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">implicitly[<span class="type">Int</span> &lt;:&lt; <span class="type">Any</span>]</span><br></pre></td></tr></table></figure>
+<p>最后一个是在<code>view</code>的约束，即表明<code>A 可以看做 B</code>。不过<code>&lt;%&lt;</code>运算符已经在<code>scala 2.9</code>之后废弃掉了。所以我们要自己造一个</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">&lt;%&lt;</span>[-<span class="type">From</span>, +<span class="type">To</span>] <span class="keyword">extends</span> (<span class="params"><span class="type">From</span> =&gt; <span class="type">To</span></span>)</span></span><br><span class="line"><span class="class">    <span class="keyword">with</span> <span class="title">Serializable</span></span></span><br><span class="line"><span class="class"><span class="title">object</span> <span class="title">&lt;%&lt;</span> </span>&#123;</span><br><span class="line">    <span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">conformsOrViewsAs</span></span>[<span class="type">A</span> &lt;% <span class="type">B</span>, <span class="type">B</span>]: <span class="type">A</span> &lt;%&lt; <span class="type">B</span> =</span><br><span class="line">        <span class="keyword">new</span> (<span class="type">A</span> &lt;%&lt; <span class="type">B</span>) &#123;<span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(x: <span class="type">A</span>) = x&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后我们自己试一下</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span>(<span class="params">i: <span class="type">Int</span></span>) </span>&#123;&#125;</span><br><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">B</span>(<span class="params">s: <span class="type">String</span></span>) </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">implicit</span> <span class="function"><span class="keyword">def</span> <span class="title">a2b</span></span>(a: <span class="type">A</span>): <span class="type">B</span> = <span class="keyword">new</span> <span class="type">B</span>(a.i.toString)</span><br><span class="line"></span><br><span class="line"><span class="comment">// correct</span></span><br><span class="line">implicitly[<span class="type">A</span> &lt;%&lt; <span class="type">B</span>]</span><br><span class="line"><span class="comment">// Error: could not find implicit value for parameter  </span></span><br><span class="line">implicitly[<span class="type">B</span> &lt;%&lt; <span class="type">A</span>]</span><br></pre></td></tr></table></figure>
+<p>至此，预备知识都复习了一遍。之后就可以好好学习一个了。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/03/18/scalazday6/" rel="next" title="learning Scalaz-day6">
+                <i class="fa fa-chevron-left"></i> learning Scalaz-day6
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/03/25/ty-level1/" rel="prev" title="Type-Level Programming in Scala-1">
+                Type-Level Programming in Scala-1 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#dependent-types"><span class="nav-number">1.</span> <span class="nav-text">Dependent Types</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#example-from-idris"><span class="nav-number">1.1.</span> <span class="nav-text">Example from Idris</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#path-dependent-types-in-scala"><span class="nav-number">1.2.</span> <span class="nav-text">Path Dependent Types in Scala</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#parameter-dependent-types-in-scala"><span class="nav-number">2.</span> <span class="nav-text">Parameter Dependent Types in Scala</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#abstract-types"><span class="nav-number">2.1.</span> <span class="nav-text">Abstract Types</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#infix-operator"><span class="nav-number">2.2.</span> <span class="nav-text">Infix Operator</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#phantom-types"><span class="nav-number">2.3.</span> <span class="nav-text">Phantom Types</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#implicit-parameters-and-implicit-conversions"><span class="nav-number">2.4.</span> <span class="nav-text">Implicit Parameters and Implicit Conversions</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#type-classes"><span class="nav-number">2.5.</span> <span class="nav-text">Type Classes</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#implicitly-and-type-equality"><span class="nav-number">2.6.</span> <span class="nav-text">Implicitly and Type Equality</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

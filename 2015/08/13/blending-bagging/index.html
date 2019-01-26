@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="虽然PGM和NMF提供了很多很炫酷的模型，但是实际上很多的DM任务并不使用这些复杂的模型。相反，很多简单的模型诸如linear regression、logistic regression、RF和GBDT等模型更加常用。所以，平时也应该关注一下这些基本的模型和技巧。">
+<meta name="keywords" content="DM,Bootstrap">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Blending and Bagging">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/08/13/blending-bagging/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="虽然PGM和NMF提供了很多很炫酷的模型，但是实际上很多的DM任务并不使用这些复杂的模型。相反，很多简单的模型诸如linear regression、logistic regression、RF和GBDT等模型更加常用。所以，平时也应该关注一下这些基本的模型和技巧。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Blending and Bagging">
+<meta name="twitter:description" content="虽然PGM和NMF提供了很多很炫酷的模型，但是实际上很多的DM任务并不使用这些复杂的模型。相反，很多简单的模型诸如linear regression、logistic regression、RF和GBDT等模型更加常用。所以，平时也应该关注一下这些基本的模型和技巧。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/08/13/blending-bagging/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Blending and Bagging | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/08/13/blending-bagging/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Blending and Bagging
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-08-13 22:05:10" itemprop="dateCreated datePublished" datetime="2015-08-13T22:05:10+08:00">2015-08-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>虽然PGM和NMF提供了很多很炫酷的模型，但是实际上很多的DM任务并不使用这些复杂的模型。相反，很多简单的模型诸如linear regression、logistic regression、RF和GBDT等模型更加常用。所以，平时也应该关注一下这些基本的模型和技巧。 <a id="more"></a></p>
+<h2 id="aggregation-models">Aggregation Models</h2>
+<h3 id="为什么要aggregation">为什么要aggregation</h3>
+<p>对于存在的很多<code>hypothesis</code>，<span class="math inline">\(g_1, ..., g_T\)</span>,我们想要找一个<span class="math inline">\(G(x) = g_{t*}(x)\)</span>，使其满足<span class="math inline">\(t* = argmin_{t \in \{1,2,..,T\}}E_{val}(g^-)\)</span></p>
+<p>简单可以想到的三种方法</p>
+<ul>
+<li><p><span class="math inline">\(G(x) = sign(\sum_{t}1*g_t(x))\)</span> 平均的投票策略</p></li>
+<li><p><span class="math inline">\(G(x) = sign(\sum_{t}\alpha_t g_t(x))\)</span> with <span class="math inline">\(a_t \geq 0\)</span>，非平均</p></li>
+<li><p>可以包括之前的两种 <span class="math inline">\(G(x) = sign(\sum_{t} q_t(x)g_t(x))\)</span> with <span class="math inline">\(q_t(x) \geq 0\)</span>， 权值是由函数确定的</p></li>
+</ul>
+<p>其本质是通过weak hypotheses来构造一个strong hypotheses。每一个hypotheses也可以看做<code>feature transform</code>.</p>
+<h3 id="blending">Blending</h3>
+<p>所谓的blending就是把我们已经得到的很多 hypotheses在重新混合。从最简单的<code>uniform blending</code>到<code>linear blending</code>到<code>Any Blending</code>。</p>
+<h4 id="uniform-blending">Uniform Blending</h4>
+<p>所谓的<code>uniform blending</code>就是认为所有的hypotheses都是有相同的权重，这在分类的情况下比较好理解，就是哪个投票多的就选哪个，在Regression的时候就取均值就好，那这样具体究竟是哪里好呢？</p>
+<p>首先设最后得到的hypotheses为<span class="math inline">\(G\)</span>，那么就有 <span class="math display">\[G(x) = \frac{1}{T}\sum^{1}_{t=1}g_t(x)\]</span> 假设真正的函数应该是<span class="math inline">\(f\)</span>，则其差距为 <span class="math display">\[\begin{split}
+avg((g_t(x) - f(x))^2) &amp; = avg(g_t^2 - 2gf  + f^2) \\
+ &amp;= avg(g_t^2) - 2Gf  - f^2 \\
+ &amp; = avg(g_t^2) - 2G^2 + G^2 + (G - f)^2 \\
+ &amp; = avg(g_t^2 -2g_tG + G^2) + (G - f)^2 \\
+ &amp; = avg((g_t - G)^2) + (G - f)^2
+\end{split}\]</span></p>
+<p>所以，当我们考虑的是<span class="math inline">\(E_{out}\)</span>的时候，就会有 <span class="math display">\[\begin{split}
+avg(E_{out}(g_t)) &amp; = avg(\varepsilon(g_t -G)) + E_{out}(G) \\
+&amp; \geq E_{out}(G)
+\end{split}\]</span></p>
+<p>所以我们可以看出来，其实最终得到的<span class="math inline">\(E_{out}(G)\)</span>一定比任意一个<span class="math inline">\(g_t\)</span>的表现要好。</p>
+<p>其实换一个角度看，如果每次获得<span class="math inline">\(g_t\)</span>都是从相同的分布的不同样本生成的话，当选取的<span class="math inline">\(g_t\)</span>的个数趋向于无穷的时候，最终的得到的<span class="math inline">\(G\)</span>可以看做整个模型的表现的期望等价于模型本身的差距<span class="math inline">\(E_{out}(G)\)</span>以及模型的variance<span class="math inline">\(\varepsilon(g_t -G)\)</span>而我们取平均就是为了减少方差，也就减少了模型本身过拟合的可能性。这种方法并不少见，回忆一下，在linear regression的时候我们引入L1范数不也是为了减少variance嘛。</p>
+<h4 id="linear-blending-and-any-blending">Linear Blending and Any Blending</h4>
+<p>把<code>Uniform Blending</code>扩展一下，不同的<span class="math inline">\(g_t\)</span>有不同的权重就变成了<code>Linear Blending</code>。考虑到regression的情况就变成</p>
+<p><span class="math display">\[min_{\alpha_t \geq 0} \frac{1}{N}\sum_{n = 1}^N (y_n - \sum_{t = 1}^T \alpha_t g_t(x_n))^2\]</span></p>
+<p>显然这里可以把每一个<span class="math inline">\(g_t(x)\)</span>看做一个特征转换的方式，考虑到这里面<span class="math inline">\(\alpha \geq 0\)</span>的约束其实是不必要的，我们完全可以采用线性回归的方法。</p>
+<p>整个流程可以这样看： 1. 先从多个不同的H里面选出来不同的<span class="math inline">\(g_t\)</span>，它们都是最小的<span class="math inline">\(E_{in}\)</span> 2. 这个时候，为了避免过拟合，应该从<code>validation set</code>里面进行学习<span class="math inline">\(\alpha\)</span></p>
+<p>既然linear可以那么显然其他的非线性的模型也都可以只要把学习<span class="math inline">\(\alpha\)</span>的时候换成学习其他的模型就可以了。</p>
+<h3 id="bagging">Bagging</h3>
+<p>当我们手中的数据有限的时候，我们不容易直接得到真正的很多的<span class="math inline">\(g_t\)</span>，而当我们数据本身是无偏的话，从另一方面，我们可以用采样的方法来获得更多的样本的效果。</p>
+<p>假设我们手中有train set为<span class="math inline">\(Z = (z_1, z_2, z_3,...,z_N)\)</span>其中<span class="math inline">\(z_i = (x_i, y_i)\)</span>，然后采用有放回的采样，采出来等同的N个数据，然后执行这个方法B次，就得到了B个Bootstrap的data set。设由第b个data set训练出来的分类器为<span class="math inline">\(g^{*b}\)</span>，则 <span class="math display">\[\hat{Error_{boot}} = \frac{1}{B}\frac{1}{N}\sum_{b=1}^B\sum_{i=1}^NL(y_i, g^{*b}(x_i))\]</span></p>
+<p>但是我们单单这样做结果还不太好，原因也很显然，没有真正意义上的交叉验证最终我们相当于用Bootstrap得到的数据集当做训练集，用完整的数据集当做测试集，当然容易过拟合了。</p>
+<p>如果对于每一个Bootstrap的数据集都是采用leave one out的方法的话，<span class="math inline">\(Err_{boot}\)</span>就会变成</p>
+<p><span class="math display">\[Err_{boot(1)} = \dfrac{1}{N}\sum_{i=1}^N\dfrac{1}{|C^{-i}|}\sum_{b\in C^{-i}}L(y_i,f^b(x_i))\]</span></p>
+<p>虽然leave one out这种方式解决了overfitting的问题，但是它确是有偏的，为了解决这个有偏的问题，Efron和Tibshirani提出了<code>0.632 estimator</code></p>
+<p><span class="math display">\[Err_{.632} = 0.368\overline{err} + 0.632Err_{boot(1)}\]</span> 其中 <span class="math display">\[\overline{err} = \dfrac{1}{N}\sum_{i=1}^N L(y_i,f(x_i))\]</span></p>
+<p>为什么是0.632呢？考虑一个观察的样本属于第b个Bootstrap样本的概率应该为 <span class="math display">\[\begin{split}
+Pr\{observation i &amp;\in bootstrap sample b \} \\
+&amp; = 1 - (1 - \frac{1}{N})^N \\
+&amp; = 1 - e^{-1} \\
+&amp;= 0.632
+\end{split}\]</span></p>
+<p>即两个不同dataset里面应该有0.632N个不同的数据。但是问题又出来了，这种方式在拟合的很好，即<span class="math inline">\(\overline{err}\)</span>很小的时候，就会变得不好了。 最终，有一种利用权值调解的方法</p>
+<p><span class="math display">\[Err_{.632} = (1-\hat{w})\overline{err} + \hat{w}Err_{boot(1)}\]</span> 其中 <span class="math display">\[\hat{w} = \frac{0.632}{1 - 0.368\hat{R}}\]</span></p>
+<p><span class="math inline">\(\hat{R}\)</span>为<code>relative overfitting rate</code>， <span class="math display">\[\hat{R} = \frac{\hat{Err^{1}} - \overline{err}}{\sigma-\overline{err}}\]</span> <span class="math display">\[\sigma = \frac{1}{N} \sum_i \sum_j L(y_i - f_j(x_i))\]</span></p>
+<h3 id="adaptive-boosting">Adaptive Boosting</h3>
+<p>再回去看看之前的Bagging方法，它仅仅就是从数据里面抽样而已。假设我们直接得到最后的结果，那么由于放回采样可能得到有重复数据的训练集可以写成</p>
+<p><span class="math display">\[E_{in}^u(h) = \frac{1}{N} \sum_{n=1}^Nu_n^t [[y_n \neq h(x_n)]]\]</span></p>
+<p>其中<span class="math inline">\(u_n^t\)</span>就是样本t中出现第n个样本的次数，所以就可以看成每一个<span class="math inline">\(g_t\)</span>都在极小化一个带权值的错误即<code>minimizing bootstrap-weighted error</code>即 <span class="math display">\[E_{in}^u(h) = \frac{1}{N} \sum_{n=1}^Nu_n L(y_n ,h(x_n)))\]</span></p>
+<p>意识到这一点之后，再进一步，我们为了更好的学习我们的模型，往往希望不同的<span class="math inline">\(g_t\)</span>尽可能的不相同，即有更多的hypotheses，所以我们可以通过调整权值来获得不同的<span class="math inline">\(g_t\)</span>。 当我们获得一个<span class="math inline">\(g_t\)</span>的时候，然后我们调整<span class="math inline">\(u^{t+1}\)</span>，试得到的数据上<span class="math inline">\(g_t\)</span>的表现很差，那么<span class="math inline">\(g_{t+1}\)</span>自然就会和<span class="math inline">\(g_t\)</span>不一样了（相关性很弱）。换而言之，就是希望 <span class="math display">\[\frac{\sum_n^N u_n^{t+1}[[y_n \neq g_t(x_n)]]}{\sum_{n=1}^N u_n^{t+1}} = \frac{1}{2}\]</span></p>
+<p>这个式子直观的解释其实就是<span class="math inline">\(g_t\)</span>犯错的点与权值乘积的和占整个数据集的一半，这样怎么调整权值就很直观了。 最后还有一个小问题，就是最后我们怎么通过不同的<span class="math inline">\(g_t\)</span>的到<span class="math inline">\(G\)</span>，显然直接通过投票是不合适的，所以就有了一下动态求<span class="math inline">\(\alpha\)</span>的过程</p>
+<ol type="1">
+<li><p>初始化，权值<span class="math inline">\(u_1\)</span>均为<span class="math inline">\(\frac{1}{N}\)</span></p></li>
+<li><p>然后计算错误率<span class="math inline">\(\varepsilon_t = \frac{\sum_n^N u_n^{t}[[y_n \neq g_t(x_n)]]}{\sum_{n=1}^N u_n^{t}}\)</span> ，更新系数<span class="math inline">\(\alpha_m = \log \sqrt {\frac{1 - \varepsilon_t}{\varepsilon_t}}\)</span></p></li>
+<li><p>更新权值<span class="math inline">\(u_{ti} = u_{ti} * exp(\alpha_t*[[y\neq g_t(x_i)]])\)</span></p></li>
+<li><p>最后输出<span class="math inline">\(G(x) = sign(\sum_{t=1}^T\alpha_t g_t(x))\)</span></p></li>
+</ol>
+<h4 id="from-vc-theory">from VC theory</h4>
+<p>AdaBoost的VC bound如下</p>
+<p><span class="math display">\[E_{out}(G) \leq E_{in}(G)+O(\sqrt {O(d_{vc}(\mathcal{H})T*\log Tl\frac{\log N}{N})})\]</span></p>
+<p>另外，作者还证明了，<span class="math inline">\(E_{in}\)</span>可以在<span class="math inline">\(T = O(\log N)\)</span>的迭代次数内减少到一个很小的值，而且对于分类器只要求比瞎猜强一点即<span class="math inline">\(\varepsilon_t \leq \varepsilon \lt 1/ 2\)</span>就可以。 所以，由于T的增长比较缓慢，所以随着N的增大，<span class="math inline">\(E_{out}\)</span>的值可以被明显的限制住。</p>
+<p>### 其他几点 #### 为什么用指数模型 为什么系数这里突然出来个对数，可能一开始感觉比较奇怪。 我们设 <span class="math display">\[f_*(x) = arg min_{f(x)} E_{Y|x}(e^{-Yf(x)}) = \frac{1}{2} \log \frac{Pr(Y=1|x)}{Pr(Y=0|x)}\]</span> 改一下形式就是 <span class="math display">\[Pr(Y=1|x) = \frac{1}{1 + e^{-2f^*(x)}}\]</span> 也就是，这里其实就是为了求最优的二分类的解。 在换个角度，取<span class="math inline">\(p(x) = Pr(Y = 1|x)\)</span>，<span class="math inline">\(Y^{&#39;} = (Y + 1) / 2 \in \{0,1\}\)</span>，此时采用<code>cross-entropy</code>作为损失函数的话就变成了 <span class="math display">\[-l(Y, f(x)) = Y^{&#39;}\log p(x) + (1 - Y^{&#39;}l\log(1 - p(x)))\]</span> 整理后为 <span class="math display">\[-l(Y, f(x)) = log (1 + e ^{-2Yf(x)})\]</span> 所以，也可以看做极小化交互熵。</p>
+<p>#### 从贝叶斯看Bootstrap 设一个狄利克雷分布 <span class="math display">\[w \sim Dir_L(a1)\]</span> 其中<span class="math inline">\(a1\)</span>是L维的向量，然后我们采样N个得到的分布可以看成 <span class="math display">\[w \sim Dir_L(a1 + N*\hat{w})\]</span> 当<span class="math inline">\(a1 = 0\)</span>是，我们得到一个无信息先验分布<code>noinformative prior</code> <span class="math display">\[w \sim Dir_L(N\hat{w})\]</span> 由于我们是有放回的采样，所以不同分类可以看做从多项分布里面采样</p>
+<p><span class="math display">\[N\hat{w}^* \sim Mult(N, \hat{w})\]</span></p>
+<p>而这个分布的形式与后验分布的形式应该是一样的，理论上应该有相同的矩阵协方差矩阵等。所以，Bootstrap可以看做一种利用采样来获得非参共轭先验的方法，所以根据共轭的性质，可以通过采样得到的结果来减少后验的<code>variance</code>，所以能取得更好地结果。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/DM/" rel="tag"># DM</a>
+          
+            <a href="/tags/Bootstrap/" rel="tag"># Bootstrap</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/03/18/Multi-label/" rel="next" title="Multi-View Multi-Instance Multi-Label Learning">
+                <i class="fa fa-chevron-left"></i> Multi-View Multi-Instance Multi-Label Learning
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/19/Before/" rel="prev" title="写在研一暑假">
+                写在研一暑假 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#aggregation-models"><span class="nav-number">1.</span> <span class="nav-text">Aggregation Models</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要aggregation"><span class="nav-number">1.1.</span> <span class="nav-text">为什么要aggregation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#blending"><span class="nav-number">1.2.</span> <span class="nav-text">Blending</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#uniform-blending"><span class="nav-number">1.2.1.</span> <span class="nav-text">Uniform Blending</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#linear-blending-and-any-blending"><span class="nav-number">1.2.2.</span> <span class="nav-text">Linear Blending and Any Blending</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bagging"><span class="nav-number">1.3.</span> <span class="nav-text">Bagging</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#adaptive-boosting"><span class="nav-number">1.4.</span> <span class="nav-text">Adaptive Boosting</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#from-vc-theory"><span class="nav-number">1.4.1.</span> <span class="nav-text">from VC theory</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

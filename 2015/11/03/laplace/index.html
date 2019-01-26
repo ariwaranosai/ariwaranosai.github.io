@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="在进行概率图模型中建模的时候，大多数情况下，我们都会尽量选择共轭先验，这样可以在计算时利用积分积掉一些不好求的部分。还有一些情况是在生成模型中，混入了广义线性模型，带隐变量同时又带有非共轭的模型，这就导致后验分布写出来的形式很难进行处理。比如这篇论文里面，由于使用softmax函数的原因，导致非共轭的情况出现，这种时候，主要采用两种手段，Laplace Approximation或者Samplin">
+<meta name="keywords" content="近似手段">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Laplace Approximation">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/11/03/laplace/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="在进行概率图模型中建模的时候，大多数情况下，我们都会尽量选择共轭先验，这样可以在计算时利用积分积掉一些不好求的部分。还有一些情况是在生成模型中，混入了广义线性模型，带隐变量同时又带有非共轭的模型，这就导致后验分布写出来的形式很难进行处理。比如这篇论文里面，由于使用softmax函数的原因，导致非共轭的情况出现，这种时候，主要采用两种手段，Laplace Approximation或者Samplin">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Laplace Approximation">
+<meta name="twitter:description" content="在进行概率图模型中建模的时候，大多数情况下，我们都会尽量选择共轭先验，这样可以在计算时利用积分积掉一些不好求的部分。还有一些情况是在生成模型中，混入了广义线性模型，带隐变量同时又带有非共轭的模型，这就导致后验分布写出来的形式很难进行处理。比如这篇论文里面，由于使用softmax函数的原因，导致非共轭的情况出现，这种时候，主要采用两种手段，Laplace Approximation或者Samplin">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/11/03/laplace/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Laplace Approximation | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/11/03/laplace/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Laplace Approximation
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-11-03 05:17:32" itemprop="dateCreated datePublished" datetime="2015-11-03T05:17:32+08:00">2015-11-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在进行概率图模型中建模的时候，大多数情况下，我们都会尽量选择共轭先验，这样可以在计算时利用积分积掉一些不好求的部分。还有一些情况是在生成模型中，混入了广义线性模型，带隐变量同时又带有非共轭的模型，这就导致后验分布写出来的形式很难进行处理。比如<a href="http://research.microsoft.com/en-us/um/people/pkohli/papers/vkgsk_www2014.pdf" target="_blank" rel="noopener">这篇论文</a>里面，由于使用softmax函数的原因，导致非共轭的情况出现，这种时候，主要采用两种手段，Laplace Approximation或者Sampling的方法。最近碰巧遇到了，就记录一下。 <a id="more"></a></p>
+<blockquote>
+<p>话说，一提到拉普拉斯，我就想起来拉普拉斯之箱了。</p>
+</blockquote>
+<h3 id="laplace-approximation">laplace approximation</h3>
+<p>简而言之，laplace approximation就是使用Gaussian去近似一个<code>连续变量</code>的概率密度函数。</p>
+<p>假设变量<span class="math inline">\(z\)</span>的复杂分布为<span class="math inline">\(p(x)\)</span>，同时有</p>
+<p><span class="math display">\[p(z) = \frac{1}{Z}f(z)\]</span></p>
+<p>由于<span class="math inline">\(f(x)\)</span>的形式复杂，我们往往求不出来归一化的项，所以只能利用高斯分布来近似，而高斯的中心点就取<span class="math inline">\(p(z)\)</span>的<code>mode</code>众数，即<span class="math inline">\(p^{&#39;&#39;}(z_0) = 0\)</span>的点。又由于已知高斯的对数其实是变量的二次函数，所以就取其泰勒展开的两项。</p>
+<p><span class="math display">\[\ln f(z) \cong \ln f(z_0) - \frac{1}{2}A(z - z_0)^2\]</span> <span class="math display">\[\quad A = - \frac{d^2}{dz^2} \ln f(z) \mid_{z=z_0}\]</span></p>
+<p>所以，很容易就可以得到</p>
+<p><span class="math display">\[f(z) \cong f(z_0) exp(-\frac{A}{2}(z - z_0)^2)\]</span> <span class="math display">\[q(z) = (\frac{A}{2 \pi})^{1/2} exp(-\frac{A}{2}(z - z_0)^2)\]</span></p>
+<p>即这个高斯为<span class="math inline">\(\mathcal{N}(z|z_0,A^{-1})\)</span>，同时可以直接扩展到高维的情况。不过laplace近似只考虑了局部的情况，而且在高维的情况下不仅要求极值点<span class="math inline">\(z_0\)</span>还要求相应的Hessian matrix，还是挺麻烦的。但是另一方面，它只要求函数f在极大值附近平滑，应用简单。</p>
+<h3 id="一个简单的例子">一个简单的例子</h3>
+<p>现在有一个例子，假设<span class="math inline">\(X \sim g(z_i|\theta) = \theta(\theta + 1)x_i^{\theta - 1}(1 - x_i)\)</span>，其中<span class="math inline">\(x_{in} \in (0,1)\)</span>，物理意义是网球选手在n次循环赛的胜率。显然这个式子没有现成的先验，但是可是使用一个<span class="math inline">\(Gamma(\alpha,\beta)\)</span>的先验。可得其后验分布为</p>
+<p><span class="math display">\[\begin{split}
+p(\theta|x) &amp; = const * L_x (\theta) * p(\theta) \\
+&amp;= const * \Big\{\theta^n (\theta + 1)^n \prod_{i = 1}^n x_i^{\theta}\Big\} * \theta^{\alpha - 1} e^{-\beta \theta} \\
+&amp; = const * \theta^{n + \alpha - 1}(\theta + 1)^n e^{-\{b + \sum_{i = 1}^n \log(1 / x_i )\} \theta}
+\end{split}\]</span></p>
+<p>然后将其取个对数</p>
+<p><span class="math display">\[\log p(\theta | x) = const + (n + \alpha - 1)\log \theta + n \log (\theta + 1) - \theta \Big\{  b - \sum_{i = 1}^n \log x_i \Big\}\]</span></p>
+<p>求一阶导数</p>
+<p><span class="math display">\[\frac{n + \alpha - 1}{\theta} + \frac{n}{\theta + 1} - {b - \sum_{i = 1}^n \log x_i}\]</span></p>
+<p>然后求二阶导数</p>
+<p><span class="math display">\[-\frac{n + \alpha - 1}{\theta^2} - \frac{n}{(\theta + 1)^2}\]</span></p>
+<p>然后就能求出均值和方差了。比如如果n为20，<span class="math inline">\(\sum_{i = 1} \log X_i = -4.59\)</span>，假设超参为<span class="math inline">\(a = 1, b = 1\)</span>， 令一阶导为0可得<span class="math inline">\(\theta = 6.69\)</span>，二阶导为-0.785，这样就可以使用正太分布<span class="math inline">\(\mathcal{N}(6.69, 1.129^2)\)</span>来近似这一段了。</p>
+<h3 id="废话">废话</h3>
+<p>laplace近似本身就是泰勒公式展开的应用，使用简单，尤其是在<code>推倒</code>的时候解决了很多的问题，不过还是想吐槽一句，一开始费劲的建立复杂的模型，然后求解的时候都只能求近似解。（人家有low bound的啊！）</p>
+<p>引用:</p>
+<ol type="1">
+<li><p>《PRML》</p></li>
+<li><p>https://stat.duke.edu/~st118/sta250/laplace.pdf</p></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/近似手段/" rel="tag"># 近似手段</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/10/22/GBDT/" rel="next" title="Boosted Descision Tree">
+                <i class="fa fa-chevron-left"></i> Boosted Descision Tree
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/10/ep/" rel="prev" title="三硬币问题-Expectation Propagation解法">
+                三硬币问题-Expectation Propagation解法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#laplace-approximation"><span class="nav-number">1.</span> <span class="nav-text">laplace approximation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一个简单的例子"><span class="nav-number">2.</span> <span class="nav-text">一个简单的例子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#废话"><span class="nav-number">3.</span> <span class="nav-text">废话</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

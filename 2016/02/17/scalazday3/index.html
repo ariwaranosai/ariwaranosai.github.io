@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="上一次的从Functor开始，然后到Applicative，最后到sequenceA的实现。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="learning Scalaz-day3">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/02/17/scalazday3/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="上一次的从Functor开始，然后到Applicative，最后到sequenceA的实现。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="learning Scalaz-day3">
+<meta name="twitter:description" content="上一次的从Functor开始，然后到Applicative，最后到sequenceA的实现。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/02/17/scalazday3/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>learning Scalaz-day3 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/02/17/scalazday3/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">learning Scalaz-day3
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-02-17 10:15:37" itemprop="dateCreated datePublished" datetime="2016-02-17T10:15:37+08:00">2016-02-17</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Scalaz翻译/" itemprop="url" rel="index"><span itemprop="name">Scalaz翻译</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>上一次的从<code>Functor</code>开始，然后到<code>Applicative</code>，最后到<code>sequenceA</code>的实现。</p>
+<a id="more"></a>
+<h3 id="kinds-and-some-type-foo">Kinds and some type-foo</h3>
+<p>之前的内容只关注构建自己的<code>Types</code>以及<code>Typeclasses</code>但是并没有特别讨论<code>kinds</code>以及<code>types</code>。</p>
+<blockquote>
+<p><code>Types</code>可以看做<code>values</code>上带着的小标签，我们通过这个标签来获取一些诸如判断如何操作使用的信息。而<code>Types</code>本身也有这样的标签叫做<code>Kinds</code>。</p>
+</blockquote>
+<p>在<code>ghci</code>里面使用<code>:k</code>命令可以可以查看<code>type</code>的<code>kind</code>。在<code>scala console</code>里，也可以同样查看类型。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; :k <span class="type">Int</span></span><br><span class="line">scala.<span class="type">Int</span><span class="symbol">'s</span> kind is <span class="type">A</span></span><br><span class="line"></span><br><span class="line">scala&gt; :k -v <span class="type">Int</span></span><br><span class="line">scala.<span class="type">Int</span><span class="symbol">'s</span> kind is <span class="type">A</span></span><br><span class="line">*</span><br><span class="line"><span class="type">This</span> is a proper <span class="class"><span class="keyword">type</span>.</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">scala&gt;</span> </span>:k -v <span class="type">Option</span></span><br><span class="line">scala.<span class="type">Option</span><span class="symbol">'s</span> kind is <span class="type">F</span>[+<span class="type">A</span>]</span><br><span class="line">* -(+)-&gt; *</span><br><span class="line"><span class="type">This</span> is a <span class="class"><span class="keyword">type</span> <span class="title">constructor</span></span>: a <span class="number">1</span>st-order-kinded <span class="class"><span class="keyword">type</span>.</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">scala&gt;</span> </span>:k -v <span class="type">Either</span></span><br><span class="line">scala.util.<span class="type">Either</span><span class="symbol">'s</span> kind is <span class="type">F</span>[+<span class="type">A1</span>,+<span class="type">A2</span>]</span><br><span class="line">* -(+)-&gt; * -(+)-&gt; *</span><br><span class="line"><span class="type">This</span> is a <span class="class"><span class="keyword">type</span> <span class="title">constructor</span></span>: a <span class="number">1</span>st-order-kinded <span class="class"><span class="keyword">type</span>.</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">scala&gt;</span> </span>:k -v <span class="type">Equal</span></span><br><span class="line">scalaz.<span class="type">Equal</span><span class="symbol">'s</span> kind is <span class="type">F</span>[<span class="type">A</span>]</span><br><span class="line">* -&gt; *</span><br><span class="line"><span class="type">This</span> is a <span class="class"><span class="keyword">type</span> <span class="title">constructor</span></span>: a <span class="number">1</span>st-order-kinded <span class="class"><span class="keyword">type</span>.</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">scala&gt;</span> </span>:k -v <span class="type">Functor</span></span><br><span class="line">scalaz.<span class="type">Functor</span><span class="symbol">'s</span> kind is <span class="type">X</span>[<span class="type">F</span>[<span class="type">A</span>]]</span><br><span class="line">(* -&gt; *) -&gt; *</span><br><span class="line"><span class="type">This</span> is a <span class="class"><span class="keyword">type</span> <span class="title">constructor</span> <span class="title">that</span> <span class="title">takes</span> <span class="title">type</span> <span class="title">constructor</span>(<span class="params">s</span>)</span>: a higher-kinded <span class="class"><span class="keyword">type</span>.</span></span><br></pre></td></tr></table></figure>
+<p>从最上面开始,<code>Int</code>以及其他具体类型，都用<code>*</code>表示，在scala里面采用<code>A</code>来表示，<code>first-order value</code>，像<code>(_: Int) + 3</code>这种函数，或者如<code>Option</code>、<code>Either</code>这种<code>type constructor</code>，我们使用诸如<code>*-&gt;*</code>或者<code>*-&gt;*-&gt;*</code>。值得注意的是，<code>Option[Int]</code>就是<code>*</code>，而<code>Option</code>才是<code>*-&gt;*</code>。用scala的类型变量声明就是<code>F[+A]</code>，<code>F[+A1,+A2]</code>。</p>
+<p><code>higher-order value</code>像<code>(f: Int =&gt; Int, list: List[Int]) =&gt; list map {f}</code>这种高阶函数，是一种接受其他<code>type constructor</code>的<code>type constructor</code>。类型如<code>(* -&gt; *) -&gt; *</code>，或者可以写成<code>X[F[A]]</code>。</p>
+<p>在<code>scalaz 7.1</code>中，<code>Equal</code>以及其他一些的类型的<code>kind</code>为<code>F[A]</code>，而<code>Functor</code>以及其他从它派生而来的类型的<code>kind</code>为<code>X[F[A]]</code>。Scala倾向于交叉着使用<code>type class</code>和<code>type constructor</code>，一些术语显得有些混乱。比如，<code>List</code>本身符合<code>Functor</code>的性质，而事实上<code>Functor[List]</code>可以从<code>List</code>派生出来，所以我们说<code>List is a functor</code>。</p>
+<blockquote>
+<p>In FP, "is a" means "a instance can be derived from." <span class="citation" data-cites="jimduey">@jimduey</span> # CPL14 It's a provable relationship, not reliant on LSP.</p>
+</blockquote>
+<p>由于List的<code>kind</code>为<code>F[+A]</code>，所以很容易意识到<code>F</code>对应于<code>Functor</code>。此外，<code>Functor</code>作为<code>typeclass</code>的定义需要在<code>F[A]</code>外面再包一层，就变成了<code>X[F[A]]</code>。scala本身可以把类型当做变量来使用比如</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">type</span> <span class="title">F</span>[_]</span></span><br><span class="line"><span class="class">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>一般来说，在你直接使用那些诸如的操作的时候不用关心这些细节，但是当你想要通过类型的伴生对象进行一些操作的时候，就需要注意了。比如</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过注入调用</span></span><br><span class="line"><span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>).shows</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过伴生对象调用 </span></span><br><span class="line"><span class="type">Show</span>[<span class="type">List</span>[<span class="type">Int</span>]].show(<span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>)) </span><br><span class="line"></span><br><span class="line"><span class="comment">// 应该是 Functor[List]即X[F[_]]</span></span><br><span class="line"><span class="type">Functor</span>[<span class="type">List</span>].lift((_: <span class="type">Int</span>) + <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// error: List[Int] takes no type parameters, expected: one</span></span><br><span class="line"><span class="type">Functor</span>[<span class="type">List</span>[<span class="type">Int</span>]].lift((_: <span class="type">Int</span>) + <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="tagged-type">Tagged type</h3>
+<p>在《Learn You a Haskell for Great Good》中有提到</p>
+<blockquote>
+<p>The newtype keyword in Haskell is made exactly for these case when we want to just take one type and wrap it in something to present it as another type</p>
+</blockquote>
+<p>这在<code>Haskell</code>中是个语言级的特性，我们可以试一试在scala中实现对应的东西。</p>
+<p>考虑一个应用场景，我们想要表示物体的重量，使用<code>kg</code>作为标准单位。一般来说，我们希望传入一个<code>Double</code>，然后使用它。一般来说我们可以</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">KiloGram</span>(<span class="params">value: <span class="type">Double</span></span>)</span></span><br></pre></td></tr></table></figure>
+<p>但是这样虽然可以保证类型安全，但是每次使用的时候都要使用<code>x.value</code>的形式。<code>scalaz</code>里面提供了<code>@@</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">KiloGram</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">def</span> <span class="title">KiloGram</span>[<span class="type">A</span>](<span class="params">a: <span class="type">A</span></span>)</span>: <span class="type">A</span> @@ <span class="type">KiloGram</span> = <span class="type">Tag</span>[<span class="type">A</span>, <span class="type">KiloGram</span>](a)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> mass = <span class="type">KiloGram</span>(<span class="number">20.0</span>)</span><br><span class="line"></span><br><span class="line"><span class="number">30</span> * <span class="type">Tag</span>.unwrap(mass)</span><br><span class="line"></span><br><span class="line"><span class="number">2</span> * scalaz.<span class="type">Tag</span>.unsubst[<span class="type">Double</span>, <span class="type">Id</span>, <span class="type">KiloGram</span>](mass)</span><br></pre></td></tr></table></figure>
+<p><code>@@</code>的实现大致如</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[scalaz] <span class="class"><span class="keyword">type</span> <span class="title">Tagged</span>[<span class="type">A</span>, <span class="type">T</span>] </span>= &#123;<span class="class"><span class="keyword">type</span> <span class="title">Tag</span> </span>= <span class="type">T</span>; <span class="class"><span class="keyword">type</span> <span class="title">Self</span> </span>= <span class="type">A</span>&#125;</span><br><span class="line"> <span class="class"><span class="keyword">type</span> <span class="title">@@</span>[<span class="type">T</span>, <span class="type">Tag</span>] </span>= <span class="type">Tagged</span>[<span class="type">T</span>, <span class="type">Tag</span>]</span><br></pre></td></tr></table></figure>
+<p>它构件了一个新的类型，其中<code>Tag</code>用来标注我们给的带有含义的类型比如<code>KiloGram</code>，然后<code>T</code>用来代表具体的类型比如这里的<code>Double</code>。通过<code>A @@ KiloGram</code>来构件新的类型。</p>
+<p>现在，我们可以定义根据<span class="math inline">\(E=mc^2\)</span>求能量的</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">KiloGram</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">def</span> <span class="title">KiloGram</span>[<span class="type">A</span>](<span class="params">a: <span class="type">A</span></span>)</span>: <span class="type">A</span> @@ <span class="type">KiloGram</span> = <span class="type">Tag</span>[<span class="type">A</span>, <span class="type">KiloGram</span>](a)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> mass = <span class="type">KiloGram</span>(<span class="number">20.0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">JoulePerKiloGram</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">def</span> <span class="title">JoulePerKiloGram</span>[<span class="type">A</span>](<span class="params">a: <span class="type">A</span></span>)</span>: <span class="type">A</span> @@ <span class="type">JoulePerKiloGram</span> = <span class="type">Tag</span>[<span class="type">A</span>, <span class="type">JoulePerKiloGram</span>](a)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">energyR</span></span>(m: <span class="type">Double</span> @@ <span class="type">KiloGram</span>): <span class="type">Double</span> @@ <span class="type">JoulePerKiloGram</span> =</span><br><span class="line">    <span class="type">JoulePerKiloGram</span>(<span class="number">299792458.0</span> * <span class="number">299792458.0</span> * <span class="type">Tag</span>.unwrap(m))</span><br><span class="line"></span><br><span class="line">energyR(mass)</span><br><span class="line"><span class="comment">// res: scalaz.@@[Double,JoulePerKiloGram] = 1.79751035747363533E18</span></span><br><span class="line">energyR(<span class="number">20</span>) <span class="comment">// error type mismatch</span></span><br></pre></td></tr></table></figure>
+<p>正如上面代码展示的，我们直接传递<code>Double</code>的时候会在编译期就触发错误。</p>
+<h4 id="about-those-monoids">About those Monoids</h4>
+<p>显然<code>*</code>和1与<code>++</code>和<code>Nil</code>有很多相似的性质，比如</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">4</span>*<span class="number">1</span> == <span class="number">1</span>*<span class="number">4</span></span><br><span class="line"><span class="type">Nil</span> ++ <span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>) == <span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>) ++ <span class="type">Nil</span></span><br><span class="line"></span><br><span class="line">(<span class="number">3</span> * <span class="number">2</span>) * <span class="number">4</span> == <span class="number">3</span> * (<span class="number">2</span> * <span class="number">4</span>)</span><br><span class="line">(<span class="type">List</span>(<span class="string">"la"</span>) ++ <span class="type">List</span>(<span class="string">"di"</span>)) ++ <span class="type">List</span>(<span class="string">"da"</span>) == <span class="type">List</span>(<span class="string">"la"</span>) ++ (<span class="type">List</span>(<span class="string">"di"</span>) ++ <span class="type">List</span>(<span class="string">"da"</span>))</span><br></pre></td></tr></table></figure>
+<p>满足幺元的性质，满足结合律。</p>
+<h4 id="monoid">monoid</h4>
+<blockquote>
+<p>A monoid is when you have an associative binary function and a value which acts as an identity with respect to that function.</p>
+</blockquote>
+<p>我们来看看<code>scalaz</code>中<code>Monoid</code>的实现</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Monoid</span>[<span class="type">F</span>] <span class="keyword">extends</span> <span class="title">Semigroup</span>[<span class="type">F</span>] </span>&#123; self =&gt;</span><br><span class="line">  <span class="comment">////</span></span><br><span class="line">  <span class="comment">/** The identity element for `append`. */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">zero</span></span>: <span class="type">F</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// derived functions</span></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * For `n = 0`, `zero`</span></span><br><span class="line"><span class="comment">   * For `n = 1`, `append(zero, value)`</span></span><br><span class="line"><span class="comment">   * For `n = 2`, `append(append(zero, value), value)`</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">multiply</span></span>(value: <span class="type">F</span>, n: <span class="type">Int</span>): <span class="type">F</span> =</span><br><span class="line">    <span class="keyword">if</span> (n &lt;= <span class="number">0</span>) zero <span class="keyword">else</span> multiply1(value, n - <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<h5 id="semigroup">Semigroup</h5>
+<p><code>monoid</code>继承自<code>semigroup</code>，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Semigroup</span>[<span class="type">F</span>]  </span>&#123; self =&gt;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">append</span></span>(f1: <span class="type">F</span>, f2: =&gt; <span class="type">F</span>): <span class="type">F</span></span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">SemigroupOps</span>[<span class="type">F</span>] <span class="title">private</span>[syntax](<span class="params">val self: <span class="type">F</span></span>)</span></span><br><span class="line"><span class="class">    (<span class="params">implicit val <span class="type">F</span>: <span class="type">Semigroup</span>[<span class="type">F</span>]</span>) <span class="keyword">extends</span> <span class="title">Ops</span>[<span class="type">F</span>] </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="function"><span class="keyword">def</span> <span class="title">|+|</span></span>(other: =&gt; <span class="type">F</span>): <span class="type">F</span> = <span class="type">F</span>.append(self, other)</span><br><span class="line">  <span class="keyword">final</span> <span class="function"><span class="keyword">def</span> <span class="title">mappend</span></span>(other: =&gt; <span class="type">F</span>): <span class="type">F</span> = <span class="type">F</span>.append(self, other)</span><br><span class="line">  <span class="keyword">final</span> <span class="function"><span class="keyword">def</span> <span class="title">⊹</span></span>(other: =&gt; <span class="type">F</span>): <span class="type">F</span> = <span class="type">F</span>.append(self, other)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先看看mappend函数。</p>
+<blockquote>
+<p>We have mappend, which, as you've probably guessed, is the binary function. It takes two values of the same type and return a value of that type as well.</p>
+</blockquote>
+<p>不过虽然他的名字叫<code>mappend</code>，也不意味着一定是把什么东西连起来，只是集合上的乘法运算而已。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>) mappend <span class="type">List</span>(<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>)</span><br><span class="line"><span class="string">"one"</span> |+| <span class="string">"two"</span></span><br></pre></td></tr></table></figure>
+<h4 id="back-to-monoid">Back to Monoid</h4>
+<p>重新看一下<code>Monoid</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Monoid</span>[<span class="type">F</span>] <span class="keyword">extends</span> <span class="title">Semigroup</span>[<span class="type">F</span>] </span>&#123; self =&gt;</span><br><span class="line">  <span class="comment">////</span></span><br><span class="line">  <span class="comment">/** The identity element for `append`. */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">zero</span></span>: <span class="type">F</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>mempty represents the identity value for a particular monoid.</p>
+</blockquote>
+<p>这里的<code>mempty</code>在<code>scalaz</code>里面就叫<code>zero</code>，我们可以看看这些<code>zero</code>都是什么。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Monoid</span>[<span class="type">List</span>[<span class="type">Int</span>]].zero <span class="comment">// res: List[Int]=List()</span></span><br><span class="line"><span class="type">Monoid</span>[<span class="type">String</span>].zero <span class="comment">// res: String=""</span></span><br></pre></td></tr></table></figure>
+<h4 id="tags.multiplication">Tags.Multiplication</h4>
+<blockquote>
+<p>So now that there are two equally valid ways for numbers (addition and multiplication) to be monoids, which way do choose? Well, we don't have to.</p>
+</blockquote>
+<p>所以在<code>scalaz 7.1</code>中，存在<code>tagged type</code>。其中有8个针对Monoids的tag，以及1个叫做<code>Zip</code>的为<code>Applicative</code>的tag。</p>
+<p>比如</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Tags</span>.<span class="type">Multiplication</span>(<span class="number">10</span>) |+| <span class="type">Monoid</span>[<span class="type">Int</span> @@ <span class="type">Tags</span>.<span class="type">Multiplication</span>].zero</span><br><span class="line"><span class="comment">// res0: scalaz.@@[Int,scalaz.Tags.Multiplication] = 10</span></span><br><span class="line"><span class="type">Tags</span>.<span class="type">Multiplication</span>(<span class="number">10</span>) |+| <span class="type">Tags</span>.<span class="type">Multiplication</span>(<span class="number">3</span>)</span><br><span class="line"><span class="comment">// res1: scalaz.@@[Int,scalaz.Tags.Multiplication] = 30</span></span><br><span class="line"><span class="number">10</span> |+| <span class="type">Monoid</span>[<span class="type">Int</span>].zero</span><br><span class="line"><span class="comment">// res2: 10</span></span><br><span class="line"><span class="number">10</span> |+| <span class="number">3</span></span><br><span class="line"><span class="comment">// res3: 13</span></span><br></pre></td></tr></table></figure>
+<h4 id="tags.disjunction-and-tags.conjunction">Tags.Disjunction and Tags.Conjunction</h4>
+<p>另外一种可以采用两种不同的方式满足<code>Monoid</code>的类型是<code>Bool</code>。第一种方法是用<code>or</code>当做运算，用<code>False</code>当做<code>identity value</code>，另一种是用<code>and</code>当做运算，用<code>True</code>当做<code>identity value</code>。</p>
+<p>在<code>scalaz 7</code>里面，使用<code>Disjunction</code>和<code>Conjunction</code>两种方式来区别。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Tags</span>.<span class="type">Disjunction</span>(<span class="literal">true</span>) |+| <span class="type">Tags</span>.<span class="type">Disjunction</span>(<span class="literal">false</span>)</span><br><span class="line"><span class="comment">// res0: scalaz.@@[Boolean,scalaz.Tags.Disjunction] = true</span></span><br><span class="line"></span><br><span class="line"><span class="type">Monoid</span>[<span class="type">Boolean</span> @@ <span class="type">Tags</span>.<span class="type">Disjunction</span>].zero |+| <span class="type">Tags</span>.<span class="type">Disjunction</span>(<span class="literal">true</span>)</span><br><span class="line"><span class="comment">// res1: scalaz.@@[Boolean,scalaz.Tags.Disjunction] = true</span></span><br><span class="line"></span><br><span class="line"><span class="type">Tags</span>.<span class="type">Conjunction</span>(<span class="literal">true</span>) |+| <span class="type">Tags</span>.<span class="type">Conjunction</span>(<span class="literal">false</span>)</span><br><span class="line"><span class="comment">// res2: scalaz.@@[Boolean,scalaz.Tags.Conjunction] = false</span></span><br><span class="line"></span><br><span class="line"><span class="type">Monoid</span>[<span class="type">Boolean</span> @@ <span class="type">Tags</span>.<span class="type">Conjunction</span>].zero |+| <span class="type">Tags</span>.<span class="type">Conjunction</span>(<span class="literal">false</span>)</span><br><span class="line"><span class="comment">// res3: scalaz.@@[Boolean,scalaz.Tags.Conjunction] = false</span></span><br></pre></td></tr></table></figure>
+<h4 id="ordering-as-monoid">Ordering as Monoid</h4>
+<p>Ordering同样也是<code>Monoid</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(<span class="type">Ordering</span>.<span class="type">LT</span>: <span class="type">Ordering</span>) |+| (<span class="type">Ordering</span>.<span class="type">GT</span> : <span class="type">Ordering</span>)</span><br><span class="line"><span class="comment">// res0: scalaz.Ordering = LT</span></span><br><span class="line">(<span class="type">Ordering</span>.<span class="type">GT</span>: <span class="type">Ordering</span>) |+| (<span class="type">Ordering</span>.<span class="type">LT</span> : <span class="type">Ordering</span>)</span><br><span class="line"><span class="comment">// res1: scalaz.Ordering = GT</span></span><br><span class="line"><span class="type">Monoid</span>[<span class="type">Ordering</span>].zero |+| (<span class="type">Ordering</span>.<span class="type">LT</span> : <span class="type">Ordering</span>)</span><br><span class="line"><span class="comment">// res2: scalaz.Ordering = LT</span></span><br><span class="line"><span class="type">Monoid</span>[<span class="type">Ordering</span>].zero |+| (<span class="type">Ordering</span>.<span class="type">GT</span>: <span class="type">Ordering</span>)</span><br><span class="line"><span class="comment">// res3: scalaz.Ordering = GT</span></span><br><span class="line">(<span class="type">Ordering</span>.<span class="type">EQ</span> : <span class="type">Ordering</span>) == <span class="type">Monoid</span>[<span class="type">Ordering</span>].zer</span><br><span class="line"><span class="comment">// res4: Boolean: true</span></span><br></pre></td></tr></table></figure>
+<p>这里<code>EQ</code>是幺元，而操作是当第一个为<code>EQ</code>时，返回第二个结果，否则返回第一个结果。</p>
+<p><code>Monoid</code>到底有什么用呢？比如我们想要比较两个字符串的长度，但是当他们长度相等的时候，就比较字母顺序。就可以这么实现。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lengthCompare</span></span>(lhs: <span class="type">String</span>, rhs: <span class="type">String</span>): <span class="type">Ordering</span> = </span><br><span class="line">    (lhs.length ?|? rhs.length) |+| (lhs ?|? rhs)</span><br><span class="line"></span><br><span class="line">lengthCompare(<span class="string">"zen"</span>, <span class="string">"ants"</span>)</span><br><span class="line"><span class="comment">// res0: scalaz.Ordering = LT</span></span><br><span class="line">lengthCompare(<span class="string">"ans"</span>, <span class="string">"ans"</span>)</span><br><span class="line"><span class="comment">// res1: scalaz.Ordering = EQ</span></span><br><span class="line">lengthCompare(<span class="string">"zen"</span>, <span class="string">"ant"</span>)</span><br><span class="line"><span class="comment">// res2: res2: scalaz.Ordering = GT</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/02/06/scalazday2/" rel="next" title="learning Scalaz-day2">
+                <i class="fa fa-chevron-left"></i> learning Scalaz-day2
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/02/28/scalazday4/" rel="prev" title="learning Scalaz-day4">
+                learning Scalaz-day4 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#kinds-and-some-type-foo"><span class="nav-number">1.</span> <span class="nav-text">Kinds and some type-foo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tagged-type"><span class="nav-number">2.</span> <span class="nav-text">Tagged type</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#about-those-monoids"><span class="nav-number">2.1.</span> <span class="nav-text">About those Monoids</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#monoid"><span class="nav-number">2.2.</span> <span class="nav-text">monoid</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#semigroup"><span class="nav-number">2.2.1.</span> <span class="nav-text">Semigroup</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#back-to-monoid"><span class="nav-number">2.3.</span> <span class="nav-text">Back to Monoid</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tags.multiplication"><span class="nav-number">2.4.</span> <span class="nav-text">Tags.Multiplication</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tags.disjunction-and-tags.conjunction"><span class="nav-number">2.5.</span> <span class="nav-text">Tags.Disjunction and Tags.Conjunction</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ordering-as-monoid"><span class="nav-number">2.6.</span> <span class="nav-text">Ordering as Monoid</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

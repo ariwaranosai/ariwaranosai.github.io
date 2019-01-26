@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="事实证明，非洲人在任何地方都非。搞不定论文的我只能接着写一些没用的。预定的计划是结合Cats以及常见的猫论的内容。自己也是个半吊子，写出来总结一下。">
+<meta name="keywords" content="Scala,Cats">
+<meta property="og:type" content="article">
+<meta property="og:title" content="预备知识-Cats和Cats">
+<meta property="og:url" content="http://ariwaranosai.xyz/2017/02/06/cats-0/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="事实证明，非洲人在任何地方都非。搞不定论文的我只能接着写一些没用的。预定的计划是结合Cats以及常见的猫论的内容。自己也是个半吊子，写出来总结一下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/category.JPG">
+<meta property="og:image" content="http://nkssai.qiniudn.com/HNI_0086.JPG">
+<meta property="og:image" content="http://nkssai.qiniudn.com/HNI_0082.JPG">
+<meta property="og:image" content="http://nkssai.qiniudn.com/HNI_0084.JPG">
+<meta property="og:image" content="http://nkssai.qiniudn.com/HNI_0083.JPG">
+<meta property="og:image" content="http://nkssai.qiniudn.com/HNI_0081.JPG">
+<meta property="og:image" content="http://nkssai.qiniudn.com/HNI_0088.JPG">
+<meta property="og:image" content="http://nkssai.qiniudn.com/HNI_0089.JPG">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="预备知识-Cats和Cats">
+<meta name="twitter:description" content="事实证明，非洲人在任何地方都非。搞不定论文的我只能接着写一些没用的。预定的计划是结合Cats以及常见的猫论的内容。自己也是个半吊子，写出来总结一下。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/category.JPG">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2017/02/06/cats-0/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>预备知识-Cats和Cats | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2017/02/06/cats-0/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">预备知识-Cats和Cats
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-02-06 15:39:20" itemprop="dateCreated datePublished" datetime="2017-02-06T15:39:20+08:00">2017-02-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Cats/" itemprop="url" rel="index"><span itemprop="name">Cats</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>事实证明，非洲人在任何地方都非。搞不定论文的我只能接着写一些没用的。预定的计划是结合<a href="http://typelevel.org/cats/" target="_blank" rel="noopener">Cats</a>以及常见的猫论的内容。自己也是个半吊子，写出来总结一下。</p>
+<a id="more"></a>
+<h3 id="从cats开始">从Cats开始</h3>
+<p><code>Category</code>是一个简单抽象的概念。简单来说一个<code>Category</code><span class="math inline">\(C\)</span>包含两种元素：</p>
+<ul>
+<li>一堆<code>object</code> <span class="math inline">\(ob(C)\)</span></li>
+<li>一堆<code>morphisms</code> <span class="math inline">\(hom(C)\)</span>。所谓<code>morphism</code>，是从<code>source object</code>映射到<code>target object</code>的箭头(<code>arrow</code>)。当然，这里的<code>object</code>应该属于<span class="math inline">\(ob(C)\)</span>。我们可以写作<span class="math inline">\(f: a \rightarrow b\)</span>或者<span class="math inline">\(hom(a, b)\)</span>。此外，还要满足一个性质，对于<code>objects</code> a, b以及c，如果有<span class="math inline">\(f: a \rightarrow b\)</span>以及<span class="math inline">\(g: b \rightarrow c\)</span>，则必须要有一个<code>arrow</code><span class="math inline">\(a \rightarrow c\)</span>。可以写成<span class="math inline">\(g \circ f\)</span>称为<code>g after f</code>。</li>
+</ul>
+<p>此外，还应该满足两条公理。</p>
+<ul>
+<li>associativity。 对于<span class="math inline">\(f: a \rightarrow b\)</span>，<span class="math inline">\(g: b \rightarrow c\)</span>以及<span class="math inline">\(h: c \rightarrow d\)</span>。则应该有<span class="math inline">\(h\circ (g \circ f) = (h \circ g) \circ f\)</span>。</li>
+<li>identity。 对于每一个<code>object x</code>，都应该存在<code>morphism</code><span class="math inline">\(id_x: x -&gt; x\)</span>，被称为<span class="math inline">\(x\)</span>的<code>identity morphism</code>。由于这个性质，对于<span class="math inline">\(f\)</span>应该有<span class="math inline">\(f \circ id_A = f\)</span>。</li>
+</ul>
+<p>所以，对于<code>category</code>，我们可以想象成一堆圈，以及把他们连接起来的箭头。</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/category.JPG" alt="Category"><figcaption>Category</figcaption>
+</figure>
+<h4 id="types-and-cats">Types and Cats</h4>
+<p><code>Category</code>中一个重要的性质就是<code>morphisms</code>的组合。但并不是任意两个<code>morphisms</code>都可以组合，他需要前一个<code>morphism</code>的<code>target object</code>是后一个<code>morphism</code>的<code>source object</code>，而这一点和我们在编程中的函数很相似。</p>
+<h5 id="types-到-hask">Types 到 <strong>Hask</strong></h5>
+<p>一种对于<code>Type</code>最直观的解释就是一个<code>type</code>就是代表一堆<code>value</code>的集合(<code>set</code>)。<code>Set</code>中的元素可以是有限的，比如<code>Bool</code>就是{true, false}，也可以是无限的，比如<code>String</code>。</p>
+<p>我们先来看定义在<code>Set</code>上的范畴<strong>Set</strong>（之后我们都用这种粗体代表一个特定的范畴）。在<strong>Set</strong>中，<code>object</code>是一个个<code>set</code>，而<code>morphisms</code>就是<code>functions</code>。因此，如果我们认为<code>type</code>其实就是一种<code>set</code>的话，其实我们可以在类型上也定义一个范畴。但是对于<code>morphism</code>和函数，这里要求编程语言中的函数和数学上的函数一致，即没有副作用并且可以在有限步内结束。没有副作用好说，但是函数能不能在有限步之内结束这个停机问题却没法解决。为此我们引入一个新类型<span class="math inline">\(\bot\)</span>，它用来代表没有返回类型（比如抛异常）。值得一提的是，<span class="math inline">\(\bot\)</span>并不是常见的<code>void</code>，在<code>Scala</code>中更像是<code>Nothing</code>，<code>Haskell</code>中的<code>Empty</code>。最终，我们把包含<span class="math inline">\(\bot\)</span>的所有类型的范畴（其实并不是范畴，不过可以在某些程度上看成范畴，具体的可以看引用3）称为<strong>Hask</strong>。</p>
+<h4 id="monoid">Monoid</h4>
+<p>相比其他的<code>M words</code>，<code>Monoid</code>是一个相对好理解的例子。</p>
+<h5 id="集合中的monoid">集合中的Monoid</h5>
+<p>中文称<code>Monoid</code>为幺半群，即包含幺元的半群。半群说明他包含一个二元运算<span class="math inline">\(*\)</span>，使得所有的<span class="math inline">\(a, b \in S\)</span>，都有<span class="math inline">\(a * b \in S\)</span>，而且<span class="math inline">\(*\)</span>满足结合律。同时他还存在幺元，即存在<span class="math inline">\(e\)</span>满足<span class="math inline">\(e *a = a * e = a\)</span>。</p>
+<p>很明显自然数在加法上是一个<code>Monoid</code>。<code>String</code>以及连接操作满足<code>Monoid</code>。</p>
+<h5 id="cats中的monoid">Cats中的Monoid</h5>
+<p>Cats上的<code>Monoid</code>有一些不同，我们要定义的是<code>object</code>和<code>morphism</code>。其中<code>objects</code>肯定还是其中的元素，但是集合中的二元操作就要稍作变化，对于一个二元操作可以看成<span class="math inline">\(f: a \rightarrow b \rightarrow c\)</span>，为了让它可以映射<code>object</code>，对于每一个<span class="math inline">\(f\)</span>，我们都可以先给他一个参数<span class="math inline">\(a\)</span>让他变成<span class="math inline">\(f : b \rightarrow c\)</span>。写成代码就可以当成</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">op</span></span>(a: <span class="type">A</span>): <span class="type">C</span> = </span><br><span class="line">	(x: <span class="type">B</span>) =&gt; biop(a, x)</span><br></pre></td></tr></table></figure>
+<p>举个例子，对于正数和加法。我们就不能用<code>+</code>来当做 <code>morphism</code>，而要用<code>+1</code>, <code>+2</code>这种来当做<code>morphism</code>，并且还有<code>+0</code>来当做<code>identity</code>。</p>
+<p><code>Monoid</code>是个很常见的例子，我们之后还会再提到它。</p>
+<h4 id="objects-in-cats">Objects in Cats</h4>
+<p><code>Cats</code>中有一些特殊的<code>objects</code>。</p>
+<h5 id="isomorphism-for-objects">Isomorphism for objects</h5>
+<p>先介绍<code>isomorphism</code>。<code>isomorphism</code>是一个存在很广泛的概念，最直观的感觉就是两个东西如果是<code>isomorphism</code>的那么他们具有相似的形状。正式一点，对于一个范畴<strong>C</strong>中，存在<span class="math inline">\(f: A \rightarrow B\)</span>以及一个<span class="math inline">\(g: B \rightarrow A\)</span>满足</p>
+<p><span class="math display">\[g \circ f = id_A\ \ and\ \  f \circ g = id_B \]</span></p>
+<p>换而言之，<span class="math inline">\(g = f^{-1}\)</span>，我们就说<code>A is isomorphic to B</code>。</p>
+<h5 id="initial-object">Initial Object</h5>
+<p><code>Initial object</code><span class="math inline">\(I\)</span>指的是对于范畴<strong>C</strong>中的任意<code>object</code> <span class="math inline">\(A\)</span>，都有且只有一个<code>arrow</code>满足<span class="math inline">\(f: I \rightarrow A\)</span>。比如下面这个例子</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/HNI_0086.JPG" alt="initial"><figcaption>initial</figcaption>
+</figure>
+<p>对于我们之前<strong>Hask</strong>，我们可以拥有函数<code>absurd:: Empty -&gt; r</code>，把<code>Empty</code>映射到任意类型，所以这里<code>Empty</code>就是我们的<code>initial object</code>。</p>
+<h5 id="terminal-object">Terminal Object</h5>
+<p>类似的，<code>terminal object</code><span class="math inline">\(T\)</span>是指对于范畴<strong>C</strong>中的任意<code>object</code><span class="math inline">\(A\)</span>，有且只有一个<code>arrow</code>满足<span class="math inline">\(f: A \rightarrow T\)</span>。就像</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/HNI_0082.JPG" alt="Terminal"><figcaption>Terminal</figcaption>
+</figure>
+<p>同样在<strong>Hask</strong>，我们有函数<code>unit:: a -&gt; ()</code>，使得<code>()</code>称为<code>terminal object</code>。为什么其他类型不行呢？因为其他类型都至少有两个及其以上的值。这样对于一个函数</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">toBool</span> :: a -&gt; <span class="type">Bool</span></span><br><span class="line"><span class="title">toBool</span> _ = true</span><br><span class="line"><span class="title">toBool</span> _ = false</span><br></pre></td></tr></table></figure>
+<p>有两个不同的<code>function</code>，能将一个类型映射到<code>Bool</code>上。而只有一个元素的类型应该是同构与<code>()</code>的。对于<code>Initial object</code>也是这个道理。</p>
+<h4 id="duality">Duality</h4>
+<p>对偶也是个很直观的概念，你可以想象成把一个范畴中所有的箭头都反过来。对于<strong>C</strong>，我们称其对偶为<span class="math inline">\(\textbf{C}^{op}\)</span>。比如，如果范畴__C__里面有<span class="math inline">\(f: A \rightarrow B\)</span>以及<span class="math inline">\(g: B \rightarrow C\)</span>，然后组合得到<span class="math inline">\(h: A \rightarrow C\)</span>，那么<span class="math inline">\(\textbf{C}^{op}\)</span>里面就应该有<span class="math inline">\(f^{op}: B \rightarrow A\)</span>以及<span class="math inline">\(g^{op}: C \rightarrow B\)</span>，组合得到<span class="math inline">\(h^{op}: C \rightarrow A\)</span>。</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/HNI_0084.JPG" alt="Duality"><figcaption>Duality</figcaption>
+</figure>
+<h3 id="product-and-coproduct">Product and Coproduct</h3>
+<h4 id="products">Products</h4>
+<p><code>Set</code>的<code>product</code>我们都见过，称为<code>cartesian product</code>，即</p>
+<p><span class="math display">\[A \times B = \{(a, b)| a \in A, b \in B\}\]</span></p>
+<p>现在这里存在两个投影</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/HNI_0083.JPG" alt="product"><figcaption>product</figcaption>
+</figure>
+<p>类似的，我们定义<code>object</code>的<code>product</code>，<code>object a</code>和<code>object b</code>的<code>product</code>为<code>object c</code>，意味着<code>object c</code>以及其两个<code>projections</code>，对于任意的<code>object</code> <span class="math inline">\(c\prime\)</span>以及它的两个<code>projections</code>都有唯一的<code>morphism m</code>从<span class="math inline">\(c\prime\)</span>到<span class="math inline">\(c\)</span>可以<code>factorizes</code>(分解)<span class="math inline">\(c\prime\)</span>的两个<code>projections</code>。</p>
+<p>这一段话可能有点别扭，我们先看一个例子。</p>
+<p>对于<code>(Int, Bool)</code>这个<code>Int</code>和<code>Bool</code>两个<code>type</code>的<code>product</code>。我们可以构造</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fst</span></span>(t: (<span class="type">Int</span>, <span class="type">Boolean</span>)) = t._1</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">snd</span></span>(t: (<span class="type">Int</span>, <span class="type">Boolean</span>)) = t._2</span><br></pre></td></tr></table></figure>
+<p>显然我们依旧有其他的类型可以构造这种形式，比如<code>(Int, Double, Bool)</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">p</span></span>(t: (<span class="type">Int</span>, <span class="type">Double</span>, <span class="type">Boolean</span>)) = t._1</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">q</span></span>(t: (<span class="type">Int</span>, <span class="type">Double</span>, <span class="type">Boolean</span>)) = t._3</span><br></pre></td></tr></table></figure>
+<p>但是为什么后者不是<code>product</code>呢，原因也很简单他能被分解，我们可以构造</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">m</span></span>(t: (<span class="type">Int</span>, <span class="type">Double</span>, <span class="type">Boolean</span>)) = (t._1, t._3)</span><br></pre></td></tr></table></figure>
+<p>很显然，我们可以重新得到</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">m</span></span>(t: (<span class="type">Int</span>, <span class="type">Double</span>, <span class="type">Boolean</span>)) = (p(t), q(t))</span><br></pre></td></tr></table></figure>
+<h4 id="coproduct">Coproduct</h4>
+<p><code>Coproduct</code>就是和<code>Product</code>就是对偶的关系。我们定义<code>object a</code>和<code>object b</code>的<code>Coproduct</code>为<code>object c</code>，意味着<code>object c</code>以及其两个<code>projections</code>，对于任意的<code>object</code> <span class="math inline">\(c\prime\)</span>以及它的两个<code>projections</code>都有唯一的<code>morphism m</code>从<span class="math inline">\(c\)</span>到<span class="math inline">\(c\prime\)</span>可以<code>factorizes</code>(分解)<span class="math inline">\(c\prime\)</span>的两个<code>projections</code>。</p>
+<p>这一段话基本和<code>Product</code>一样，不同之后最后<span class="math inline">\(c\)</span>和<span class="math inline">\(c\prime\)</span>是反过来的。先看看这个图。我们常见的一个例子就是，<code>Either Int Boolean</code>与<code>Boolean</code>和<code>Int</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">p</span></span>(i: <span class="type">Int</span>) = <span class="type">Left</span>(i)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">q</span></span>(i: <span class="type">Boolean</span>) = <span class="type">Right</span>(i)</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="http://nkssai.qiniudn.com/HNI_0081.JPG" alt="coproduct"><figcaption>coproduct</figcaption>
+</figure>
+<h4 id="algebra-of-types">Algebra of Types</h4>
+<p>之前也写过关于<a href="http://ariwaranosai.xyz/2015/12/29/VSADT/">Algebra Types</a>，这里其实也很容易发现<code>Product</code>其实是<code>Product Types</code>，而<code>Coproduct</code>其实是<code>Sum Types</code>。</p>
+<p>我们继续换个角度。在<code>Haskell</code>中<code>Either</code>是这么定义的</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Either</span> a b = <span class="type">Left</span> a | <span class="type">Right</span> b</span><br></pre></td></tr></table></figure>
+<p>可以看做<code>a + b</code>的话，然后把<code>(a, b)</code>看做乘法，那么对于<code>List</code></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span> a = <span class="type">Nil</span> | <span class="type">Cons</span> a (<span class="type">List</span> a)</span><br></pre></td></tr></table></figure>
+<p>就变成</p>
+<p>$x = 1 + a + a * a + a * a * a + ... $</p>
+<p>它由无限长的加法和乘法构成。我们确实拥有了一个<code>Algebra</code>。</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/HNI_0088.JPG" alt="代数"><figcaption>代数</figcaption>
+</figure>
+<p>对应到一阶逻辑上。</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/HNI_0089.JPG" alt="逻辑"><figcaption>逻辑</figcaption>
+</figure>
+<p>再进一步就是<code>Curry-Howard isomorphism</code>，我们之后再谈。</p>
+<h3 id="引用">引用</h3>
+<ol type="1">
+<li><a href="https://en.wikipedia.org/wiki/Category_%28mathematics%29" target="_blank" rel="noopener">Category in wikipedia</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Monoid_%28category_theory%29" target="_blank" rel="noopener">Monoid in wikipedia</a></li>
+<li><a href="https://wiki.haskell.org/Hask" target="_blank" rel="noopener">Hask</a></li>
+<li><a href="https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/" target="_blank" rel="noopener">Category Theory for Programmers</a></li>
+<li><a href="https://www.mpi-sws.org/~dreyer/courses/catlogic/awodey.pdf" target="_blank" rel="noopener">Category Theory (Oxford Logic Guides)</a></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+            <a href="/tags/Cats/" rel="tag"># Cats</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/05/tagless/" rel="next" title="Final tagless And Object Algebras">
+                <i class="fa fa-chevron-left"></i> Final tagless And Object Algebras
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/15/opsmacros/" rel="prev" title="Spire’s Ops macros? Why and How!">
+                Spire’s Ops macros? Why and How! <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#从cats开始"><span class="nav-number">1.</span> <span class="nav-text">从Cats开始</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#types-and-cats"><span class="nav-number">1.1.</span> <span class="nav-text">Types and Cats</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#types-到-hask"><span class="nav-number">1.1.1.</span> <span class="nav-text">Types 到 Hask</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#monoid"><span class="nav-number">1.2.</span> <span class="nav-text">Monoid</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#集合中的monoid"><span class="nav-number">1.2.1.</span> <span class="nav-text">集合中的Monoid</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#cats中的monoid"><span class="nav-number">1.2.2.</span> <span class="nav-text">Cats中的Monoid</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#objects-in-cats"><span class="nav-number">1.3.</span> <span class="nav-text">Objects in Cats</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#isomorphism-for-objects"><span class="nav-number">1.3.1.</span> <span class="nav-text">Isomorphism for objects</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#initial-object"><span class="nav-number">1.3.2.</span> <span class="nav-text">Initial Object</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#terminal-object"><span class="nav-number">1.3.3.</span> <span class="nav-text">Terminal Object</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#duality"><span class="nav-number">1.4.</span> <span class="nav-text">Duality</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#product-and-coproduct"><span class="nav-number">2.</span> <span class="nav-text">Product and Coproduct</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#products"><span class="nav-number">2.1.</span> <span class="nav-text">Products</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#coproduct"><span class="nav-number">2.2.</span> <span class="nav-text">Coproduct</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#algebra-of-types"><span class="nav-number">2.3.</span> <span class="nav-text">Algebra of Types</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用"><span class="nav-number">3.</span> <span class="nav-text">引用</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="GBDT是一个很常用的算法，在很多地方的效果都很好，而且它和AdaBoost还有密切的关系。">
+<meta name="keywords" content="DM,Bootstrap,AdaBoost">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Boosted Descision Tree">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/10/22/GBDT/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="GBDT是一个很常用的算法，在很多地方的效果都很好，而且它和AdaBoost还有密切的关系。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Boosted Descision Tree">
+<meta name="twitter:description" content="GBDT是一个很常用的算法，在很多地方的效果都很好，而且它和AdaBoost还有密切的关系。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/10/22/GBDT/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Boosted Descision Tree | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/10/22/GBDT/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Boosted Descision Tree
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-10-22 20:32:30" itemprop="dateCreated datePublished" datetime="2015-10-22T20:32:30+08:00">2015-10-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>GBDT是一个很常用的算法，在很多地方的效果都很好，而且它和AdaBoost还有密切的关系。 <a id="more"></a></p>
+<h3 id="from-random-forest-to-adaboost-d-tree">From Random Forest to AdaBoost-D Tree</h3>
+<p>Random Forest本身就有不少好用的性质，它利用boostrapping的方式，获取更多的样本交给决策树来处理，然后加入一些随机化的因子（比如删减一些特征）等方式，来减少模型过拟合的可能，最后用等权投票的方式来获取最终的结果。</p>
+<p>其实很直接的一个想法就是把boostrapping改成adaboost，然后交给决策树来处理，但是还有一些小问题要处理，因为adaboost得到的数据是带权的，而一般来说决策树是没有权值这种说法的。所以，只能在数据处理上做文章，即按照权重将数据进行抽样，这样得到数据应该也是符合权重的比例的。</p>
+<p>不过，由于最终需要给学出来的树计算投票权重，<span class="math inline">\(\alpha_t = ln \sqrt{\frac{1 - \epsilon_t}{\epsilon_t}}\)</span>，如果一个树在fully grown时，他的<span class="math inline">\(\epsilon_t\)</span>会变成0，这样的话权值就变成<span class="math inline">\(\infty\)</span>，这显然是不合理的，所以我们要限制单棵树的高度，防止单棵树的过拟合。</p>
+<h3 id="optimization-view-of-adaboost">Optimization View of AdaBoost</h3>
+<p>回到AdaBoost中核心的调解样本权值的部分， 对于每一次的迭代，当问题是二分类输出的时候可以简化成</p>
+<p><span class="math display">\[u_{n}^{t + 1} = u_{n}^{t} * \exp(-y_n\alpha_tg_t(x_n))\]</span></p>
+<p>其实最后可以看成</p>
+<p><span class="math display">\[\begin{split} 
+u_{n}^{t+1} &amp; = u_n^{1}* \prod_{t = 1}^Texp(-y_n\alpha_tg_t(x_n)) \\
+    &amp;= 1/ N * exp(-y_n\sum_{t = 1}^T \alpha_tg_t(x_n))
+\end{split}\]</span></p>
+<p>但是其实，指数上面那一项<span class="math inline">\(\sum_{t = 1}^T \alpha_tg_t(x_n)\)</span>本来就是最终投票时得到的分数的部分。这表明了，其实最终样本的权值是和指数项有简单的正比的关系。</p>
+<p>换个角度看这个问题的话，对于<code>linear blending</code>可以看成是通过学习每一个<span class="math inline">\(g_t\)</span>的过程看做进行特征转换，然后其实<span class="math inline">\(\alpha_t\)</span>就是特征的权重，那<span class="math inline">\(\sum_{t = 1}^T \alpha_tg_t(x_n))\)</span>这一项就可以看成用<span class="math inline">\(w^T\phi(x_n)\)</span>，这其实就和SVM中用来求margin<span class="math inline">\(\frac{y_n(w^T\phi(x_n) + b)}{||w||}\)</span>很像，只是少了<span class="math inline">\(||w||\)</span>，所以我们可以把这个看成是对margin的一种描述。</p>
+<p>所以，我们希望间隔大其实就是等价于<span class="math inline">\(exp(-y_n\sum_{t = 1}^T \alpha_tg_t(x_n))\)</span>尽可能的小，也就等价于<span class="math inline">\(u_n^{N+1}\)</span>尽可能的小，也就是AdaBoost要减小<span class="math inline">\(\sum_{n=1}^{N}u_n^{t}\)</span>。</p>
+<h3 id="gradient-descent-on-adaboost-error-function">Gradient Descent on AdaBoost Error Function</h3>
+<p>之前，已经得到了AdaBoost的Error Function，即</p>
+<p><span class="math display">\[E_{ADA} = 1/ N * \sum_{n - 1}^Nexp(-y_n\sum_{t = 1}^T \alpha_tg_t(x_n))\]</span></p>
+<p>然后，每一次迭代的时候，我们想要优化这个函数，但是方式不太一样，是找一个好的<span class="math inline">\(g_t\)</span>来进行优化，即加入一个参数<span class="math inline">\(h(x)\)</span>代表待优化的函数，<span class="math inline">\(\eta\)</span>为其系数。</p>
+<p><span class="math display">\[\begin{split}
+E_{ADA} &amp;= \frac{1}{N} \sum_{n - 1}^N exp (-y_n(\sum_{\tau = 1}^{t - 1}\alpha_\tau g_\tau(x_n) + \eta h(x_n))) \\
+&amp; = \sum_{n = 1}^N u_n^t exp(-y_n\eta h(x_n)) \\
+&amp; \sim \sum_{n = 1}^N u_n^t (1 - y_n \eta h(x_n)) \\
+&amp; = \sum_{n = 1}^t u_n^t  - \eta \sum_{n - 1}^N u_n^t y_n h(x_n)
+\end{split}\]</span></p>
+<p>对于第t+1次迭代，先将第t次迭代所得的那一项取出来，然后对这个式子进行泰勒展开，最后得到最后一项，即我们想要优化的部分是<span class="math inline">\(\sum_{n = 1}^N u_n^t(-y_nh(x_n))\)</span>。</p>
+<p>继续向下看，对于这一项，我们考虑二元分类的情况下简单的变形即分类标签为<span class="math inline">\(\{+1, -1\}\)</span>，</p>
+<p><span class="math display">\[\begin{split}
+\sum_{n = 1}^N u_n^t(-y_nh(x_n)) 
+&amp; = -\sum_{n = 1}^N u_n^t + 2E_{in}^{u^t}(h)
+\end{split}\]</span></p>
+<p>所以，我们想要优化的话，就靠优化每一个的<span class="math inline">\(E_{in}\)</span>，而这正是在AdaBoost里面使用的分类器做的事情。</p>
+<p>接下来，再进一步，方向<span class="math inline">\(h(x)\)</span>有了，那对应的<span class="math inline">\(\eta\)</span>不是也能继续优化嘛，找一个最合适的<span class="math inline">\(\eta\)</span>可以提高目标函数收敛的速度，回到刚才那个式子 其实式子$_{n = 1}^N u_n^t(-y_nh(x_n)) $完全可以看成 <span class="math display">\[(\sum_{n = 1}^N u_n^t)(\sum_{correct}u_n^t exp(-\eta) + \sum_{incorrect}u_n^t exp(\eta))\]</span></p>
+<p>然后对这个式子求偏导，解出来就是<span class="math inline">\(\eta_t = \ln \sqrt{\frac{1 - \epsilon_t}{\epsilon}}\)</span>，这个就是<span class="math inline">\(\alpha_t\)</span>。</p>
+<p>其实到这里，AdaBoost 优化的方法就展示出来了，它每一步其实都是在找一个函数的方向，然后向那个方向走<span class="math inline">\(\alpha\)</span>大小的距离，这个就是最后的结果。</p>
+<h3 id="gradient-boosting-decision-tree">Gradient Boosting Decision Tree</h3>
+<p>如果我们把之前的AdaBoost的方法扩展一下，不做二元分类的假设，</p>
+<p><span class="math display">\[\underset{\eta}{min} \underset{h}{min}\frac{1}{N}\sum_{n = 1}^N err \big (\sum_{\tau}^{t- 1}\alpha_\tau g_\tau(x_n) + \eta h(x_n), y_n\big) \]</span></p>
+<p>不对error函数做假设，每一步计算梯度的<span class="math inline">\(h(x)\)</span>以及距离的<span class="math inline">\(\eta\)</span>。</p>
+<h4 id="gradient-boosting-on-regression">Gradient Boosting on Regression</h4>
+<p>下面看一个把这个思路用在Regression的例子。 显然，Regression的时候，使用的error function一般是是<span class="math inline">\(err(s, y) = (s - y)^2\)</span></p>
+<p>在极小化h的时候， <span class="math display">\[\underset{h}{min} \ \ constants + \frac{\eta}{N} \sum_{n = 1}^{N} 2h(x_n)(s_n - y_n)\]</span></p>
+<p>前面是每次迭代的开始位置，我们不关心，因为理论上，只要我们每一步走的没错，不论在哪里开始都能最终走到一个好的解，之后那一项就是<span class="math inline">\(h(x)\)</span>与error function对s的偏导。如果我们想要减少这个目标函数的话，只要让<span class="math inline">\(h(x_n)\)</span>和<span class="math inline">\((s_n - y_n)\)</span>，由于我们只想要方向而不关心<span class="math inline">\(h(x_n)\)</span>的大小，所以，我们加<span class="math inline">\((h(x))^2\)</span>作为惩罚项到目标函数里，这样完全满足我们的假设。</p>
+<p>则上式变成</p>
+<p><span class="math display">\[\underset{h}{min} \ \ \ constants + \frac{\eta}{N} \sum_{n = 1}^N (2h(x_n)(s_n - y_n)+ (h(x_n))^2)\]</span></p>
+<p>整理一下就变成了</p>
+<p><span class="math display">\[constants + \frac{n}{N} \sum_{n = 1}^N(constants + (h(x_n) - (y_n - s_n))^2)\]</span></p>
+<p>也就是我们希望<span class="math inline">\(h(x_n)\)</span>和残差尽可能的接近，那只要让<span class="math inline">\(h(x_n)\)</span>称为一个<span class="math inline">\(x_n\)</span>到<span class="math inline">\((y_n - s_n)\)</span>的一个线性映射就可以了。也就是再解一个平方误差的回归问题就行了。</p>
+<p>找到了好的<span class="math inline">\(h(x)\)</span>之后，下一步就是搞定<span class="math inline">\(\eta\)</span>。</p>
+<p><span class="math display">\[\begin{split}
+\underset{\eta}{min} &amp; \frac{1}{N}(s_n + \eta g_t(x_n) - y_n)^2  \\
+ &amp;= \frac{1}{N} \sum_{n = 1}^{N}((y_n - s_n) - \eta g(x_n))^2
+\end{split}\]</span></p>
+<p>最后这一项又称为了一个一元的线性回归项。</p>
+<h3 id="gbdt">GBDT</h3>
+<p>最终终于到了GBDT这个重点，与之前的方法相似。</p>
+<p>初始化 <span class="math inline">\(s_1 = s_2 = s_3 = ... = s_N = 0\)</span> 对于第t次循环</p>
+<ol type="1">
+<li><p>先求解一种算法求解<span class="math inline">\(g_t\)</span>，使其满足<span class="math inline">\(x_n\)</span>到<span class="math inline">\(y_n - s_n\)</span>的回归。这里就可以使用决策树。 由于一开始<span class="math inline">\(s_n\)</span>都是0，所以一起开始其实就是求解一个原始的regression。</p></li>
+<li><p>做一个单变量的线性回归来拟合<span class="math inline">\((\{(g_t(x_n),y_n - s_n )\})\)</span>，求解<span class="math inline">\(\alpha\)</span></p></li>
+<li><p>更新<span class="math inline">\(G(x) = \sum_{t = 1}^T \alpha_tg_t(x)\)</span></p></li>
+</ol>
+<p>最终得到 <span class="math inline">\(G(x) = \sum_{t = 1}^T \alpha_t g_t(x)\)</span></p>
+<h3 id="反思">反思</h3>
+<p>GBDT其实是GB这种方法在决策树上的应用，对于RF这种基于Boosting的算法来说，依靠每个决策树学习算法（一般来说分类器越强越好）来减少模型的bias，然后依靠Boosting以及其他随机因子来减小模型的variance。而像AdaBoost这种算法，一方面依靠每个分类器学习模型在泛函空间上的梯度方向，然后靠Adaptive的方法学习在这些方向上的距离，由于每个分类器只提供方向（而且应该尽可能的只提供方向），所以即使是弱分类器效果也会不错，而且反而还会避免overfitting。（这一段都是我瞎编的）</p>
+<p>不过，我倒是我发现，我对一些基础理论的学习还是不够，接下来还是看一些相关的东西吧。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/DM/" rel="tag"># DM</a>
+          
+            <a href="/tags/Bootstrap/" rel="tag"># Bootstrap</a>
+          
+            <a href="/tags/AdaBoost/" rel="tag"># AdaBoost</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/08/19/Before/" rel="next" title="写在研一暑假">
+                <i class="fa fa-chevron-left"></i> 写在研一暑假
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/03/laplace/" rel="prev" title="Laplace Approximation">
+                Laplace Approximation <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#from-random-forest-to-adaboost-d-tree"><span class="nav-number">1.</span> <span class="nav-text">From Random Forest to AdaBoost-D Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#optimization-view-of-adaboost"><span class="nav-number">2.</span> <span class="nav-text">Optimization View of AdaBoost</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gradient-descent-on-adaboost-error-function"><span class="nav-number">3.</span> <span class="nav-text">Gradient Descent on AdaBoost Error Function</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gradient-boosting-decision-tree"><span class="nav-number">4.</span> <span class="nav-text">Gradient Boosting Decision Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#gradient-boosting-on-regression"><span class="nav-number">4.1.</span> <span class="nav-text">Gradient Boosting on Regression</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gbdt"><span class="nav-number">5.</span> <span class="nav-text">GBDT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反思"><span class="nav-number">6.</span> <span class="nav-text">反思</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

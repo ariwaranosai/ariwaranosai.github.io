@@ -1,0 +1,3 @@
+User-agent: *
+# Enter the path to your sitemap here
+Sitemap: http://ariwaranosai.xyz/sitemap.xml

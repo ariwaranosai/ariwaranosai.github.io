@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="day 4里面粗看了typeclass law以及一些Monoid。今天就到了Monads。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="learning Scalaz-day5">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/03/17/scalazday5/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="day 4里面粗看了typeclass law以及一些Monoid。今天就到了Monads。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="learning Scalaz-day5">
+<meta name="twitter:description" content="day 4里面粗看了typeclass law以及一些Monoid。今天就到了Monads。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/03/17/scalazday5/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>learning Scalaz-day5 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/03/17/scalazday5/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">learning Scalaz-day5
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-03-17 11:31:20" itemprop="dateCreated datePublished" datetime="2016-03-17T11:31:20+08:00">2016-03-17</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Scalaz翻译/" itemprop="url" rel="index"><span itemprop="name">Scalaz翻译</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><code>day 4</code>里面粗看了<code>typeclass law</code>以及一些<code>Monoid</code>。今天就到了<code>Monads</code>。</p>
+<a id="more"></a>
+<h3 id="a-fistful-of-monads">A Fistful of Monads</h3>
+<blockquote>
+<p>Monads are a natural extension applicative functors, and they provide a solution to the following problem: If we have a value with context, <code>m a</code>, how do we apply it to a function that takes a normal <code>a</code> and returns a value with a context.</p>
+</blockquote>
+<p>在<code>Scalaz</code>提供了<code>Monad</code>。（Oh， the M word， Scala）。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Monad</span>[<span class="type">F</span>[_]] <span class="keyword">extends</span> <span class="title">Applicative</span>[<span class="type">F</span>] <span class="keyword">with</span> <span class="title">Bind</span>[<span class="type">F</span>] </span>&#123; self =&gt;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它继承了<code>Applicative</code>和<code>Bind</code>。我们先看看<code>Bind</code>。</p>
+<h4 id="bind">Bind</h4>
+<p><code>Bind</code>的代码是这样的。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Bind</span>[<span class="type">F</span>[_]] <span class="keyword">extends</span> <span class="title">Apply</span>[<span class="type">F</span>] </span>&#123; self =&gt;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/** Equivalent to `join(map(fa)(f))`. */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">bind</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">F</span>[<span class="type">B</span>]): <span class="type">F</span>[<span class="type">B</span>]</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以及注入的操作</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">BindOps</span>[<span class="type">F</span>[_],<span class="title">A</span>] <span class="title">private</span>[syntax](<span class="params">val self: <span class="type">F</span>[<span class="type">A</span>]</span>)</span></span><br><span class="line"><span class="class">    (<span class="params">implicit val <span class="type">F</span>: <span class="type">Bind</span>[<span class="type">F</span>]</span>) <span class="keyword">extends</span> <span class="title">Ops</span>[<span class="type">F</span>[<span class="type">A</span>]] </span>&#123;</span><br><span class="line">  <span class="comment">////</span></span><br><span class="line">  <span class="keyword">import</span> <span class="type">Liskov</span>.&lt;~&lt;, <span class="type">Leibniz</span>.===</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">flatMap</span></span>[<span class="type">B</span>](f: <span class="type">A</span> =&gt; <span class="type">F</span>[<span class="type">B</span>]) = <span class="type">F</span>.bind(self)(f)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">&gt;&gt;=</span></span>[<span class="type">B</span>](f: <span class="type">A</span> =&gt; <span class="type">F</span>[<span class="type">B</span>]) = <span class="type">F</span>.bind(self)(f)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">∗</span></span>[<span class="type">B</span>](f: <span class="type">A</span> =&gt; <span class="type">F</span>[<span class="type">B</span>]) = <span class="type">F</span>.bind(self)(f)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">join</span></span>[<span class="type">B</span>](<span class="keyword">implicit</span> ev: <span class="type">A</span> &lt;~&lt; <span class="type">F</span>[<span class="type">B</span>]): <span class="type">F</span>[<span class="type">B</span>] = <span class="type">F</span>.bind(self)(ev(_))</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">μ</span></span>[<span class="type">B</span>](<span class="keyword">implicit</span> ev: <span class="type">A</span> &lt;~&lt; <span class="type">F</span>[<span class="type">B</span>]): <span class="type">F</span>[<span class="type">B</span>] = <span class="type">F</span>.bind(self)(ev(_))</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">&gt;&gt;</span></span>[<span class="type">B</span>](b: =&gt; <span class="type">F</span>[<span class="type">B</span>]): <span class="type">F</span>[<span class="type">B</span>] = <span class="type">F</span>.bind(self)(_ =&gt; b)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">&gt;&gt;!</span></span>[<span class="type">B</span>](f: <span class="type">A</span> =&gt; <span class="type">F</span>[<span class="type">B</span>]): <span class="type">F</span>[<span class="type">A</span>] = <span class="type">F</span>.bind(self)(a =&gt; <span class="type">F</span>.map(f(a))(_ =&gt; a))</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">ifM</span></span>[<span class="type">B</span>](ifTrue: =&gt; <span class="type">F</span>[<span class="type">B</span>], ifFalse: =&gt; <span class="type">F</span>[<span class="type">B</span>])(<span class="keyword">implicit</span> ev: <span class="type">A</span> === <span class="type">Boolean</span>): <span class="type">F</span>[<span class="type">B</span>] = &#123;</span><br><span class="line">    <span class="keyword">val</span> value: <span class="type">F</span>[<span class="type">Boolean</span>] = ev.subst(self)</span><br><span class="line">    <span class="type">F</span>.ifM(value, ifTrue, ifFalse)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">mproduct</span></span>[<span class="type">B</span>](f: <span class="type">A</span> =&gt; <span class="type">F</span>[<span class="type">B</span>]) = <span class="type">F</span>.mproduct(self)(f)</span><br><span class="line"></span><br><span class="line">  <span class="comment">////</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它引入了<code>flatMap</code>以及<code>&gt;&gt;=</code>等操作。可以看出来其实<code>flatMap</code>就是<code>bind</code>操作。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">3.</span>some flatMap &#123; x =&gt; (x + <span class="number">1</span>).some&#125; <span class="comment">// Some(4)</span></span><br><span class="line">(none: <span class="type">Option</span>[<span class="type">Int</span>]) &gt;&gt;= &#123; x =&gt; (x + <span class="number">1</span>).some <span class="comment">// None</span></span><br></pre></td></tr></table></figure>
+<h4 id="monad">Monad</h4>
+<p>由于<code>Scalaz</code>里面的<code>Monad</code>是直接继承自<code>Applicative</code>，所以这里不区分<code>return</code>以及<code>pure</code>，可以直接使用<code>point</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">9.</span>some &gt;&gt;= &#123; x =&gt; <span class="type">Monad</span>[<span class="type">Option</span>].point(x * <span class="number">10</span>)&#125; <span class="comment">// Some(90)</span></span><br><span class="line">(none: <span class="type">Option</span>[<span class="type">Int</span>]) &gt;&gt;= &#123; x =&gt; <span class="type">Monad</span>[<span class="type">Option</span>].point(x * <span class="number">10</span>)&#125; <span class="comment">// None</span></span><br></pre></td></tr></table></figure>
+<h4 id="walk-the-line">Walk the line</h4>
+<p>看一个例子</p>
+<blockquote>
+<p>Let’s say that [Pierre] keeps his balance if the number of birds on the left side of the pole and on the right side of the pole is within three. So if there’s one bird on the right side and four birds on the left side, he’s okay. But if a fifth bird lands on the left side, then he loses his balance and takes a dive.</p>
+</blockquote>
+<p>我们通过<code>Option</code>包裹<code>Pole</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">Birds</span> </span>= <span class="type">Int</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Pole</span>(<span class="params">left: <span class="type">Birds</span>, right: <span class="type">Birds</span></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">landLeft</span></span>(n: <span class="type">Birds</span>): <span class="type">Option</span>[<span class="type">Pole</span>] =</span><br><span class="line">        <span class="keyword">if</span> (math.abs((left + n) - right) &lt; <span class="number">4</span>)</span><br><span class="line">            copy(left = left + n).some</span><br><span class="line">        <span class="keyword">else</span> none</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">landRight</span></span>(n: <span class="type">Birds</span>): <span class="type">Option</span>[<span class="type">Pole</span>] =</span><br><span class="line">        <span class="keyword">if</span> (math.abs(left - (right + n)) &lt; <span class="number">4</span>)</span><br><span class="line">            copy(right = right + n).some</span><br><span class="line">        <span class="keyword">else</span> none</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>想用它的时候，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>)) &gt;&gt;= </span><br><span class="line">	&#123; _.landLeft(<span class="number">2</span>) &#125; &gt;&gt;= &#123; _.landLeft(<span class="number">2</span>) </span><br><span class="line"><span class="comment">// res0: Option[Pole] = Some(Pole(1,0))</span></span><br><span class="line"></span><br><span class="line"><span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>)) &gt;&gt;= </span><br><span class="line">    &#123;_.landLeft(<span class="number">1</span>)&#125; &gt;&gt;= </span><br><span class="line">    &#123;_.landRight(<span class="number">4</span>)&#125; &gt;&gt;= </span><br><span class="line">    &#123;_.landLeft(<span class="number">-1</span>)&#125; &gt;&gt;= </span><br><span class="line">    &#123;_.landRight(<span class="number">-2</span>)&#125;</span><br><span class="line"><span class="comment">// res1: Option[Pole] = None</span></span><br></pre></td></tr></table></figure>
+<h5 id="banana-on-wire">Banana on wire</h5>
+<blockquote>
+<p>We may also devise a function that ignores the current number of birds on the balancing pole and just makes Pierre slip and fall. We can call it banana.</p>
+</blockquote>
+<p>我们可能会需要一个总是通往失败的函数，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Pole</span>(<span class="params">left: <span class="type">Birds</span>, right: <span class="type">Birds</span></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">landLeft</span></span>(n: <span class="type">Birds</span>): <span class="type">Option</span>[<span class="type">Pole</span>] =</span><br><span class="line">        <span class="keyword">if</span> (math.abs((left + n) - right) &lt; <span class="number">4</span>)</span><br><span class="line">            copy(left = left + n).some</span><br><span class="line">        <span class="keyword">else</span> none</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">landRight</span></span>(n: <span class="type">Birds</span>): <span class="type">Option</span>[<span class="type">Pole</span>] =</span><br><span class="line">        <span class="keyword">if</span> (math.abs(left - (right + n)) &lt; <span class="number">4</span>)</span><br><span class="line">            copy(right = right + n).some</span><br><span class="line">        <span class="keyword">else</span> none</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们还有函数<code>&gt;&gt;</code>，忽视前一个正常的结果，直接返回下一个（如果你怀疑这个有什么用，想想之前的parser）。</p>
+<p>如果我们想直接使用一下的话</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>)) &gt;&gt;= </span><br><span class="line">	&#123;_.landLeft(<span class="number">1</span>)&#125; &gt;&gt; </span><br><span class="line">	(none: <span class="type">Option</span>[<span class="type">Pole</span>]) &gt;&gt;= </span><br><span class="line">	&#123;_.landRight(<span class="number">1</span>)&#125;</span><br></pre></td></tr></table></figure>
+<p>就会报错。类型推断并没有正常的发挥作用。这是由于操作符优先级的问题，在<code>Scala</code>中，以<code>=</code>结尾的运算符，除已经用于比较大小的运算符如<code>&gt;=</code>外，优先级等价于赋值号，比其他任何符号的优先级都低，所以这种时候要加括号，或者直接当成函数调用。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>)).&gt;&gt;=(</span><br><span class="line">    &#123;_.landLeft(<span class="number">1</span>)&#125;).&gt;&gt;(none: <span class="type">Option</span>[<span class="type">Pole</span>]).&gt;&gt;=(&#123;_.landRight(<span class="number">1</span>)&#125;)</span><br></pre></td></tr></table></figure>
+<h5 id="for-syntax">for syntax</h5>
+<p>在<code>Haskell</code>中，<code>Monad</code>有一个明显的好处，就是可以直接使用<code>do</code>这种语法糖。而在<code>Scala</code>中，使用的是<code>for</code>语句。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 当由于有太多的lambda嵌套，显得很乱的时候</span></span><br><span class="line"><span class="number">3.</span>some &gt;&gt;=</span><br><span class="line">    &#123; x =&gt; (none: <span class="type">Option</span>[<span class="type">String</span>]) &gt;&gt;=</span><br><span class="line">        &#123; y =&gt; (x.shows + y).some &#125; &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 改写为for</span></span><br><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">    x &lt;- <span class="number">3.</span>some</span><br><span class="line">    y &lt;- none: <span class="type">Option</span>[<span class="type">String</span>]</span><br><span class="line">&#125; <span class="keyword">yield</span> x.shows + y</span><br></pre></td></tr></table></figure>
+<p>而且，我们避免了显式的在结果中构造<code>Option</code>的过程。</p>
+<h5 id="pierre-returns">Pierre returns</h5>
+<p>我们将之前的内容改写成<code>for</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">    start &lt;- <span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>))</span><br><span class="line">    first &lt;- start.landLeft(<span class="number">1</span>)</span><br><span class="line">    second &lt;- first.landRight(<span class="number">2</span>)</span><br><span class="line">    third &lt;- second.landLeft(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">yield</span> third</span><br></pre></td></tr></table></figure>
+<p>如果我们丢一个<code>banana</code>，让他总是失败</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">    start &lt;- <span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>))</span><br><span class="line">    first &lt;- start.landLeft(<span class="number">1</span>)</span><br><span class="line">    _ &lt;- (none: <span class="type">Option</span>[<span class="type">Pole</span>])</span><br><span class="line">    second &lt;- first.landRight(<span class="number">2</span>)</span><br><span class="line">    third &lt;- second.landLeft(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">yield</span> third</span><br></pre></td></tr></table></figure>
+<p>一开始可能会感觉困惑，为什么从<code>none</code>取出来的值直接用<code>_</code>，也就是我们不关心它的值，还要把它写出来，其实把这段代码用<code>flatMap</code>展开，就会比较明显。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>)).flatMap(start =&gt; &#123;</span><br><span class="line">    start.landLeft(<span class="number">1</span>).flatMap(first =&gt; &#123;</span><br><span class="line">        first.banana.flatMap(second =&gt; &#123;</span><br><span class="line">            first.landRight(<span class="number">2</span>)</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>这里使用了<code>banana</code>，其实我们要的是<code>none</code>的作用，可以说<code>Monad</code>包裹了副作用。</p>
+<h5 id="pattern-matching-and-failure">Pattern matching and failure</h5>
+<p>同样，我们在<code>for</code>表达式里面也可以使用<code>Pattern matching</code>，不过，在匹配失败的时候，会直接调用<code>Monad</code>的<code>fail</code>函数，从而产生一个<code>failure in the context of the current monad</code>，避免程序的崩溃。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">    (x :: xs) &lt;- <span class="string">""</span>.toList.some</span><br><span class="line">&#125; <span class="keyword">yield</span> x</span><br><span class="line"></span><br><span class="line"><span class="comment">// res0: Option[Char] = None</span></span><br></pre></td></tr></table></figure>
+<h3 id="list-monad">List Monad</h3>
+<blockquote>
+<p>On the other hand, a value like [3,8,9] contains several results, so we can view it as one value that is actually many values at the same time. Using lists as applicative functors showcases this non-determinism nicely.</p>
+</blockquote>
+<p><code>List</code>可以看做用来描述<code>non-determinism</code>的<code>Monad</code>。</p>
+<p>比如函数会返回不定个数的结果。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span>(<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>) &gt;&gt;= &#123;x =&gt; <span class="type">List</span>(x, -x)&#125;</span><br><span class="line"><span class="comment">// res0: List[Int] = List(3, -3, 4, -4, 5, -5)</span></span><br></pre></td></tr></table></figure>
+<p>所以，可以用<code>List</code>表示可能返回多个解的值。而在<code>scalaz</code>里面使用也很简单。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">    n &lt;- <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line">    ch &lt;- <span class="type">List</span>('a', 'b')</span><br><span class="line">&#125; <span class="keyword">yield</span> (n, ch)</span><br><span class="line"><span class="comment">// res1: List[(Int, Char)] = List((1,a), (1,b), (2,a), (2,b))</span></span><br></pre></td></tr></table></figure>
+<h3 id="monadplus-and-the-guard-function">MonadPlus and the guard function</h3>
+<p><code>scala</code>的<code>for</code>可以添加<code>filtering</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">    x &lt;- (<span class="number">1</span> |-&gt; <span class="number">50</span>) <span class="keyword">if</span> x.shows contains <span class="string">"7"</span></span><br><span class="line">&#125; <span class="keyword">yield</span> x</span><br><span class="line"><span class="comment">// res0: List[Int] = List(7, 17, 27, 37, 47)</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>The MonadPlus type class is for monads that can also act as monoids.</p>
+</blockquote>
+<p><code>Scalaz</code>中的<code>MonadPlus</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">MonadPlus</span>[<span class="type">F</span>[_]] <span class="keyword">extends</span> <span class="title">Monad</span>[<span class="type">F</span>] <span class="keyword">with</span> <span class="title">ApplicativePlus</span>[<span class="type">F</span>] </span>&#123; self =&gt;</span><br><span class="line">  <span class="comment">////</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Remove `f`-failing `A`s in `fa`, by which we mean: in the</span></span><br><span class="line"><span class="comment">    * expression `filter(filter(fa)(f))(g)`, `g` will never be invoked</span></span><br><span class="line"><span class="comment">    * for any `a` where `f(a)` returns false.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">filter</span></span>[<span class="type">A</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">Boolean</span>) =</span><br><span class="line">    bind(fa)(a =&gt; <span class="keyword">if</span> (f(a)) point(a) <span class="keyword">else</span> empty[<span class="type">A</span>])</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="plus-plusempty-and-applicativeplus">Plus, PlusEmpty, and ApplicativePlus</h4>
+<p>转而去看<code>ApplicativePlus</code>,</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">ApplicativePlus</span>[<span class="type">F</span>[_]] <span class="keyword">extends</span> <span class="title">Applicative</span>[<span class="type">F</span>] <span class="keyword">with</span> <span class="title">PlusEmpty</span>[<span class="type">F</span>] </span>&#123; self =&gt;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>他继承自<code>PlusEmpty</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">PlusEmpty</span>[<span class="type">F</span>[_]] <span class="keyword">extends</span> <span class="title">Plus</span>[<span class="type">F</span>] </span>&#123; self =&gt;</span><br><span class="line">  <span class="comment">////</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">empty</span></span>[<span class="type">A</span>]: <span class="type">F</span>[<span class="type">A</span>]</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再去看<code>Plus</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Plus</span>[<span class="type">F</span>[_]]  </span>&#123; self =&gt;</span><br><span class="line">  <span class="comment">////</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">plus</span></span>[<span class="type">A</span>](a: <span class="type">F</span>[<span class="type">A</span>], b: =&gt; <span class="type">F</span>[<span class="type">A</span>]): <span class="type">F</span>[<span class="type">A</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>与<code>Semigroup[A]</code>以及<code>Monoid[A]</code>相似，<code>Plus[F[_]]</code>以及<code>PlusEmpty[F[_]]</code>需要去实现<code>plus</code>以及<code>empty</code>，但是是在<code>F[_]</code>这个类型构造器的层次上。</p>
+<p><code>Plus</code>引入了<code>&lt;+&gt;</code>去连接两个<code>containers</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>) &lt;+&gt; <span class="type">List</span>(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br><span class="line"><span class="comment">// res0: List[Int] = List(1, 2, 3, 4, 5, 6)</span></span><br></pre></td></tr></table></figure>
+<p>然后通过<code>MonadPlus</code>引入了<code>filter</code>操作</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="number">1</span> |-&gt; <span class="number">50</span>) filter &#123; x =&gt; x.shows contains '<span class="number">7</span>' &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="a-knights-quest">A knight’s quest</h3>
+<p>再看个例子，</p>
+<blockquote>
+<p>Here’s a problem that really lends itself to being solved with non-determinism. Say you have a chess board and only one knight piece on it. We want to find out if the knight can reach a certain position in three moves.</p>
+</blockquote>
+<p>先定义个棋子</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">KnightPos</span>(<span class="params">c: <span class="type">Int</span>, r: <span class="type">Int</span></span>) </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">move</span></span>: <span class="type">List</span>[<span class="type">KnightPos</span>] =</span><br><span class="line">        <span class="keyword">for</span> &#123;</span><br><span class="line">            <span class="type">KnightPos</span>(c2, r2) &lt;- <span class="type">List</span>(<span class="type">KnightPos</span>(c + <span class="number">2</span>, r - <span class="number">1</span>), <span class="type">KnightPos</span>(c + <span class="number">2</span>, r + <span class="number">1</span>),</span><br><span class="line">                <span class="type">KnightPos</span>(c - <span class="number">2</span>, r - <span class="number">1</span>), <span class="type">KnightPos</span>(c - <span class="number">2</span>, r + <span class="number">1</span>),</span><br><span class="line">                <span class="type">KnightPos</span>(c + <span class="number">1</span>, r - <span class="number">2</span>), <span class="type">KnightPos</span>(c + <span class="number">1</span>, r + <span class="number">2</span>),</span><br><span class="line">                <span class="type">KnightPos</span>(c - <span class="number">1</span>, r - <span class="number">2</span>), <span class="type">KnightPos</span>(c - <span class="number">1</span>, r + <span class="number">2</span>)) </span><br><span class="line">            <span class="keyword">if</span> ((<span class="number">1</span> |-&gt; <span class="number">8</span>) contains c2) &amp;&amp; ((<span class="number">1</span> |-&gt; <span class="number">8</span>) contains r2)</span><br><span class="line">        &#125; <span class="keyword">yield</span> <span class="type">KnightPos</span>(c2, r2)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后试用一下</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">KnightPos</span>(<span class="number">8</span>, <span class="number">2</span>).move</span><br><span class="line"><span class="comment">// res0: List[KnightPos] = List(KnightPos(6,1), KnightPos(6,3), KnightPos(7,4))</span></span><br></pre></td></tr></table></figure>
+<p>然后加入走三步以及判断的功能</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">KnightPos</span>(<span class="params">c: <span class="type">Int</span>, r: <span class="type">Int</span></span>) </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">move</span></span>: <span class="type">List</span>[<span class="type">KnightPos</span>] =</span><br><span class="line">        <span class="keyword">for</span> &#123;</span><br><span class="line">            <span class="type">KnightPos</span>(c2, r2) &lt;- <span class="type">List</span>(<span class="type">KnightPos</span>(c + <span class="number">2</span>, r - <span class="number">1</span>), <span class="type">KnightPos</span>(c + <span class="number">2</span>, r + <span class="number">1</span>),</span><br><span class="line">                <span class="type">KnightPos</span>(c - <span class="number">2</span>, r - <span class="number">1</span>), <span class="type">KnightPos</span>(c - <span class="number">2</span>, r + <span class="number">1</span>),</span><br><span class="line">                <span class="type">KnightPos</span>(c + <span class="number">1</span>, r - <span class="number">2</span>), <span class="type">KnightPos</span>(c + <span class="number">1</span>, r + <span class="number">2</span>),</span><br><span class="line">                <span class="type">KnightPos</span>(c - <span class="number">1</span>, r - <span class="number">2</span>), <span class="type">KnightPos</span>(c - <span class="number">1</span>, r + <span class="number">2</span>))</span><br><span class="line">                <span class="keyword">if</span> ((<span class="number">1</span> |-&gt; <span class="number">8</span>) element c2) &amp;&amp; ((<span class="number">1</span> |-&gt; <span class="number">8</span>) contains r2)</span><br><span class="line">        &#125; <span class="keyword">yield</span> <span class="type">KnightPos</span>(c2, r2)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">in3</span></span>: <span class="type">List</span>[<span class="type">KnightPos</span>] =</span><br><span class="line">        <span class="keyword">for</span> &#123;</span><br><span class="line">            first &lt;- move</span><br><span class="line">            second &lt;- first.move</span><br><span class="line">            third &lt;- second.move</span><br><span class="line">        &#125; <span class="keyword">yield</span> third</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">canReachIn3</span></span>(end: <span class="type">KnightPos</span>): <span class="type">Boolean</span> = in3 contains end</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后试一下</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">KnightPos</span>(<span class="number">6</span>, <span class="number">2</span>) canReachIn3 <span class="type">KnightPos</span>(<span class="number">6</span>, <span class="number">1</span>)</span><br><span class="line"><span class="comment">// res0: Boolean = true</span></span><br><span class="line"><span class="type">KnightPos</span>(<span class="number">6</span>, <span class="number">2</span>) canReachIn3 <span class="type">KnightPos</span>(<span class="number">7</span>, <span class="number">6</span>)</span><br><span class="line"><span class="comment">// res1: Boolean = false</span></span><br></pre></td></tr></table></figure>
+<h3 id="monad-laws">Monad Laws</h3>
+<p><code>Monad</code>也像<code>functor</code>等一样，<code>Monad Laws</code>有着重要的地位。</p>
+<h4 id="left-identity">Left identity</h4>
+<blockquote>
+<p>if we take a value, put it in a default context with return and then feed it to a function by using &gt;&gt;=, it’s the same as just taking the value and applying the function to it.</p>
+</blockquote>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="number">3</span>) &gt;&gt;= </span><br><span class="line">	&#123; x =&gt; (x + <span class="number">100000</span>).some &#125;) assert_=== <span class="number">3</span> |&gt; &#123; x =&gt; (x + <span class="number">100000</span>).some &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="right-identity">Right identity</h4>
+<blockquote>
+<p>if we have a monadic value and we use &gt;&gt;= to feed it to return, the result is our original monadic value.</p>
+</blockquote>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="string">"move on up"</span>.some flatMap &#123;<span class="type">Monad</span>[<span class="type">Option</span>].point(_)&#125;) assert_=== <span class="string">"move on up"</span>.some</span><br></pre></td></tr></table></figure>
+<h4 id="associativity">Associativity</h4>
+<blockquote>
+<p>when we have a chain of monadic function applications with &gt;&gt;=, it shouldn’t matter how they’re nested.</p>
+</blockquote>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>)) &gt;&gt;= </span><br><span class="line">	&#123;_.landRight(<span class="number">2</span>)&#125; &gt;&gt;= </span><br><span class="line">	&#123;_.landLeft(<span class="number">2</span>)&#125; &gt;&gt;= &#123;_.landRight(<span class="number">2</span>)&#125;</span><br><span class="line"><span class="comment">// res0: Option[Pole] = Some(Pole(2,4))</span></span><br><span class="line"></span><br><span class="line"><span class="type">Monad</span>[<span class="type">Option</span>].point(<span class="type">Pole</span>(<span class="number">0</span>, <span class="number">0</span>)) &gt;&gt;= &#123; x =&gt;</span><br><span class="line">       x.landRight(<span class="number">2</span>) &gt;&gt;= &#123; y =&gt;</span><br><span class="line">       y.landLeft(<span class="number">2</span>) &gt;&gt;= &#123; z =&gt;</span><br><span class="line">       z.landRight(<span class="number">2</span>)</span><br><span class="line">       &#125;&#125;&#125;</span><br><span class="line"><span class="comment">// res1: Option[Pole] = Some(Pole(2,4))</span></span><br></pre></td></tr></table></figure>
+<p>在<code>Scalaz</code>里面，这样描述这些<code>Law</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">MonadLaw</span> <span class="keyword">extends</span> <span class="title">ApplicativeLaw</span> <span class="keyword">with</span> <span class="title">BindLaw</span> </span>&#123;</span><br><span class="line">    <span class="comment">/** Lifted `point` is a no-op. */</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">rightIdentity</span></span>[<span class="type">A</span>](a: <span class="type">F</span>[<span class="type">A</span>])(<span class="keyword">implicit</span> <span class="type">FA</span>: <span class="type">Equal</span>[<span class="type">F</span>[<span class="type">A</span>]]): <span class="type">Boolean</span> = </span><br><span class="line">	    <span class="type">FA</span>.equal(bind(a)(point(_: <span class="type">A</span>)), a)</span><br><span class="line">    <span class="comment">/** Lifted `f` applied to pure `a` is just `f(a)`. */</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">leftIdentity</span></span>[<span class="type">A</span>, <span class="type">B</span>](a: <span class="type">A</span>, f: <span class="type">A</span> =&gt; <span class="type">F</span>[<span class="type">B</span>])</span><br><span class="line">        (<span class="keyword">implicit</span> <span class="type">FB</span>: <span class="type">Equal</span>[<span class="type">F</span>[<span class="type">B</span>]]): <span class="type">Boolean</span> = </span><br><span class="line">	    <span class="type">FB</span>.equal(bind(point(a))(f), f(a))</span><br><span class="line">	<span class="comment">// associative law in Bind</span></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">     * As with semigroups, monadic effects only change when their</span></span><br><span class="line"><span class="comment">     * order is changed, not when the order in which they're</span></span><br><span class="line"><span class="comment">     * combined changes.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">associativeBind</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>](fa: <span class="type">F</span>[<span class="type">A</span>], f: <span class="type">A</span> =&gt; <span class="type">F</span>[<span class="type">B</span>], g: <span class="type">B</span> =&gt; <span class="type">F</span>[<span class="type">C</span>])</span><br><span class="line">        (<span class="keyword">implicit</span> <span class="type">FC</span>: <span class="type">Equal</span>[<span class="type">F</span>[<span class="type">C</span>]]): <span class="type">Boolean</span> =</span><br><span class="line">      <span class="type">FC</span>.equal(bind(bind(fa)(f))(g), bind(fa)((a: <span class="type">A</span>) =&gt; bind(f(a))(g)))</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/03/11/NMF-multi/" rel="next" title="Non-negative matrix factorization with Multi-view and Manifold">
+                <i class="fa fa-chevron-left"></i> Non-negative matrix factorization with Multi-view and Manifold
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/03/18/scalazday6/" rel="prev" title="learning Scalaz-day6">
+                learning Scalaz-day6 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#a-fistful-of-monads"><span class="nav-number">1.</span> <span class="nav-text">A Fistful of Monads</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#bind"><span class="nav-number">1.1.</span> <span class="nav-text">Bind</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#monad"><span class="nav-number">1.2.</span> <span class="nav-text">Monad</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#walk-the-line"><span class="nav-number">1.3.</span> <span class="nav-text">Walk the line</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#banana-on-wire"><span class="nav-number">1.3.1.</span> <span class="nav-text">Banana on wire</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#for-syntax"><span class="nav-number">1.3.2.</span> <span class="nav-text">for syntax</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#pierre-returns"><span class="nav-number">1.3.3.</span> <span class="nav-text">Pierre returns</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#pattern-matching-and-failure"><span class="nav-number">1.3.4.</span> <span class="nav-text">Pattern matching and failure</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#list-monad"><span class="nav-number">2.</span> <span class="nav-text">List Monad</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#monadplus-and-the-guard-function"><span class="nav-number">3.</span> <span class="nav-text">MonadPlus and the guard function</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#plus-plusempty-and-applicativeplus"><span class="nav-number">3.1.</span> <span class="nav-text">Plus, PlusEmpty, and ApplicativePlus</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#a-knights-quest"><span class="nav-number">4.</span> <span class="nav-text">A knight’s quest</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#monad-laws"><span class="nav-number">5.</span> <span class="nav-text">Monad Laws</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#left-identity"><span class="nav-number">5.1.</span> <span class="nav-text">Left identity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#right-identity"><span class="nav-number">5.2.</span> <span class="nav-text">Right identity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#associativity"><span class="nav-number">5.3.</span> <span class="nav-text">Associativity</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

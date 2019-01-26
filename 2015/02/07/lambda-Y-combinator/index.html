@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="这篇是我读《the little scheme》之后想记下来一些东西，这本书初看是在介绍简单的scheme的语法，写一些例子，但是在最后几章分别介绍了图灵停机问题和Y combinator，我才发现作者的心思。 \(\lambda\)-Calculus的语法与规约 语法以及自由变量 先给出lambda演算的BNF  然后给出一些例子：  简单的解释一下的话，对于单一的x，就是指一个变量x，而对于(">
+<meta name="keywords" content="lisp,FP,scheme">
+<meta property="og:type" content="article">
+<meta property="og:title" content="lambda演算到Y-combinator">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/02/07/lambda-Y-combinator/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="这篇是我读《the little scheme》之后想记下来一些东西，这本书初看是在介绍简单的scheme的语法，写一些例子，但是在最后几章分别介绍了图灵停机问题和Y combinator，我才发现作者的心思。 \(\lambda\)-Calculus的语法与规约 语法以及自由变量 先给出lambda演算的BNF  然后给出一些例子：  简单的解释一下的话，对于单一的x，就是指一个变量x，而对于(">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午12.20.18.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午12.22.06.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午1.23.51.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午1.45.25.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午2.03.36.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午2.07.52.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午5.29.42.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午5.50.46.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午5.57.58.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午6.02.33.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午7.02.13.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="lambda演算到Y-combinator">
+<meta name="twitter:description" content="这篇是我读《the little scheme》之后想记下来一些东西，这本书初看是在介绍简单的scheme的语法，写一些例子，但是在最后几章分别介绍了图灵停机问题和Y combinator，我才发现作者的心思。 \(\lambda\)-Calculus的语法与规约 语法以及自由变量 先给出lambda演算的BNF  然后给出一些例子：  简单的解释一下的话，对于单一的x，就是指一个变量x，而对于(">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午12.20.18.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/02/07/lambda-Y-combinator/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>lambda演算到Y-combinator | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/02/07/lambda-Y-combinator/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">lambda演算到Y-combinator
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-02-07 00:25:10" itemprop="dateCreated datePublished" datetime="2015-02-07T00:25:10+08:00">2015-02-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这篇是我读《the little scheme》之后想记下来一些东西，这本书初看是在介绍简单的scheme的语法，写一些例子，但是在最后几章分别介绍了图灵停机问题和Y combinator，我才发现作者的心思。</p>
+<h3 id="lambda-calculus的语法与规约"><span class="math inline">\(\lambda\)</span>-Calculus的语法与规约</h3>
+<h4 id="语法以及自由变量">语法以及自由变量</h4>
+<p>先给出lambda演算的BNF <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午12.20.18.png"> 然后给出一些例子： <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午12.22.06.png"></p>
+<p>简单的解释一下的话，对于单一的x，就是指一个变量x，而对于(x y)这种形式，意义是将x应用在y上，以scheme（scheme本身就可以看做一个<span class="math inline">\(\lambda\)</span>-Calculus的扩展）的代码为例(+ 1 2)，就是将第一个符号<code>+</code>应用到<code>1</code>和<code>2</code>上。</p>
+<p>对于<span class="math inline">\(\lambda\)</span>这个符号就是定义一个匿名函数，即lambda函数，如<span class="math inline">\((\lambda x.x)\)</span>就是定义了一个以x为参数，返回x的函数，如果要调用这个函数，就用括号的语法<span class="math inline">\(((\lambda x.x) a)\)</span>，就相当于将a当做参数传给函数。当然正如经常所说的函数是第一类成员，函数的定义可以出现在任何地方，比如在调用参数<span class="math inline">\(((\lambda x.x) (\lambda x.x))\)</span>、在返回值上<span class="math inline">\((\lambda y.(\lambda x.x))\)</span>等。</p>
+<p>然后，使用<span class="math inline">\(\mathcal{FV}\)</span>代表<code>free variables</code>，其实就是没有被绑定的变量，它有以下的关系：</p>
+<p><img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午1.23.51.png"></p>
+<p>即变量的集合中的元素都是自由变量。但是在函数中，除参数（他们的值应该在调用时被确定）意外，其他的变量也应该是自由变量。在一个语句中的自由变量应该是所有符号自由变量的并集。 下面有一些例子： <span class="math display">\[\mathcal{FV}(x) = \{x\}\]</span> <span class="math display">\[\mathcal{FV}((x\space (y\space x))) = \{x,y\}\]</span> <span class="math display">\[\mathcal{FV}((\lambda x.(x \space y)) = \{y\}\]</span> <span class="math display">\[\mathcal{FV}(z\space (\lambda z.z)) = \{z\}\]</span></p>
+<h4 id="规约">规约</h4>
+<p>在我们定义lambda演算表达式的规约之前，还需要定义变量替换的一些关系。定义关系<span class="math inline">\(\_[\_ \leftarrow \_]\)</span>将一个将源表达式映射到目标表达式。这只是一个简单地替换，但是它__只替换自由变量__。 具体语法 <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午1.45.25.png"></p>
+<p>一些例子 <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午2.03.36.png"></p>
+<p>然后定义三种简单的规约关系<span class="math inline">\(\alpha,\beta,\eta\)</span>： <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午2.07.52.png"></p>
+<ul>
+<li><span class="math inline">\(\alpha\)</span>关系对参数进行重命名。意义是对于<span class="math inline">\((\lambda X_1.M)\)</span>等价于将参数换成<span class="math inline">\(X_2\)</span>，然后将M中的<span class="math inline">\(X_1\)</span>换成<span class="math inline">\(X_2\)</span>，当然前提是<span class="math inline">\(X_2 \notin \mathcal{FV}(M)\)</span>。这表明了诸如<span class="math inline">\((\lambda x.x)\)</span>这种函数和<span class="math inline">\((\lambda y.y)\)</span>是等价的。所以，有时候也叫<span class="math inline">\(\alpha\)</span>替换。</li>
+<li><span class="math inline">\(\beta\)</span>关系是主要的规约原则，主要处理函数的规约。其实就是对于一个函数调用，就是将其函数体部分的替换成参数。有时候，直接叫<span class="math inline">\(\beta\)</span>规约。</li>
+<li><span class="math inline">\(\eta\)</span>关系体现了一个事实，当一个函数做的事是接受一个参数，然后马上将这个参数传给另一个函数，等价于直接调用另一个函数。</li>
+</ul>
+<p>三种规约的并集，我们称<code>general reduction relation</code>为__n__。</p>
+<p>下面是一个规约的例子： <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午5.29.42.png"></p>
+<p>标示符中有很多的括号会导致阅读的困难，为了简化，有时会采用如下简写：</p>
+<ul>
+<li><span class="math inline">\(M_1 \space M_2 \space M_3\)</span>等价于<span class="math inline">\((M_1 \space M_2 \space M_3)\)</span></li>
+<li><span class="math inline">\(\lambda X.M_1 \space M_2\)</span>等价于<span class="math inline">\((\lambda X.(M_1 \space M_2))\)</span></li>
+<li><span class="math inline">\(\lambda X Y Z.M\)</span>等价于<span class="math inline">\((\lambda X.(\lambda Y.(\lambda Z.M)))\)</span></li>
+</ul>
+<h4 id="实现基本元素">实现基本元素</h4>
+<h5 id="定义boolean">定义Boolean</h5>
+<p>Boolean值是我们编程语言必须的，一般我们常见的方法就是预先定义两个常量<code>true</code>和<code>false</code>。但是在lambda演算中采用不同的办法，这里定义</p>
+<p><img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午5.50.46.png"></p>
+<p>为什么这么定义呢？ 我们展开试一下 首先，其实对于if我们期望它应该满足两个功能 <figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">if</span> # <span class="literal">t</span> M N) <span class="comment">;应该返回M</span></span><br><span class="line">(<span class="name">if</span> # f M N) <span class="comment">;应该返回N</span></span><br></pre></td></tr></table></figure></p>
+<p>我们展开这两个式子 <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午5.57.58.png"> <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午6.02.33.png"></p>
+<p>显然，这种方式定义的<code>if</code>,<code>true</code>,<code>false</code>都是可以满足需求的。</p>
+<h5 id="定义pairs">定义pairs</h5>
+<p>除了Boolean以外，还需要一些数据结构，这里就定义<code>pair</code>以及相关的操作。显然应该有 <span class="math display">\[fst \space (mkpair \space M \space N) =_n M\]</span> <span class="math display">\[snd \space (mkpair \space M \space N) =_n N\]</span></p>
+<p>所以我们利用之前定义的boolean内容来定义 <span class="math display">\[&lt;M, N&gt; \doteq \lambda s.if \space s \space M \space N\]</span> <span class="math display">\[fs \doteq \lambda p.p \space true\]</span> <span class="math display">\[snd \doteq \lambda p.p \space false\]</span></p>
+<p>这几个定义都比较容易理解。</p>
+<h5 id="定义数字">定义数字</h5>
+<p>除了Boolean和pair以外，还有一个非atom的特例，就是数字。在lambda演算中有很多方法定义数字，其中最著名的还是<code>Church numerals</code>（邱奇数）。 <img src="http://nkssai.qiniudn.com/FP-屏幕快照%202015-02-05%20下午7.02.13.png"></p>
+<p>这里f看成函数，x是函数参数，数字的大小其实就是对应了f函数的调用次数。 对于数字应该还有加减等操作。 定义加1这个操作为： <span class="math display">\[add1 \doteq \lambda n.\lambda f.\lambda x \space f \space(n \space f \space x)\]</span> 有了这个加一的操作以后，就可以定义<code>add</code>了，n加m其实就是将<code>n+1</code>这个操作做m次，正好我们这里对数字的定义就是f在以x为参数执行的次数，所以，我们可以直接定义 <span class="math display">\[add \doteq \lambda n.\lambda m.m \space add1 \space n\]</span> 相似的可以定义函数<code>iszero</code> <span class="math display">\[iszero \doteq \lambda n.n\space (\lambda x . false)\space true\]</span></p>
+<p>之前已经成功的定义了一系列的函数，但是在定义<code>sub1</code>上，明显有一些困难，<code>add1</code>只要在数字外面再包一层对于f的调用就好，但是<code>sub1</code>却不是这么简单，我们想要一种回滚这种函数的方法。 这里采用一种巧妙的方式实现，将<code>sub1</code>的实现分成两部分：</p>
+<ul>
+<li>生成一个包含对于给定的参数x和true的pair，true代表函数f应该被跳过。</li>
+<li>包裹给定的函数f，依次获取pair，只有当pair包含false时，才执行f，同时永远返回包含false的pair，这样f在接下来会被使用。</li>
+</ul>
+<p><span class="math display">\[wrap \doteq \lambda f.\lambda p.&lt;false, if\ (fst\ p)\ (snd\ p)\ (f\ (snd\ p))&gt;\]</span></p>
+<p>然后定义<code>sub1</code>，它接受一个数字n，然后返回一个以f和x为参数的函数，但是他会把f用上面定义的<code>wrap</code>函数包裹着，由于同时给了参数是&lt;true,x&gt;，所以，在第一层调用f（注意这个时候其实调用的是用<code>wrap</code>包裹的f），会因为(fst p)是true而直接返回第二个值。</p>
+<p><span class="math display">\[sub1 \doteq \lambda n.\lambda f.\lambda x.snd\ (n \ (wrap\ f)\ &lt;true,x&gt;)\]</span></p>
+<p>为了形象的理解这个问题，下面我们计算一下<code>2 - 1</code> <span class="math display">\[(sub1\ \ \lambda f.\lambda x . f\ (f\ x))\]</span> 将<code>sub1</code>展开 <span class="math display">\[((\lambda n.\lambda f.\lambda x. snd\ (n\ (wrap\ f)\ &lt;true,x&gt;))\ \ \lambda f.\lambda x . f\ (f\ x))\]</span> 展开n部分 <span class="math display">\[(\lambda f.\lambda x.snd\ \ ((\lambda f.\lambda x . f\ (f\ x)) \ \ (wrap\ f)\ &lt;true,x&gt;))\]</span> 展开后面 <span class="math display">\[(\lambda f.\lambda x.snd\ \ ((wrap\ f)\ \ ((wrap\ f)\  &lt;true,x&gt;)))\]</span> 后一个<span class="math inline">\(((wrap\ f)\  &lt;true,x&gt;)\)</span>的结果显然是<span class="math inline">\(&lt;false,x&gt;\)</span> <span class="math display">\[(\lambda f.\lambda x.snd\ \ ((wrap\ f)\  &lt;false,x&gt;))\]</span> 现在<span class="math inline">\(((wrap\ f)\  &lt;false,x&gt;)\)</span>的结果是<span class="math inline">\(&lt;false, (f\ x)&gt;\)</span> 最后结果就变成 <span class="math display">\[(\lambda f.\lambda x.f \ x)\]</span></p>
+<p>这里也是证明了函数是有效的。 这里再提一点，在之前的所有例子中，所有的lambda函数都是只有一个参数的，有时候可能会见到有直接写多个参数的写法，其实是一样。 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">lambda</span></span> (x)</span><br><span class="line">	(<span class="name"><span class="builtin-name">lambda</span></span> (y)</span><br><span class="line">	x+y))</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">lambda</span></span> (x y)</span><br><span class="line">	x+y)</span><br></pre></td></tr></table></figure>
+<p>这两种写法后一种可以看作第一种写法的一个语法糖而已。</p>
+<p>至此，也是大致了解了<span class="math inline">\(\lambda\)</span>-Calculus的能力与算法。接下来，让我们回到scheme，来看一下图灵停机问题。</p>
+<h3 id="图灵停机">图灵停机</h3>
+<p>停机其实是一个描述起来很简单的问题：是否存在一个函数对于任意函数它都能计算该函数在给定的输入是否会停止？</p>
+<p>先让我们尝试写一下这个函数，首该先参数应该是个函数， <figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">define</span> will-stop?</span><br><span class="line">	(<span class="name">lambda</span> (<span class="name">f</span>)</span><br><span class="line">...))</span><br></pre></td></tr></table></figure></p>
+<p>我们希望will-stop?这个函数能在参数为可以停止的函数时返回true，否则返回true，这个好像很难写，我们先找几个例子试一下。于是我们写下来一个函数 <figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">define</span> eternity</span><br><span class="line">	(<span class="name">lambda</span> (<span class="name">x</span>)</span><br><span class="line">		(<span class="name">eternity</span> x)</span><br><span class="line">))</span><br></pre></td></tr></table></figure></p>
+<p>显然这个函数会无穷递归下去，显然我们希望 <figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">will-stop</span>? eternity)</span><br></pre></td></tr></table></figure></p>
+<p>的结果应该是false。 然后我们再定义一个函数 <figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">define</span> next-try</span><br><span class="line">	(<span class="name">lambda</span> (<span class="name">x</span>)</span><br><span class="line">		(<span class="name">and</span> (<span class="name">will-stop</span>? next-try)</span><br><span class="line">			(<span class="name">eternity</span> x))))</span><br></pre></td></tr></table></figure></p>
+<p>在试一试这个函数，如果调用 <figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">will-stop</span>? next-try)</span><br></pre></td></tr></table></figure></p>
+<p>结果会怎么样呢？这个好像有点复杂，我们先猜一下，假设返回值是false。这样，语句 <figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">and</span> (<span class="name">will-stop</span>? next-try) (<span class="name">eternity</span> x))</span><br></pre></td></tr></table></figure></p>
+<p>会因为and的短路效果，只执行第一句，就意味着next-try这个函数会停止。等等，好像不太对，返回值是false不是意味着这个函数不会停止嘛？看样子，我们只能假设会返回true了，但是这样上面那条语句又会因为and，去执行后面那个停止不了的函数，从而导致next-try这个函数不会听着。两条路都走不通。 这就说明，will-stop?这个函数就不存在。 魔鬼存在于递归（自指）之中。</p>
+<h3 id="y-combinator">Y-combinator</h3>
+<p>最后终于到了今天的重点<code>Y-combinator</code>了，不过在得到<code>Y-combinator</code>之前，还有一些概念。</p>
+<h4 id="一些概念">一些概念</h4>
+<p>首先定义不动点，所谓的不动点<code>fixed-point</code>就是指函数映射到自身的一个点。比如对于一个函数<span class="math inline">\(f(x) = x^2 -x + 1\)</span>就有<span class="math inline">\(f(1) = 1\)</span>这就可以称为函数f的一个不动点。粗看好像并不是所有的函数都有不动点，比如像<span class="math inline">\(f(x)= x+ 1\)</span>这种函数就明显没有不动点。不动点的存在其实有着很深的含义，比如我们在求解方程的时候可以利用不断地迭代x、f(x)、f(f(x))来接近解。</p>
+<p>先看一个常见的概念<code>高阶函数(higher-order function)</code>，这个名字在编程时肯定比较常见，所谓的高阶函数就是至少满足下面一个条件： - 接受一个或多个函数作为输入 - 输出一个函数 其实很多函数式编程语言的map、filter等函数都是高阶函数的例子。高阶函数也叫做算子。在无类型的lambda演算中，所有的函数都是高阶的；而在函数式编程中返回另一个函数的高阶函数称为curry化函数。</p>
+<p>我们把<code>fixed-point</code>和<code>higher-order function</code>就来到了<code>fixed-point combinator</code>。如果一个以函数为参数f的不动点就是有一个函数g满足f(g)=g。如果一个函数fix满足对于所有的函数g都有g(fix)=fix即g(fix(g)) = fix(g)，我们称为<code>fixed-point combinator</code>。而在我们之前见到的无类型lambda演算中的最简单的<code>fixed-point combinator</code>就称为<code>Y-combinator</code>。</p>
+<h4 id="接近y-combinator">接近Y-combinator</h4>
+<p>从之前的lambda演算的过程可以发现，由于lambda的不存在命名，所以没有办法像写代码一样实现递归。这里就需要之前的<code>fixed-point combinator</code>出场了。如果我们能找到一个<code>fixed-point</code>的话，问题就解决了。看个例子，比如定义 Y为我们找到的<code>fixed-point combinator</code>，则 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(Y g) = (g (Y g)) = (g (g (Y g)))</span><br></pre></td></tr></table></figure></p>
+<p>这样就可以利用<code>Y combinator</code>达到递归的能力了。</p>
+<h4 id="从递归的例子开始">从递归的例子开始</h4>
+<p>让我们从一个例子开始，让我们写一个乘法 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">define</span></span> mult</span><br><span class="line">  (<span class="name"><span class="builtin-name">lambda</span></span> (n)</span><br><span class="line">    (<span class="name"><span class="builtin-name">lambda</span></span> (m)</span><br><span class="line">      (<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">       ((<span class="name"><span class="builtin-name">zero?</span></span> n) <span class="number">0</span>)</span><br><span class="line">       (<span class="name"><span class="builtin-name">else</span></span></span><br><span class="line">        (<span class="name"><span class="builtin-name">+</span></span> m ((<span class="name">mult</span> (<span class="name">sub1</span> n)) m)))))))</span><br></pre></td></tr></table></figure></p>
+<p>等价于lambda验算的 <span class="math display">\[mult \doteq \lambda n.\lambda m.if\ (zero? \ n)\ 0 \ (add\ m\ (mult\ (sub1 \ n)\ m))\]</span> 但是这种写法是不能直接按照那三个原则展开的。 既然没有办法直接写出来这个函数，就想办法写出来一个生成乘法的函数，然后慢慢改对。 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">define</span></span>	mkmult0</span><br><span class="line">  (<span class="name"><span class="builtin-name">lambda</span></span> (t)</span><br><span class="line">    (<span class="name"><span class="builtin-name">lambda</span></span> (n)</span><br><span class="line">      (<span class="name"><span class="builtin-name">lambda</span></span> (m)</span><br><span class="line">	(<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">	 ((<span class="name"><span class="builtin-name">zero?</span></span> n) <span class="number">0</span>)</span><br><span class="line">	 (<span class="name"><span class="builtin-name">else</span></span></span><br><span class="line">	  (<span class="name"><span class="builtin-name">+</span></span> m ((<span class="name">t</span> (<span class="name">sub1</span> n)) m))))))))</span><br></pre></td></tr></table></figure></p>
+<p>函数<code>mkmult0</code>接受接受一个函数t（先不管接受的是什么函数），然后返回一个正常计算得到一个数一个数乘以0的值的函数。好，这里迈出了第一步。我们这试着用这种方法写出来一个满足乘以1的情况。怎么写呢？我们已经有一个满足0的情况了，当n为1的时候，在(sub1 n)之后得到的不就是0的情况了嘛！那我们就把mkmult0里面的t变成一个mkmult0接受任意一个参数返回之后的值就行了。 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">define</span></span>	mkmult1</span><br><span class="line">  (<span class="name"><span class="builtin-name">lambda</span></span> (t)</span><br><span class="line">    (<span class="name"><span class="builtin-name">lambda</span></span> (n)</span><br><span class="line">      (<span class="name"><span class="builtin-name">lambda</span></span> (m)</span><br><span class="line">	(<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">	 ((<span class="name"><span class="builtin-name">zero?</span></span> n) <span class="number">0</span>)</span><br><span class="line">	 (<span class="name"><span class="builtin-name">else</span></span></span><br><span class="line">	  (<span class="name"><span class="builtin-name">+</span></span> m (((<span class="name">mkmult0</span> t) (<span class="name">sub1</span> n)) m))))))))</span><br></pre></td></tr></table></figure></p>
+<p>好了，这样我们又得到了一个可以生成计算0、1的函数的函数了。再来一发，写个可以计算2的 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">define</span></span>	mkmult2</span><br><span class="line">  (<span class="name"><span class="builtin-name">lambda</span></span> (t)</span><br><span class="line">    (<span class="name"><span class="builtin-name">lambda</span></span> (n)</span><br><span class="line">      (<span class="name"><span class="builtin-name">lambda</span></span> (m)</span><br><span class="line">	(<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">	 ((<span class="name"><span class="builtin-name">zero?</span></span> n) <span class="number">0</span>)</span><br><span class="line">         (<span class="name"><span class="builtin-name">else</span></span></span><br><span class="line">	  (<span class="name"><span class="builtin-name">+</span></span> m (((<span class="name">mkmult1</span> t) (<span class="name">sub1</span> n)) m))))))))</span><br></pre></td></tr></table></figure></p>
+<p>只要按照这个方法，我们只要写无穷次就能写出计算所有结果的函数了，可惜我们写不出无穷个。。。 不过观察一下这个函数，这几个函数都是很相似，唯一不懂的就是 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(+ m (((mkmult* t) (sub1 n)) m))))))))</span><br></pre></td></tr></table></figure></p>
+<p>这里的<code>mkmult*</code>不太一样，而且不论是哪一个<code>mkmult*</code>都是在外面包了一层遇到0的情况而已，我们只要保证每次都能生成一个那样的函数同时能保证下次的展开就行了，这个形式直接写成 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(+ m (((t t) (sub1 n)) m))))))))</span><br></pre></td></tr></table></figure></p>
+<p>就行了啊。</p>
+<p>于是就有了， <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">define</span></span> mkmult-f</span><br><span class="line">  (<span class="name"><span class="builtin-name">lambda</span></span> (t)</span><br><span class="line">    (<span class="name"><span class="builtin-name">lambda</span></span> (n)</span><br><span class="line">      (<span class="name"><span class="builtin-name">lambda</span></span> (m)</span><br><span class="line">        (<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">         ((<span class="name"><span class="builtin-name">zero?</span></span> n) <span class="number">0</span>)</span><br><span class="line">         (<span class="name"><span class="builtin-name">else</span></span></span><br><span class="line">          (<span class="name"><span class="builtin-name">+</span></span> m</span><br><span class="line">             (((<span class="name">t</span> t) (<span class="name">sub1</span> n)) m)))))))</span><br></pre></td></tr></table></figure></p>
+<p>然后，我们的乘法就是 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">define</span></span> mult</span><br><span class="line">	(<span class="name">mkmult-f</span> mkmult-f))</span><br></pre></td></tr></table></figure></p>
+<p>终于，我们写完了这个乘法函数。</p>
+<h4 id="获取y-combinator">获取Y-combinator</h4>
+<p>有了这个例子，我们类比一下之前的想法，想得到一个对于函数<code>mult</code>的递归调用，我们在外面嵌入了(mkmult mkmult)的调用，那这个<code>mk*</code>函数又有什么可以抽象出来的呢？ 回到这个乘法，我们把<code>mkmult-f</code>替换到进去，把整个展开 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">((<span class="name"><span class="builtin-name">lambda</span></span> (f)</span><br><span class="line">   (<span class="name">f</span> f))</span><br><span class="line"> (<span class="name"><span class="builtin-name">lambda</span></span> (t)</span><br><span class="line">   (<span class="name"><span class="builtin-name">lambda</span></span> (n)</span><br><span class="line">     (<span class="name"><span class="builtin-name">lambda</span></span> (m)</span><br><span class="line">       (<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">        ((<span class="name"><span class="builtin-name">zero?</span></span> n) <span class="number">0</span>)</span><br><span class="line">        (<span class="name"><span class="builtin-name">else</span></span></span><br><span class="line">         (<span class="name"><span class="builtin-name">+</span></span> m</span><br><span class="line">            (((<span class="name"><span class="builtin-name">lambda</span></span>	(x)</span><br><span class="line">                (<span class="name"><span class="builtin-name">lambda</span></span> (y)</span><br><span class="line">                  (((<span class="name">t</span> t) x) y)))</span><br><span class="line">              (<span class="name">sub1</span> n)) m))))))))</span><br></pre></td></tr></table></figure></p>
+<p>为了把统一的部分区分开，这里把之前的(t t)写成了 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">lambda</span></span> (x)</span><br><span class="line">((<span class="name">t</span> t) x))</span><br></pre></td></tr></table></figure></p>
+<p>这个根据<span class="math inline">\(\eta\)</span>替换应该是一样的。 然后我们进一步，把这个写在函数里面的调用当做参数，写到这个函数外面。 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">((<span class="name"><span class="builtin-name">lambda</span></span> (f)</span><br><span class="line">   (<span class="name">f</span> f))</span><br><span class="line"> (<span class="name"><span class="builtin-name">lambda</span></span> (t)</span><br><span class="line">   ((<span class="name"><span class="builtin-name">lambda</span></span> (multi)</span><br><span class="line">   	(<span class="name"><span class="builtin-name">lambda</span></span> (n)</span><br><span class="line">        (<span class="name"><span class="builtin-name">lambda</span></span> (m)</span><br><span class="line">          (<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">           ((<span class="name"><span class="builtin-name">zero?</span></span> n) <span class="number">0</span>)</span><br><span class="line">           (<span class="name"><span class="builtin-name">else</span></span></span><br><span class="line">            (<span class="name"><span class="builtin-name">+</span></span> m</span><br><span class="line">               ((<span class="name">multi</span> (<span class="name">sub1</span> n)) m)))))))</span><br><span class="line">    (<span class="name"><span class="builtin-name">lambda</span></span> (x)</span><br><span class="line">(<span class="name"><span class="builtin-name">lambda</span></span>	(y)</span><br><span class="line">        (((<span class="name">t</span> t) x) y))))))</span><br></pre></td></tr></table></figure></p>
+<p>中间以<code>multi</code>为参数的又可以拿出来 <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">((<span class="name"><span class="builtin-name">lambda</span></span> (multi)</span><br><span class="line">     ((<span class="name"><span class="builtin-name">lambda</span></span> (mk-multi)</span><br><span class="line">        (<span class="name">mk-multi</span> mk-multi))</span><br><span class="line">      (<span class="name"><span class="builtin-name">lambda</span></span> (mk-multi)</span><br><span class="line">        (<span class="name">multi</span></span><br><span class="line">		 (<span class="name"><span class="builtin-name">lambda</span></span> (x)</span><br><span class="line">           (<span class="name"><span class="builtin-name">lambda</span></span> (y)</span><br><span class="line">	     (((<span class="name">mk-multi</span> mk-multi) x) y)))))))</span><br><span class="line">   (<span class="name"><span class="builtin-name">lambda</span></span> (multi)</span><br><span class="line">     (<span class="name"><span class="builtin-name">lambda</span></span> (n)</span><br><span class="line">       (<span class="name"><span class="builtin-name">lambda</span></span> (m)</span><br><span class="line">		 (<span class="name"><span class="builtin-name">cond</span></span></span><br><span class="line">          ((<span class="name"><span class="builtin-name">zero?</span></span> n) <span class="number">0</span>)</span><br><span class="line">	  (<span class="name"><span class="builtin-name">else</span></span> (<span class="name"><span class="builtin-name">+</span></span> m ((<span class="name">multi</span> (<span class="name">sub1</span> n)) m))))))))</span><br></pre></td></tr></table></figure></p>
+<p>仔细观察一下最下面，那不是我们想要的一般的递归的乘法的写法嘛！而前面的这部分，可以单独提出来称为一个函数，给他个名字<code>Y</code> <figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="builtin-name">define</span></span> Y</span><br><span class="line">  (<span class="name"><span class="builtin-name">lambda</span></span> (le)</span><br><span class="line">    ((<span class="name"><span class="builtin-name">lambda</span></span> (f) (<span class="name">f</span> f))</span><br><span class="line">      (<span class="name"><span class="builtin-name">lambda</span></span> (f)</span><br><span class="line">		(<span class="name">le</span> (<span class="name"><span class="builtin-name">lambda</span></span> (x) ((<span class="name">f</span> f) x)))))))</span><br></pre></td></tr></table></figure></p>
+<p>这个就是我们想要的<code>Y-combinator</code>。 用lambda演算表示的话 <span class="math display">\[Y \doteq \lambda f.(\lambda x.f\ (x \ x))\ (\lambda x.f\ (x \ x))\]</span> 很容易可以计算出(Y g) = (g (Y g))，证明了这个是个<code>fixed-point combinator</code>。</p>
+<blockquote>
+<p>(Y g)<br>
+= (λf.(λx.(f (x x)) λx.(f (x x))) g)<br>
+= (λx.(g (x x)) λx.(g (x x)))（λf的β-归约 - 应用主函数于g）<br>
+= (λy.(g (y y)) λx.(g (x x)))（α-转换 - 重命名约束变量）<br>
+= (g (λx.(g (x x)) λx.(g (x x))))（λy的β-归约 - 应用左侧函数于右侧函数）<br>
+= (g (Y g))（Y的定义）</p>
+</blockquote>
+<p>至此，终于得到了<code>Y-combinator</code>。</p>
+<p>参考引用：</p>
+<ol type="1">
+<li><p>《Programming Languages and Lambda Calculi》</p></li>
+<li><p>《the little scheme》</p></li>
+<li><p>wiki上关于<a href="https://zh.wikipedia.org/wiki/%CE%9B%E6%BC%94%E7%AE%97" target="_blank" rel="noopener">lambda演算</a>的介绍</p></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/lisp/" rel="tag"># lisp</a>
+          
+            <a href="/tags/FP/" rel="tag"># FP</a>
+          
+            <a href="/tags/scheme/" rel="tag"># scheme</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/09/30/Gibbs-Sampling-and-B-LDA/" rel="next" title="Gibbs Sampling与B-LDA">
+                <i class="fa fa-chevron-left"></i> Gibbs Sampling与B-LDA
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/03/18/Multi-label/" rel="prev" title="Multi-View Multi-Instance Multi-Label Learning">
+                Multi-View Multi-Instance Multi-Label Learning <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#lambda-calculus的语法与规约"><span class="nav-number">1.</span> <span class="nav-text">\(\lambda\)-Calculus的语法与规约</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#语法以及自由变量"><span class="nav-number">1.1.</span> <span class="nav-text">语法以及自由变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#规约"><span class="nav-number">1.2.</span> <span class="nav-text">规约</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现基本元素"><span class="nav-number">1.3.</span> <span class="nav-text">实现基本元素</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#定义boolean"><span class="nav-number">1.3.1.</span> <span class="nav-text">定义Boolean</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#定义pairs"><span class="nav-number">1.3.2.</span> <span class="nav-text">定义pairs</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#定义数字"><span class="nav-number">1.3.3.</span> <span class="nav-text">定义数字</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#图灵停机"><span class="nav-number">2.</span> <span class="nav-text">图灵停机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#y-combinator"><span class="nav-number">3.</span> <span class="nav-text">Y-combinator</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#一些概念"><span class="nav-number">3.1.</span> <span class="nav-text">一些概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#接近y-combinator"><span class="nav-number">3.2.</span> <span class="nav-text">接近Y-combinator</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#从递归的例子开始"><span class="nav-number">3.3.</span> <span class="nav-text">从递归的例子开始</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取y-combinator"><span class="nav-number">3.4.</span> <span class="nav-text">获取Y-combinator</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

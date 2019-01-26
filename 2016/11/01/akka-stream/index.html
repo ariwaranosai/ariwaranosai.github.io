@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="有一些时候内置的akka的Graph不能满足我们的需求，需要自己订制Graph，最近写socks5的时候发现要自己搞，就学习一下。">
+<meta name="keywords" content="scala,akka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Akka Custom stream processing">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/11/01/akka-stream/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="有一些时候内置的akka的Graph不能满足我们的需求，需要自己订制Graph，最近写socks5的时候发现要自己搞，就学习一下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/屏幕快照%202016-10-30%20下午4.37.24.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/package.png">
+<meta property="og:image" content="http://nkssai.qiniudn.com/joinMat.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Akka Custom stream processing">
+<meta name="twitter:description" content="有一些时候内置的akka的Graph不能满足我们的需求，需要自己订制Graph，最近写socks5的时候发现要自己搞，就学习一下。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/屏幕快照%202016-10-30%20下午4.37.24.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/11/01/akka-stream/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Akka Custom stream processing | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/11/01/akka-stream/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Akka Custom stream processing
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-11-01 16:23:23" itemprop="dateCreated datePublished" datetime="2016-11-01T16:23:23+08:00">2016-11-01</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/不会写代码/" itemprop="url" rel="index"><span itemprop="name">不会写代码</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>有一些时候内置的akka的<code>Graph</code>不能满足我们的需求，需要自己订制<code>Graph</code>，最近写socks5的时候发现要自己搞，就学习一下。</p>
+<a id="more"></a>
+<p>首先，应用这些东西的前提是你对akka stream有一定的了解，这里推荐油管上的<code>Konrad Malawski</code>视频以及简单看看这个<a href="https://github.com/pkinsky/akka-streams-example" target="_blank" rel="noopener">repo</a>。然后，就可以去看看<a href="http://doc.akka.io/docs/akka/2.4/scala/stream/stream-customize.html" target="_blank" rel="noopener">官方的教程</a>。</p>
+<h3 id="大体情况">大体情况</h3>
+<p>构造一个<code>Custom Stream Process</code>，大概需要这么几个东西</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TrivalHandler</span> <span class="keyword">extends</span> <span class="title">GraphStage</span>[<span class="type">FlowShape</span>[<span class="type">A</span>, <span class="type">B</span>]] </span>&#123;</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 声明使用的port</span></span><br><span class="line">  <span class="keyword">val</span> in = <span class="type">Inlet</span>[<span class="type">A</span>](<span class="string">"Map.in"</span>)</span><br><span class="line">  <span class="keyword">val</span> out = <span class="type">Outlet</span>[<span class="type">B</span>](<span class="string">"Map.out"</span>)</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 声明shape</span></span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">val</span> shape = <span class="type">FlowShape</span>.of(in, out)</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 构造GraphStageLogic</span></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">createLogic</span></span>(attr: <span class="type">Attributes</span>): <span class="type">GraphStageLogic</span> =</span><br><span class="line">    <span class="keyword">new</span> <span class="type">GraphStageLogic</span>(shape) &#123;</span><br><span class="line">    <span class="comment">// 内部状态</span></span><br><span class="line">    ....</span><br><span class="line">    <span class="comment">// InHandler的设置</span></span><br><span class="line">      setHandler(in, <span class="keyword">new</span> <span class="type">InHandler</span> &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onPush</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">          push(out, f(grab(in)))</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;)</span><br><span class="line">     </span><br><span class="line">    <span class="comment">// OutHandler的设置</span></span><br><span class="line">      setHandler(out, <span class="keyword">new</span> <span class="type">OutHandler</span> &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onPull</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">          pull(in)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先定义你想要的那个结构，有几个<code>inlet</code>几个<code>outlet</code>，以及具体的<code>Shape</code>来指定是<code>SourceShape</code>、<code>SinkShape</code>还是<code>FlowShape</code>，最关键的是<code>createLogic</code>得到的<code>GraphStageLogic</code>，在实现的时候应该把具体的可变的部分都保留在<code>GraphStageLogic</code>里面。</p>
+<p>对于<code>GraphStageLogic</code>来说，关键在设计<code>InHandler</code>或者<code>OutHandler</code>的逻辑。</p>
+<p>官方文档中使用这两种线表示两个<code>flow</code>，</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/屏幕快照%202016-10-30%20下午4.37.24.png" alt="Alt text"><figcaption>Alt text</figcaption>
+</figure>
+<p>上面是元素流动的流，下面是请求的流，因为<code>Akka Stream</code>采用这种实现方式。</p>
+<p>以<code>InHandler</code>为例，它有三个回调函数<code>onPush</code>、<code>onUpstreamFinish</code>以及<code>onUpstreamFailure</code>。这三个函数用来对应上游对这个<code>stage</code>的行为。<code>onPush</code>说明上游有数据<code>Push</code>过来，然后你可以通过<code>push</code>把数据推向下游。相对的，下游通过<code>OnPush</code>来说明自己需要数据，你也可以通过<code>pull</code>来向上游请求数据。默认的流就是如上图所示。</p>
+<p>具体自己实现的时候也可以靠考虑这个流的方式来对应到具体代码的实现上。当然同时应该满足文档中的状态机。</p>
+<h3 id="一个栗子">一个栗子</h3>
+<p>最初我是想写一个<code>Socks5</code>的服务器，结果发现其实完整的<code>custom flow graphstage</code>的文档挺少的。有很多坑，这里先搞一个例子。</p>
+<p>目标是这样的，我们想自己实现<code>source</code>的例子比较常见，比如我们有个新的数据源，并没有默认的实现，但是<code>flow</code>的例子可能少一点，但是我们如果用<code>akka stream</code>处理<code>tcp</code>请求，有些情况我们需要自己解析包的结构，然后再进行处理。这种时候，我们可能就需要自己定制<code>flowstage</code>了。</p>
+<p>这里定义了包结构是以<code>0x00</code>开始代表包的开始，然后跟一个<code>Byte</code>的内容代表以后的包长度，然后跟着<code>utf8</code>的字符，然后返回就是对应的字符。</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/package.png" alt="Alt text"><figcaption>Alt text</figcaption>
+</figure>
+<p>大概是这个样子的。接下来就是把他们拼装到一起了。</p>
+<p>首先处理<code>tcp</code>连接的这一部分，<code>Stream</code>中流的是<code>IncomingConnection</code>，然后<code>materialize</code>之后得到的是<code>Future[ServerBinding]</code>，然后对于每一个<code>IncomingConnection</code>，通过<code>handleWith</code>来暴露流，如果去看源码，其实<code>handleWith</code>就是</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">flow.joinMat(handler)(<span class="type">Keep</span>.right).run()</span><br></pre></td></tr></table></figure>
+<p>而<code>joinMat</code>的拓扑其实就是</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/joinMat.png" alt="Alt text"><figcaption>Alt text</figcaption>
+</figure>
+<p>也就是我们需要一个<code>Flow[ByteString, ByteString]</code>，获取输入的流，然后返回输出的流。</p>
+<p>我们可能希望更多，比如当一次<code>tcp</code>断开之后，能获得一些统计信息什么的。所以，实现的时候不能只继承<code>GraphStage</code>也应该实现<code>GraphStageWithMaterializedValue</code>。即类型应该为<code>GraphStageWithMaterializedValue[FlowStage[ByteString, String], Future[Int]]</code>。</p>
+<p>先定义对开的接口，一个输入一个输出，然后定到<code>shape</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> in = <span class="type">Inlet</span>[<span class="type">ByteString</span>](<span class="string">"Custom.in"</span>)</span><br><span class="line"><span class="keyword">val</span> out = <span class="type">Outlet</span>[<span class="type">String</span>](<span class="string">"Custom.out"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">shape</span></span>: <span class="type">FlowShape</span>[<span class="type">ByteString</span>, <span class="type">String</span>] = <span class="type">FlowShape</span>(in, out)</span><br></pre></td></tr></table></figure>
+<p>然后，流程在<code>createLogicAndMaterializedValue</code>里面，它不止返回一个<code>GraphStageLogic</code>，还要返回<code>Future[Int]</code>，这里就当计算收到包的个数。这里有一些坑，首先是要注意<code>pull</code>和<code>push</code>的阶段，不然有可能死锁，除了<code>push</code>以外，还有<code>emit</code>他是阻塞的，所以不会出现可以对同一个<code>port</code>调用两次的情况。</p>
+<p>另外，因为要自己维护一个<code>buffer</code>，因为不能保证每次到来的都是一个完整的包，有可能要等多次才能收到一个完整的包。还有一个问题就是当客户端关闭<code>socket</code>的时候，不能直接关闭自己，应该考虑到<code>buffer</code>里面还有一些没处理过的，全都处理了之后才能关闭。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">preStart</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">  <span class="keyword">super</span>.preStart()</span><br><span class="line">  pull(in)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">postStop</span></span>() = &#123;</span><br><span class="line">  promise.tryFailure(<span class="keyword">new</span> <span class="type">IOException</span>(<span class="string">"Connection closed"</span>))</span><br><span class="line">  <span class="keyword">super</span>.postStop()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>要注意的是，因为要返回<code>Future</code>，所以<code>postStop</code>中要<code>tryFailure</code>，保证所有的出口都能完成<code>future</code>。</p>
+<p>接下来，对于<code>Inlet</code>的<code>Handler</code>，</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onPush</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">          <span class="keyword">val</span> data = grab(in)</span><br><span class="line">          writeBuffer(data)</span><br><span class="line">          processBuffer()</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">onUpstreamFinish</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">          finishRequest()</span><br><span class="line">          <span class="keyword">super</span>.onUpstreamFinish()</span><br><span class="line">          completeStage()</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p><code>finishRequest</code>里面解决剩下的<code>buffer</code>的内容。这里的内容是通过实现对应的<code>unapply</code>函数来分析和获取的，有点像<code>Parser</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">SizedByteFrame</span> <span class="keyword">extends</span> <span class="title">ByteFragment</span>[(<span class="type">Int</span>, <span class="type">Option</span>[<span class="type">String</span>])]</span>&#123;</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">fromBytes</span></span>: <span class="type">Extractor</span> =</span><br><span class="line">    <span class="keyword">new</span> <span class="type">PartialFunction</span>[<span class="type">Seq</span>[<span class="type">Byte</span>], ((<span class="type">Int</span>, <span class="type">Option</span>[<span class="type">String</span>]), <span class="type">Seq</span>[<span class="type">Byte</span>])] &#123;</span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">getLength</span></span>(d: <span class="type">Seq</span>[<span class="type">Byte</span>]) = (d.head.toInt, d.tail)</span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">isDefinedAt</span></span>(d: <span class="type">Seq</span>[<span class="type">Byte</span>]) =  &#123;</span><br><span class="line">        <span class="keyword">val</span> (size, data) = getLength(d.tail)</span><br><span class="line">        (d.head == <span class="number">0x00</span>) &amp;&amp; (size &lt;= data.length)</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(s: <span class="type">Seq</span>[<span class="type">Byte</span>]) = &#123;</span><br><span class="line">        <span class="keyword">val</span> raw = s.tail</span><br><span class="line">        <span class="keyword">val</span> (size, data) = getLength(raw)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(size &gt; <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">val</span> str = <span class="type">ByteString</span>(data.slice(<span class="number">0</span>, size).toArray).utf8String</span><br><span class="line">          ((size, <span class="type">Some</span>(str)), data.slice(size, data.length))</span><br><span class="line">        &#125; <span class="keyword">else</span></span><br><span class="line">          ((<span class="number">0</span>, <span class="type">None</span>), raw.tail)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">toBytes</span></span>(value: (<span class="type">Int</span>, <span class="type">Option</span>[<span class="type">String</span>])): <span class="type">ByteString</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> head = <span class="number">0x00</span>.toByte</span><br><span class="line">    value._2 <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Some</span>(raw) =&gt;</span><br><span class="line">        head +: value._1.toByte +: <span class="type">ByteString</span>(raw.toArray.map(_.toByte))</span><br><span class="line">      <span class="keyword">case</span> <span class="type">None</span> =&gt;</span><br><span class="line">        head +: <span class="type">ByteString</span>(<span class="number">0.</span>toByte)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于<code>outlet</code>的<code>Handler</code>，其实<code>akka stream</code>中已经内置了很多的例子，直接使用<code>eagerTerminateOutput</code>，其实就是<code>onPull</code>时什么也不干。</p>
+<p>具体使用的时候，注意下<code>mat</code>的时候，是<code>Keep right</code>还是<code>keep left</code>就差不多了。</p>
+<p>具体的代码可以看<a href="https://github.com/ariwaranosai/asnet/blob/master/src/main/scala/example/CustomFlowStage.scala" target="_blank" rel="noopener">这里</a>。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/scala/" rel="tag"># scala</a>
+          
+            <a href="/tags/akka/" rel="tag"># akka</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/17/useless/" rel="next" title="写点代码相关的">
+                <i class="fa fa-chevron-left"></i> 写点代码相关的
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/12/15/12useless/" rel="prev" title="最近看到有意思的东西">
+                最近看到有意思的东西 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#大体情况"><span class="nav-number">1.</span> <span class="nav-text">大体情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一个栗子"><span class="nav-number">2.</span> <span class="nav-text">一个栗子</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

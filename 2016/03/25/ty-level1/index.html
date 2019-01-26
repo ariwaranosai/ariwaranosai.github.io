@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="有了足够的预备知识，之后，下一个问题就是到底能不能做，我们常说c++的模板是图灵完备的，当然Scala也有这种能力。">
+<meta name="keywords" content="Scala">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Type-Level Programming in Scala-1">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/03/25/ty-level1/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="有了足够的预备知识，之后，下一个问题就是到底能不能做，我们常说c++的模板是图灵完备的，当然Scala也有这种能力。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Type-Level Programming in Scala-1">
+<meta name="twitter:description" content="有了足够的预备知识，之后，下一个问题就是到底能不能做，我们常说c++的模板是图灵完备的，当然Scala也有这种能力。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/03/25/ty-level1/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Type-Level Programming in Scala-1 | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/03/25/ty-level1/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Type-Level Programming in Scala-1
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-03-25 12:32:39" itemprop="dateCreated datePublished" datetime="2016-03-25T12:32:39+08:00">2016-03-25</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Scala/" itemprop="url" rel="index"><span itemprop="name">Scala</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>有了足够的预备知识，之后，下一个问题就是到底能不能做，我们常说<code>c++</code>的模板是图灵完备的，当然<code>Scala</code>也有这种能力。</p>
+<a id="more"></a>
+<h3 id="yes-we-can">Yes, We can</h3>
+<p>一开始给我说<code>Scala</code>的<code>type level meta programming</code>是<code>Turing completeness</code>，我是不相信的，不能你说它完备就完备，我得自己试一试。试一试，一般也就是从模拟图灵机、<code>lambda calculus</code>以及<code>SKI combinator calculus</code>中间搞一个。这三个里面最简单的自然是<code>SKI</code>了。(当然还有<code>SK</code>或者<code>Iota</code>这种更加简化的演算）</p>
+<h3 id="ski-combinator-calculus">SKI Combinator Calculus</h3>
+<p>像之前介绍过的<a href="http://ariwaranosai.xyz/2015/02/07/lambda-Y-combinator/">lambda calculus</a>一样，SKI组合子演算是一个处理表达式的规则系统。图灵机作为描述计算的模型过于复杂，见识过<code>lambda calculus</code>的简介之后，我们会发现<code>SKI</code>组合子演算更加简洁。</p>
+<p><code>lambda calculus</code>中分为三种表达式：变量、函数以及调用，而SKI组合子演算只有两种表达式调用和字幕符号，而且规则也更加简单。顾名思义，<code>SKI</code>组合子是指<code>S</code> <code>K</code> <code>I</code>三个组合子，它们分别有自己的规约规则。</p>
+<ul>
+<li><p><code>S[a][b][c]</code>规约成<code>a[c][b[c]]</code>，其实<code>a``b</code>和<code>c</code>可以是任何<code>SKI</code>演算表达式的形式。</p></li>
+<li><p><code>K[a][b]</code>规约成<code>a</code>。</p></li>
+<li><p>I[a] 规约成 <code>a</code>。</p></li>
+</ul>
+<p>比如对于下面这个例子</p>
+<ol type="1">
+<li><p><code>I[S][K][S][I[K]]</code> -&gt; <code>S[K][S][I[K]]</code> 规约I</p></li>
+<li><p><code>S[K][S][I[K]]</code> -&gt; <code>S[K][S][K]</code> 规约I</p></li>
+<li><p><code>S[K][S][K]</code> -&gt; <code>K[K][S[K]]</code> 规约S</p></li>
+<li><p><code>K[K][S[K]]</code> -&gt; <code>K</code> 归于K</p></li>
+</ol>
+<p>递归用<code>fixed point combinator</code>。</p>
+<h3 id="type-level-ski-in-scala">Type level SKI in Scala</h3>
+<p>对于整个<code>SKI</code>的实现，并不算困难，不过要注意的是规约的顺序，对于一般的<code>normal form</code>应该采用<code>lazy</code>，这在我们之前举得例子见过了。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] <span class="title">&lt;</span></span>: <span class="type">Term</span></span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> <span class="title">&lt;</span></span>: <span class="type">Term</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// S combinator</span></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">S</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= <span class="type">S1</span>[x]</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">S</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">S1</span>[x &lt;: <span class="type">Term</span>] <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[y &lt;: <span class="type">Term</span>] </span>= <span class="type">S2</span>[x, y]</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">S1</span>[x]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">S2</span>[x &lt;: <span class="type">Term</span>, y &lt;: <span class="type">Term</span>] <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[z &lt;: <span class="type">Term</span>] </span>= <span class="type">S3</span>[x, y, z]</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">S2</span>[x, y]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">S3</span>[x &lt;: <span class="type">Term</span>, y &lt;: <span class="type">Term</span>, z &lt;: <span class="type">Term</span>] <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[v &lt;: <span class="type">Term</span>] </span>= eval# ap[v]</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= x# ap[z]# ap[y# ap[z]]# eval</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先看看<code>S combinator</code>，首先定义<code>Term</code>，然后定义<code>S</code>，因为需要<code>lazy</code>，所以我们想办法把之后的值包裹起来，等到用的时候在通过<code>eval</code>计算。<code>ap</code>用来表示参数。</p>
+<p>像<code>S[K][I][C]</code>就可以用<code>S# ap[K]# ap[I]# ap[c]</code>，也就说<code>ap</code>可以看做函数，对于<code>S# ap[K]</code>就会返回一个<code>S1[K]</code>。</p>
+<p>其他的项的形式就差不多了。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The K combinator</span></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">K</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= <span class="type">K1</span>[x]</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">K</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">K1</span>[x &lt;: <span class="type">Term</span>] <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[y &lt;: <span class="type">Term</span>] </span>= <span class="type">K2</span>[x, y]</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">K1</span>[x]</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">K2</span>[x &lt;: <span class="type">Term</span>, y &lt;: <span class="type">Term</span>] <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[z &lt;: <span class="type">Term</span>] </span>= eval# ap[z]</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= x# eval</span><br><span class="line">&#125;</span><br><span class="line">   </span><br><span class="line"><span class="comment">// The I combinator</span></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">I</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= <span class="type">I1</span>[x]</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">I</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">I1</span>[x &lt;: <span class="type">Term</span>] <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[y &lt;: <span class="type">Term</span>] </span>= eval# ap[y]</span><br><span class="line">  <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= x# eval</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后让我定义一些常量符号，方便测试</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">c</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= c</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= c</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">d</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= d</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= d</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">e</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= e</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= e</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试一下</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// S[K][I][C]</span></span><br><span class="line">implicitly[<span class="type">S</span># ap[<span class="type">K</span>]# ap[<span class="type">I</span>]# ap[c]# eval =:= c]</span><br><span class="line"></span><br><span class="line"><span class="comment">// I[S][K][S][I[K]]</span></span><br><span class="line">implicitly[<span class="type">I</span># ap[<span class="type">S</span>]# ap[<span class="type">K</span>]# ap[<span class="type">S</span>]# ap[<span class="type">I</span># ap[<span class="type">K</span>]]# eval =:= <span class="type">K</span>]</span><br></pre></td></tr></table></figure>
+<p>都能顺利编译通过。为了证明<code>Turing completeness</code>还需要一个关键的东西，就是递归。这里用<code>fixed point combinator</code>保证。</p>
+<p><code>SKI</code>中的<code>fixed point</code>也有好几种，其中一种可以长成这样，定义为b形式为<code>S[K[a]][S[I][I]]</code>，具体应用</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">b = <span class="type">S</span>[<span class="type">K</span>[a]][<span class="type">S</span>[<span class="type">I</span>][<span class="type">I</span>]][b]</span><br><span class="line">= <span class="type">K</span>[a][b][<span class="type">S</span>[<span class="type">I</span>][<span class="type">I</span>][b]]</span><br><span class="line">= a[<span class="type">S</span>[<span class="type">I</span>][<span class="type">I</span>][b]]</span><br><span class="line">= a[b[b]]</span><br><span class="line">= a[b[b[b]]]</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>我们定义</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">b</span>[a &lt;: <span class="type">Term</span>] </span>= <span class="type">S</span># ap[<span class="type">K</span># ap[a]]# ap[<span class="type">S</span># ap[<span class="type">I</span>]# ap[<span class="type">I</span>]]</span><br></pre></td></tr></table></figure>
+<p>为了方便检验递归的情况，定义<code>An</code>为应用了几层</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">A0</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= c</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">A0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">A1</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= x# ap[<span class="type">A0</span>]# eval</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">A1</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">A2</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= x# ap[<span class="type">A1</span>]# eval</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">A2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后我们定义用来递归的函数</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 反转类型</span></span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">R</span> </span>= <span class="type">S</span># ap[<span class="type">K</span># ap[<span class="type">S</span># ap[<span class="type">I</span>]]]# ap[<span class="type">K</span>]</span><br><span class="line">implicitly[<span class="type">R</span># ap[c]# ap[d]# eval =:= d# ap[c]# eval]</span><br></pre></td></tr></table></figure>
+<p>然后，将它喂给<code>fixed point</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">NN1</span> </span>= b[<span class="type">R</span>]# ap[b[<span class="type">R</span>]]# ap[<span class="type">A0</span>]</span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">NN2</span> </span>= b[<span class="type">R</span>]# ap[b[<span class="type">R</span>]]# ap[<span class="type">A1</span>]</span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">NN3</span> </span>= b[<span class="type">R</span>]# ap[b[<span class="type">R</span>]]# ap[<span class="type">A2</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这里把N3换成任意一个都是对的</span></span><br><span class="line">implicitly[<span class="type">NN3</span># eval =:= c]</span><br></pre></td></tr></table></figure>
+<p>这说明，这个函数可以执行任意次，我们再看一个没有给终止条件的例子。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">An</span> <span class="keyword">extends</span> <span class="title">Term</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 任何时候ap都返回递归调用</span></span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">ap</span>[x &lt;: <span class="type">Term</span>] </span>= x# ap[<span class="type">An</span>]# eval</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">eval</span> </span>= <span class="type">An</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 无穷递归</span></span><br><span class="line"><span class="class"><span class="keyword">type</span> <span class="title">NNn</span> </span>= b[<span class="type">R</span>]# ap[b[<span class="type">R</span>]]# ap[<span class="type">An</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 编译报错</span></span><br><span class="line"><span class="comment">// Error:scalac: Error: </span></span><br><span class="line"><span class="comment">// org.jetbrains.jps.incremental.scala.remote.ServerException</span></span><br><span class="line"><span class="comment">// java.lang.StackOverflowError</span></span><br><span class="line">implicitly[<span class="type">NNn</span> =:= c]</span><br></pre></td></tr></table></figure>
+<p>至此，完全证明了<code>Scala</code>的<code>meta programming</code>的能力是<code>Turing completeness</code>。</p>
+<p>下一步就是在这个系统里面构件布尔、数字等基本的结构了。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/03/24/ty-level0/" rel="next" title="Type-Level Programming in Scala-0">
+                <i class="fa fa-chevron-left"></i> Type-Level Programming in Scala-0
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/03/27/sssss/" rel="prev" title="周末过得越开心，周日的晚上就越不开心">
+                周末过得越开心，周日的晚上就越不开心 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#yes-we-can"><span class="nav-number">1.</span> <span class="nav-text">Yes, We can</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ski-combinator-calculus"><span class="nav-number">2.</span> <span class="nav-text">SKI Combinator Calculus</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#type-level-ski-in-scala"><span class="nav-number">3.</span> <span class="nav-text">Type level SKI in Scala</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

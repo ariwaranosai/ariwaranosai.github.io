@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="最近在看LightLDA的论文，发现自己当时看到采样相关的知识都忘的差不多了，重新翻翻记录一下。">
+<meta name="keywords" content="近似推断,ML">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rejection Sampling and Metropolis Hastings">
+<meta property="og:url" content="http://ariwaranosai.xyz/2015/11/30/mh/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="最近在看LightLDA的论文，发现自己当时看到采样相关的知识都忘的差不多了，重新翻翻记录一下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/frontrj.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Rejection Sampling and Metropolis Hastings">
+<meta name="twitter:description" content="最近在看LightLDA的论文，发现自己当时看到采样相关的知识都忘的差不多了，重新翻翻记录一下。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/frontrj.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2015/11/30/mh/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Rejection Sampling and Metropolis Hastings | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2015/11/30/mh/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Rejection Sampling and Metropolis Hastings
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-11-30 15:19:10" itemprop="dateCreated datePublished" datetime="2015-11-30T15:19:10+08:00">2015-11-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/正经笔记/" itemprop="url" rel="index"><span itemprop="name">正经笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近在看LightLDA的论文，发现自己当时看到采样相关的知识都忘的差不多了，重新翻翻记录一下。 <a id="more"></a> 在无法求出来具体的分布的时候，一种是采用变分法、mean field近似，另一种就是使用采样的方法了。虽然无法求出来具体的分布，我们可以利用一些方法生成服从相应分布的样本，然后利用这些样本再去拟合想要的分布。这一点在Gibbs Sampling中已经见到了，由于求不出来<code>doc-topic</code>和<code>token-topic</code>矩阵，就采样出每一个隐变量的值，然后用统计量来估算其分布。</p>
+<h3 id="rejection-sampling">Rejection Sampling</h3>
+<p>在已经知道分布的形式的情况下，要是想要获得相应分布的样本的话其实只要求个逆，然后就可以利用<span class="math inline">\(U\sim(0,1)\)</span>来生成相应的分布了。</p>
+<p>但是之前的很多例子里面，我们要不是后验分布的形式及其复杂，要不就是下面有个归一化的项<span class="math inline">\(Z\)</span>还是带积分的，都不好求，所以，才会有更复杂的采样方法。</p>
+<p><code>Rejection Sampling</code>就是个稍微复杂一点的方法，其实想法很直观，在求不出来归一化项<code>Z</code>的时候，我们就取一个上界，然后在这个上界函数上采样，然后再以一个<span class="math inline">\(U \sim (0,1)\)</span>中的随机值，来判断是不是可以接受。</p>
+<p>具体过程，取一个<code>proposal distribution</code><span class="math inline">\(q(x)\)</span>满足存在<span class="math inline">\(Mq(x) \geq \hat{p(x)}\)</span>，其中<span class="math inline">\(\hat{p(x)}\)</span>是为归一化的概率项。则首先依据<span class="math inline">\(x \sim q(x)\)</span>采样<span class="math inline">\(x\)</span>，然后在从<span class="math inline">\(u \sim U(0,1)\)</span>中采样出来一个<span class="math inline">\(u\)</span>，如果<span class="math inline">\(u \gt \frac{\hat{p(x)}}{Mq(x)}\)</span>，那么就拒绝这个样本，不然的话，我们才接受它。如下图</p>
+<figure>
+<img src="http://nkssai.qiniudn.com/frontrj.png" alt="enter image description here"><figcaption>enter image description here</figcaption>
+</figure>
+<p><span class="math inline">\(Mq(x)\)</span>是一个上界，我们只有在<span class="math inline">\(uMq(x) \leq p(x)\)</span>的时候才会接受它。下面是证明 定义<span class="math inline">\(S = \{(x,u): u \leq \hat{p}(x)/Mq(x)\}\)</span>以及<span class="math inline">\(S_0 = \{(x,u): x \leq x_0 , u \leq \hat{p}(x)/Mq(x)\}\)</span>，那么</p>
+<p><span class="math display">\[\begin{split}
+P(x \leq x_0 | x \ \ accepted) &amp; = \frac{P(x \leq x_0, x \ \ accepted)}{P(x \ \ accepted)} \\
+&amp; = \frac{\int \int \mathbb{I}((x,u) \in S_0)q(x)dudx}{\int \int \mathbb{I}((x,u) \in S)q(x)dudx} \\
+&amp; = \frac{\int_{- \infty}^{x_0}\hat{pc}(x)dx}{\int_{-\infty}^{\infty}\hat{p}(x)dx}
+\end{split}\]</span></p>
+<p>其实<span class="math inline">\(S\)</span>可以看成所有满足条件的接受条件的点，而<span class="math inline">\(S_0\)</span>则是同时保证<span class="math inline">\(x \lt x_0\)</span>的那部分，最终得到的正好就是<span class="math inline">\(p(x)\)</span>的cdf。</p>
+<p>还有一个问题就是我们有多大的概率能得到一个可以接受的结果呢？</p>
+<p><span class="math display">\[
+p(accepted) = \int \frac{\hat{p}(x)}{Mq(x)}q(x)dx = \frac{1}{M} \int \hat{p}(x)dx
+\]</span></p>
+<p>这个结果也是很符合直觉，符合条件的M越小越好，当M趋向于正无穷的时候，我们几乎不可能得到合适的采样，我们希望M尽可能的小，来提高接受率。</p>
+<p>当我们想要对后验分布进行采样的时候，即<span class="math inline">\(p(\theta | D) = p(D|\theta)p(\theta)/p(D)\)</span>，采用<span class="math inline">\(p(\theta)\)</span>作为我们的<code>proposal</code>，选取<span class="math inline">\(M = p(D | \hat{\theta})\)</span>其中<span class="math inline">\(\hat{\theta} = arg\ max\ p(D|\theta)\)</span>，这样接受的接受率为</p>
+<p><span class="math display">\[\frac{\hat{p}(\theta)}{Mq(\theta)} = \frac{p(D | \theta)}{p(D | \hat{\theta})}\]</span></p>
+<p>但是在高维的情况下，<code>Rejection sampling</code>几乎是不可用的，比如我们希望从一个<span class="math inline">\(\mathcal{N}(0, \sigma^2_p I)\)</span>中采样，为此我们使用一个分布<span class="math inline">\(\mathcal{N}(0, \sigma^2_q I)\)</span>，这样我们选择的最优化的M应该为<span class="math inline">\((\sigma_q/\sigma_p)^D\)</span>，之前已经看到了接受率与M成反比，所以显然接受率会随着维度的提高指数级的下降，这显然是不可以接受的。</p>
+<h3 id="mcmc">MCMC</h3>
+<p>MCMC(Markov chain Monte Carlo)方法通过构造一个状态空间上的马尔科夫链，然后利用随机游走以及细致平稳分布的性质，对目标分布进行采样。之前的Gibbs Sampling就是这样一个例子，每个隐变量都是具有多个状态，在模型<code>burn-in</code>之后， 每一次迭代其实就是整个模型在其后验分布的状态空间随机游走，我们通过采样的得到的经验分布来近似其真实分布。</p>
+<p>MCMC也是经常用在PGM上的解法，而且最近越来越火吧，它有很多优点 。</p>
+<ul>
+<li><p>好求解。对比Gibbs Sampling和VBEM的推倒就能发现，Gibbs Sampling要好求的多，解法形式都比较固定。实现也比较方便</p></li>
+<li><p>在大数据集上速度更快，采样出来的部分基本只依赖其马尔科夫毯上的部分，传递的时候也可以只传递充分统计量。</p></li>
+<li><p>对于一些先验非共轭或者中间有个什么广义线性模型的情况下，采样的方法也更好求解。</p></li>
+<li><p>尤其是最近PS等各种分布式的机器学习框架比如Petuum上的lightLDA，还有腾讯的Peacock都是采用采样的方法求解的。</p></li>
+</ul>
+<h4 id="metropolis-hasting-algorithm">Metropolis Hasting algorithm</h4>
+<p>之前已经见过的Gibbs Samping是利用full conditionals来计算，利用共轭的性质来优化，但是有一些限制。</p>
+<ul>
+<li><p>后验分布的形式未知。很多情况下都是非共轭分布引起的。</p></li>
+<li><p>后验分布的参数很多，<code>grid approximations</code>的方法不可行。</p></li>
+<li><p>一些<code>full conditionals</code>并不是已知的形式。这种情况下<code>Gibbs Sampling</code>也不可用。</p></li>
+</ul>
+<p>这种时候就需要Metropolis Hastings来救场了。大概过程如下：</p>
+<ol type="1">
+<li><p>选择一个初始值<span class="math inline">\(\theta^{(0)}\)</span></p></li>
+<li><p>在第<span class="math inline">\(t\)</span>次迭代，从<code>Jumping distribution</code><span class="math inline">\(J_t(\theta^*|\theta^{(t - 1)})\)</span>生成一个候选的<span class="math inline">\(\theta^*\)</span>。</p></li>
+<li><p>计算接受率： <span class="math display">\[
+r = \frac{p(\theta^*|y)/J_t(\theta^* | \theta^{t-1}}{p(\theta^{t-1}|y)/J_t(\theta^{t - 1}|\theta^*)}
+\]</span></p></li>
+<li><p>以min(r, 1)的概率接受<span class="math inline">\(\theta^*\)</span>为<span class="math inline">\(\theta^t\)</span>，如果不接受，就令<span class="math inline">\(\theta^t = \theta^{t - 1}\)</span></p></li>
+<li><p>重复2-4，获取相应的分布<span class="math inline">\(p(\theta|y)\)</span>，要考虑<code>burn-in</code>的时间。</p></li>
+</ol>
+<p>如果要求转移概率分布J为对称的，就称为<code>random walk Metropolis sampling</code>。如果每一步并不依赖前一步，即<span class="math inline">\(J_t(\theta^* | \theta^{t - 1}) = J_t(\theta^*)\)</span>就称为<code>independent Metropolis-Hasting sampling</code>。</p>
+<p>在计算接受率的时候，当J对称时，可以化简为<span class="math inline">\(r = \frac{p(\theta^*|y)}{p(\theta^{t-1}|y)}\)</span>。这里就可以看出来<code>MH</code>的好处，由于直接计算比例，所以不需要知道归一化项。其实这个加上下一步的以概率接受，可以看出如果我们这次得到的候选的<span class="math inline">\(\theta\)</span>比之前的要好，那就可以直接接受，不然就以一个概率的比例接受，这里只要生成一个(0-1)之间的随机数，在其比<span class="math inline">\(r\)</span>要小的时候接受就行了。也就是我们始终接受一个比之前可能性大的<span class="math inline">\(\theta\)</span>。这个地方就是和<code>rejection sampling</code>不同的地方了，<code>MH</code>保证每次都会产生一个样本，而<code>rejection sampling</code>并不能保证这一点，所以采样率更低。</p>
+<p>同时，采样的<code>acceptance rate</code>可以用来评判<code>Metropolis-Hastings</code>算法效果。比如，接受率太低，那采样可能不够充分，接受率太高，可能马尔科夫链拟合的并不好。一般来说<code>random walk</code>应该处于0.25到0.5之间，而<code>independent</code>应该尽可能接近1。</p>
+<h4 id="gibbs-sampling-is-a-special-case-of-mh">Gibbs Sampling is a special case of MH</h4>
+<p>对于<code>Gibbs Sampling</code>可以看成<code>proposal distribution</code>为<span class="math inline">\(p(\theta^* | \theta) = p(\theta^*_i| \theta^{t-1}_{-i}) \mathbb{I}(\theta^*_{-i} = \theta_{-1})\)</span>的MH采样。即每次只根据条件分布更新<span class="math inline">\(\theta_i\)</span>而其他的<span class="math inline">\(\theta\)</span>保留不变。</p>
+<p>其接受率为</p>
+<p><span class="math display">\[\begin{split}
+\alpha &amp;= \frac{p(\theta^*)p(\theta|\theta^*)}{p(\theta)p(\theta|\theta^*)} = \frac{p(\theta^*_i|\theta^*_{-i})p(\theta^*_{-i})p(\theta_i|\theta_{-1}^*)}{p(\theta_i|\theta_{-i})p(\theta_{-i})p(\theta^*_i|\theta_{-1})} \\
+&amp; = \frac{p(\theta_i^*|\theta_{-i})p(\theta_{-i})p(\theta_i|\theta_{-1})}{p(\theta_i|\theta_{-i})p(\theta_{-i})p(\theta^*_i|\theta_{-1})} = 1
+\end{split}\]</span></p>
+<p>所以每次，<code>Gibbs Sampling</code>的结果都是接受的。</p>
+<h4 id="proposal-distributions">Proposal Distributions</h4>
+<p>对于给定一个目标分布<span class="math inline">\(p^*\)</span>，一个可行的<code>proposal distribution</code>是指可以以非0的概率转移到目标分布的任何非零的状态。比如，高斯分布的<code>random walk</code>没有概率为0的位置，所以对于任何<code>continuous state space</code>都是合法的。</p>
+<p>如果实在是不确定使用哪个<code>proposal</code>，也可以采用多个凸的<code>proposal</code>加权一起使用。即</p>
+<p><span class="math inline">\(p(\theta^*|\theta) = \sum_{k = 1}^K w_kp_k(\theta^*|\theta)\)</span></p>
+<h3 id="lightlda">LightLDA</h3>
+<p><a href="http://arxiv.org/abs/1412.1576" target="_blank" rel="noopener">lightLDA</a>中提出了加速采样的方法。</p>
+<p>回顾平时<code>Gibbs Sampling</code>采样的的式子</p>
+<p><span class="math display">\[p(z_{di=k}| rest) \propto \frac{(n_{kd}^{-di} + \alpha_k)(n_{kw}^{-di}+\beta_w)}{n_k^{-di} + \bar{\beta}}\]</span></p>
+<p>其中<span class="math inline">\(\bar{\beta} := \sum_w \beta_w\)</span>。诸如<code>SparseLDA</code>，<code>AliasLDA</code>都是对这个形式进行改进分解采样。<code>LightLDA</code>中将这个分解成</p>
+<p><span class="math display">\[q(z_{di} = k | rest) \propto (n_{kd} + \alpha_k) * \frac{n_{kw} + \beta_w}{n_k + \bar{\beta}}\]</span></p>
+<p>其中前面一部分只和文章相关可以看做<code>doc-proposal</code>，第二部分只和词有关系<code>word-proposal</code>部分。从直觉上来讲，合理的主题应该是在这两部分都有很大的概率。</p>
+<h4 id="word-proposal部分">Word-Proposal部分</h4>
+<p>重新定义<code>word-proposal</code>为</p>
+<p><span class="math display">\[p_w(k) \propto \frac{n_{kw}+\beta_w}{n_k + \bar{\beta}}\]</span></p>
+<p>从状态s转义到t的概率可以写成</p>
+<p><span class="math display">\[min\{1, \frac{p(t)p_w(s)}{p(s)p_w(t)}\}\]</span></p>
+<p>定义<span class="math inline">\(\pi_w := \frac{p(t)p_w(s)}{p(s)p_w(t)}\)</span>即</p>
+<p><span class="math display">\[
+\pi_w = \frac{(n_{td}^{-di} + \alpha_t)(n_{tw}^{-di} + \beta_w)(n_s^{-di} + \bar{\beta})(n_{sw} + \beta_w)(n_t + \bar{\beta})}{(n_{sd}^{-di} + \alpha_s)(n_{sw}^{-di} + \beta_w)(n_t^{-di}+\bar{\beta})(n_{tw} + \beta_w)(n_s + \bar{\beta})}
+\]</span></p>
+<p>只要保存了其所有的充分统计量<span class="math inline">\(n\)</span>，每一次完成采样之后在O(1)的时间里就可以计算出接受概率。为了采样<span class="math inline">\(p_w\)</span>的复杂度保持在O(1)，这里还采用了一个<code>alias table</code>的技巧，具体的可以看<a href="http://www.sravi.org/pubs/fastlda-kdd2014.pdf" target="_blank" rel="noopener">这里</a>，挺有意思的技巧。简单来说，就是把多项分布平整为均匀分布，然后通过常数复杂度的采样得到。然后不过，由于使用了<code>alias table</code>的技巧，需要使用2K的空间来存储<code>alias table</code>，这种时候，稀疏性就又排上用场了。将<span class="math inline">\(p_w = \frac{n_{kw}}{n_k + \beta}+\frac{\beta_w}{n_k + \beta}\)</span>，这个同样也是稀疏的可以用<code>SparseLDA</code>里面的方法简化，这样空间复杂度也降到<span class="math inline">\(O(K_w)\)</span>。</p>
+<h4 id="doc-proposal部分">Doc-Proposal部分</h4>
+<p>定义<span class="math inline">\(p_d\)</span>为</p>
+<p><span class="math display">\[
+p_d(k) \propto n_{kd} + \alpha_k
+\]</span></p>
+<p>转义概率为</p>
+<p><span class="math display">\[
+min\{1,\frac{p(t)p_d(s)}{p(s)p_d(t)}\}
+\]</span></p>
+<p>令<span class="math inline">\(\pi_d := \frac{p(t)p_d(s)}{p(s)p_d(t)}\)</span>。而且，其中<span class="math inline">\(n_{kd}\)</span>本来就是利用<span class="math inline">\(z_{di}\)</span>计算的，直接从<span class="math inline">\(1-n_d\)</span>中取一个就行了。</p>
+<h4 id="总结">总结</h4>
+<p>只看加速采样算法这一部分，采用<code>Metropolis Hasting</code>采样通过灵活的构造<code>Proposal</code>分布可以更好地利用模型的性质，混合使用两种分布也可以相互补充，更快的遍历所有的状态空间，更好地提高采样<code>mixing</code>效果。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/近似推断/" rel="tag"># 近似推断</a>
+          
+            <a href="/tags/ML/" rel="tag"># ML</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/11/22/observable/" rel="next" title="The Four Essential Effects In Programming II">
+                <i class="fa fa-chevron-left"></i> The Four Essential Effects In Programming II
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/12/07/lagrangian/" rel="prev" title="拉格朗日乘子法以及 Minimax Entropy in Crowdsourcing">
+                拉格朗日乘子法以及 Minimax Entropy in Crowdsourcing <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#rejection-sampling"><span class="nav-number">1.</span> <span class="nav-text">Rejection Sampling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mcmc"><span class="nav-number">2.</span> <span class="nav-text">MCMC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#metropolis-hasting-algorithm"><span class="nav-number">2.1.</span> <span class="nav-text">Metropolis Hasting algorithm</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#gibbs-sampling-is-a-special-case-of-mh"><span class="nav-number">2.2.</span> <span class="nav-text">Gibbs Sampling is a special case of MH</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#proposal-distributions"><span class="nav-number">2.3.</span> <span class="nav-text">Proposal Distributions</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lightlda"><span class="nav-number">3.</span> <span class="nav-text">LightLDA</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#word-proposal部分"><span class="nav-number">3.1.</span> <span class="nav-text">Word-Proposal部分</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#doc-proposal部分"><span class="nav-number">3.2.</span> <span class="nav-text">Doc-Proposal部分</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">3.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

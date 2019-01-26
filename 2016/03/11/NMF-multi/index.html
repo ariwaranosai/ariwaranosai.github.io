@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="人生艰难，复习一下基本的东西，然后说不定毕不了业的时候就只能靠这个了。非负矩阵分解也是个靠谱的方法，尤其是在PS越来越实用的时代。">
+<meta name="keywords" content="multi-view,NMF">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Non-negative matrix factorization with Multi-view and Manifold">
+<meta property="og:url" content="http://ariwaranosai.xyz/2016/03/11/NMF-multi/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="人生艰难，复习一下基本的东西，然后说不定毕不了业的时候就只能靠这个了。非负矩阵分解也是个靠谱的方法，尤其是在PS越来越实用的时代。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://nkssai.qiniudn.com/%E5%9B%BE%E7%89%871.png">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Non-negative matrix factorization with Multi-view and Manifold">
+<meta name="twitter:description" content="人生艰难，复习一下基本的东西，然后说不定毕不了业的时候就只能靠这个了。非负矩阵分解也是个靠谱的方法，尤其是在PS越来越实用的时代。">
+<meta name="twitter:image" content="http://nkssai.qiniudn.com/%E5%9B%BE%E7%89%871.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2016/03/11/NMF-multi/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Non-negative matrix factorization with Multi-view and Manifold | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2016/03/11/NMF-multi/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Non-negative matrix factorization with Multi-view and Manifold
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2016-03-11 10:05:10" itemprop="dateCreated datePublished" datetime="2016-03-11T10:05:10+08:00">2016-03-11</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>人生艰难，复习一下基本的东西，然后说不定毕不了业的时候就只能靠这个了。非负矩阵分解也是个靠谱的方法，尤其是在PS越来越实用的时代。</p>
+<a id="more"></a>
+<p>NMF，其实说起来很简单，对于<span class="math inline">\(X = [X_{.,1},...,X_{.,N}] \in R_{+}^{M \times N}\)</span>，代表非负数据矩阵，其中每一列代表一个数据点，每一行代表一种特征，NMF的目标是为了将<span class="math inline">\(X\)</span>分解为元素均为非负的<span class="math inline">\(U = [U_{i,k}] \in R_{+}^{M \times K}\)</span>和<span class="math inline">\(V = [V_{j,k}] \in R_{+}^{N \times K}\)</span>，其中<span class="math inline">\(K\)</span>为降低以后的维度。即为</p>
+<p><span class="math display">\[X \approx UV^T\]</span></p>
+<p>而分解后的矩阵以后，<span class="math inline">\(U\)</span>看做新空间的基矩阵和<span class="math inline">\(V\)</span>是新空间的坐标。然后通过，</p>
+<p><span class="math display">\[X_j \approx U(V_{j,.})^T=\sum_k^K U_{.,k}V_{j,k}\]</span></p>
+<p>即目标函数</p>
+<p><span class="math display">\[min_{U,V}||X - UV^T||_F^2, s.t. U \geq 0, V \geq 0\]</span></p>
+<p>当然这里的范数可以换，而且使用不同的范数的效果也不一样。NMF作为一种像<code>PGM</code>一样的建模手段可以用到很多地方，比如把它当做一个降维的过程，然后对<span class="math inline">\(V\)</span>的新坐标进行聚类，或者在迁移复习中，利用学习出来的<span class="math inline">\(U\)</span>当做新空间的基。</p>
+<p>NMF由于分解的结果都是正的，所以很多时候可以解释成概率，比如在对于文本数据的时候，<code>PLSA</code>和<code>LDA</code>都可以看成把<code>词-文章</code>矩阵分解成<code>词-主题</code>和<code>主题-文章</code>矩阵（当然<code>LDA</code>可以通过超参来调解分解矩阵的分布）。只要保证NMF中的<span class="math inline">\(V\)</span>是归一化的，就能认为<span class="math inline">\(V\)</span>是在<span class="math inline">\(U\)</span>的基的聚类中心上的各个类的分类结果。</p>
+<h3 id="multi-view">multi-view</h3>
+<p><code>multi-view</code>也是很常见的问题，数据来源于同一实体的不同<code>view</code>的描述，比如同一个新闻，不同报纸的报道，我们有理由认为，同一个新闻的主题应该是一致的，但是不同报纸的报道用词会不相同，采用多个<code>view</code>学习可以更好地学习到新闻所处的空间。</p>
+<p>先回顾一下概率图的<code>multi-view</code>的样子。</p>
+<p><img src="http://nkssai.qiniudn.com/%E5%9B%BE%E7%89%871.png"></p>
+<p>同一个实体会在不同的view下有不同的坐标，因为他们根本不在一个基坐标，所以直接观测的坐标信息，是不能使用的，但是我们可以假设<span class="math inline">\(X = UV^T\)</span>，这样我们就可以就把不同的基坐标和实际的坐标分开，然后假设<span class="math inline">\(V\)</span>应该是共享的，自然而然的就得到了目标函数。</p>
+<p><span class="math display">\[\sum_{v = 1}^{n_v}||X^{(v)} - U^{(v)}(V^{(v)})^T||_F^2 + \sum_{v = 1}^{n_v}\lambda_v ||V^{(v)} - V^*||\]</span> <span class="math display">\[s.t.\forall  1 \leq k \leq K, ||U_{.,k}^{(k)}||_1 = 1\ \ and \ \ U^{(v)},V^{(v)}, V^* \geq 0\]</span></p>
+<p>其中<span class="math inline">\(\lambda\)</span>可以用来调节不同<span class="math inline">\(view\)</span>的权重，不过这个麻烦的地方在对于<span class="math inline">\(U\)</span>的每一列都有归一化的约束。为了简化，不妨转化一下，加入</p>
+<p><span class="math display">\[Q^{(v)} = Diag(\sum_{i=1}^M U_{i,1}^{(v)},\sum_{i=1}^M U_{i,2}^{(v)}, ... ,\sum_{i=1}^M U_{i,K}^{(v)})\]</span></p>
+<p>其中<span class="math inline">\(Diag(.)\)</span>代表对角阵，其对角元为括号中内容，剩下元素为0。然后目标函数就可以转化为</p>
+<p><span class="math display">\[\sum_{v = 1}^{n_v}||X^{(v)} - U^{(v)}(V^{(v)})^T||_F^2+ \sum_{v = 1}^{n_v}\lambda_v ||V^{(v)}Q^{(v)} - V^*||\]</span> <span class="math display">\[s.t.\forall  1 \leq v \leq n_v, \ \ and \ \ U^{(v)},V^{(v)}, V^* \geq 0\]</span></p>
+<p>其实这里相当于把用来归一化的系数的倒数传递给<span class="math inline">\(V^{(v)}\)</span>，然后再通过乘<span class="math inline">\(Q^{(v)}\)</span>把这部分给消掉。这样式子就简化很多。</p>
+<p>为了求解这个式子，我们一次在固定其它元素的情况下，求解单一矩阵的局部极值，然后不断迭代。</p>
+<h5 id="固定v以及vv计算uv">固定<span class="math inline">\(V^*\)</span>以及<span class="math inline">\(V^{(v)}\)</span>计算<span class="math inline">\(U^{(v)}\)</span></h5>
+<p>原式为 <span class="math display">\[
+\begin{split}
+O &amp; =\sum_{v = 1}^{n_v}||X^{(v)} - U^{(v)}(V^{(v)})^T||_F \\ &amp;+ \sum_{v = 1}^{n_v}\lambda_v ||V^{(v)}Q^{(v)} - V^*|| \\
+    &amp;= Tr((X - UV^T)(X - UV^T)^T) + \\
+    &amp; = \lambda_v Tr((VQ-V^*)(VQ-V^*)^T)
+\end{split}\]</span></p>
+<p>然后利用拉格朗日乘子法加上非负约束，只考虑与<span class="math inline">\(U\)</span>有关的项。</p>
+<p><span class="math display">\[
+L_1 = Tr(UV^TVU^T-2XVU^T) + \lambda_v R + Tr(\Psi U)
+\]</span></p>
+<p>这里的<span class="math inline">\(\Psi\)</span>是拉格朗日乘子矩阵，展开会发现，其迹正好是所有元素的乘数和。</p>
+<p>其中<span class="math inline">\(R = Tr(VQQ^TV^T-2VQ(V^*)^T)\)</span></p>
+<p>先展开看<span class="math inline">\(R\)</span>这一项</p>
+<p><span class="math display">\[\begin{split}
+R&amp; = \sum_{j=1}^N \sum_{k=1}^K(V_{j,k}\sum_{i=1}^MU_{i,k}\sum_{i=1}^M U_{i,k}V_{j,k}) \\
+&amp;-2\sum_{j=1}^N\sum_{k=1}^K(V_{j,k}\sum_{i=1}^MU_{i,k}V^*_{j,k})
+\end{split}\]</span></p>
+<p>然后对<span class="math inline">\(U\)</span>求偏导</p>
+<p><span class="math display">\[
+P_{i,k} = \frac{\delta R}{\delta U_{i,k}}=2(\sum_{l=1}^M U_{l,k}\sum_{j=1}^N V_{j,k}^2 - \sum_{j=1}^N V_{j,k}V_{j,k}^*)
+\]</span></p>
+<p>有了这个就可以对整个目标函数求导，索性带迹的求导并不复杂</p>
+<p><span class="math display">\[\begin{split}
+\frac{\delta L_1}{\delta U} = -2XV + 2UV^TV + \lambda_v P + \psi 
+\end{split}\]</span></p>
+<p>然后根据这个就能把迭代式写出来，这里有个技巧，简单来说就是<code>负的除以正的</code>，具体的证明要构造一个辅助函数，详细的过程可以看<a href="http://www.cse.wustl.edu/~zhang/teaching/cs517/Spring12/CourseProjects/nmf-cai2008.pdf" target="_blank" rel="noopener">这篇论文</a>。</p>
+<p>最后得到</p>
+<p><span class="math display">\[
+U_{i,k} \leftarrow U_{i,k} \frac{(XV)_{i,k} + \lambda_v \sum_{j = 1}^N V_{j,k}V_{j,k}^*}{(UV^TV)_{i,k}+\lambda_v \sum_{l=1}^MU_{l,k}\sum_{j=1}^N V_{j,k}^2}
+\]</span></p>
+<p>显然这能保证<code>U</code>的非负性。</p>
+<h5 id="固定v以及uv计算vv">固定<span class="math inline">\(V^*\)</span>以及<span class="math inline">\(U^{(v)}\)</span>，计算<span class="math inline">\(V^{(v)}\)</span></h5>
+<p>计算<span class="math inline">\(V\)</span>的过程类似，先写出</p>
+<p><span class="math display">\[\begin{split}
+L_2 &amp; = Tr(UV^TVU^T-2XVU^T) \\
+&amp; + \lambda_v Tr(VV^T - 2V(V^*)^T) + Tr(\Phi V)
+\end{split}\]</span></p>
+<p>然后继续查查矩阵求导手册，就可以写出来，</p>
+<p><span class="math display">\[
+\frac{\delta L_2}{\delta V} =  2VU^TU -  2X^TU + 2\lambda_v(V -V^*) + \Phi
+\]</span></p>
+<p>然后继续<code>负的除以正的</code></p>
+<p><span class="math display">\[
+V_{j,k} \leftarrow V_{j,k}\frac{(X^T U)_{j,k} + \lambda_v V^*_{j,k}}{(VU^TU)_{j,k} + \lambda_v V_{j,k}}
+\]</span></p>
+<h5 id="固定u和v优化v">固定U和V，优化<span class="math inline">\(V^*\)</span></h5>
+<p>与<span class="math inline">\(V^*\)</span>有关的就一项，</p>
+<p><span class="math display">\[\begin{split}
+\frac{\delta O}{\delta V^*} &amp; = \frac{\delta \sum_{v=1}^{n_v} \lambda_v ||V^{(v)}Q^{(v)} - V^*||_F^2}{\delta V^*} \\
+&amp; = \sum_{v = 1}^{n_v} \lambda_v(-2V^(v) + 2 V^*)
+\end{split}\]</span></p>
+<p>这个就好求了</p>
+<p><span class="math display">\[
+V^* = \frac{\sum_{v = 1}^{n_v} \lambda_v V^{(v)}Q^{(v)}}{\sum_{v = 1}^{n_v} \lambda_v}
+\]</span></p>
+<p>至此，三个迭代式就都求出来了。</p>
+<h3 id="manifold">Manifold</h3>
+<p>流形指在局部同坯与欧式空间的空间。比如三维空间的球面，宇宙空间中地球表面，我们在计算两个很近的城市的距离的时候，一般是不会考虑地球的曲面的性质，误差也不会很大。</p>
+<p>话说流形这个词的，来自『天地有正气，杂然赋流形』，给人一种形变、流动的感觉。</p>
+<p>由于流形的存在，我们在计算距离的时候，不能直接计算欧氏距离，而应该计算低维嵌入流形的测地线，由此产生了<code>Isomap</code>这种算法。其实说起来很简单，为了能准确的测量距离，利用流行空间与欧式空间局部同坯的性质，先构建一个近邻图，假设近邻之间有路径，非近邻没有路径，然后用求最短路径的算法，就可以计算任意两点真正的距离了。</p>
+<p>那在矩阵分解中怎么应用这个性质呢？首先用<code>graph Laplacian</code>近似流形上的<span class="math inline">\(L = D - W\)</span>，其中</p>
+<p><span class="math display">\[
+W_{ij} = \left\{\begin{matrix}
+1, &amp; if x_i \in N_p(x_j)\ \ or\ \ x_j =in N_p(x_i)\\ 
+0, &amp; otherwise 
+\end{matrix}\right.
+\]</span></p>
+<p>然后，D是一个对角阵，其中每一个元素都是对应的W的行之和，即<span class="math inline">\(D_{ii} = \sum_j W_{ij}\)</span>。</p>
+<p>我们希望的应该是如果两个点在流形空间中接近，那么他们在分解以后的空间也接近。即</p>
+<p><span class="math display">\[\begin{split}
+R_k &amp;= \frac{1}{2} \sum_{i,j=1}^N (f_k(x_i) - f_k(x_j))^2)W_{ij} \\
+&amp;=\sum_{i=1}^N f_k(x_i)D_{ii} - \sum_{i,j=1}^N f_k(x_i)f_k(x_j)W_{ij} \\
+&amp; = \sum_{i=1}^N v_{ik}^2 D_{ii} - \sum_{i,j=1}^N v_{ik}v_{jk}W_{ij} \\
+&amp; = v_k^T D v_k - v_k^T Wv_k \\
+&amp; = v_k^TLv_k
+\end{split}\]</span></p>
+<p>使用<span class="math inline">\(v_{ik}\)</span>近似<span class="math inline">\(f_k(x_i)\)</span>，然后如果两个在流型空间接近的话，那么他们的近邻关系也应该近似。把这一项当成正则项加进入。</p>
+<p><span class="math display">\[\begin{split}
+O &amp;= ||X - UV^T||_F^2 + \lambda \sum_{i=1}^k R_k \\
+&amp; = ||X - UV^T||_F^2 + \lambda Tr(V^TLV)
+\end{split}\]</span></p>
+<p>求解方法和之前的没什么太大区别。</p>
+<p>那么流形在概率图上怎么对应呢。看<a href="http://120.52.73.76/arxiv.org/pdf/1410.6791v4.pdf" target="_blank" rel="noopener">这篇论文</a>。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/multi-view/" rel="tag"># multi-view</a>
+          
+            <a href="/tags/NMF/" rel="tag"># NMF</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/02/28/scalazday4/" rel="next" title="learning Scalaz-day4">
+                <i class="fa fa-chevron-left"></i> learning Scalaz-day4
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/03/17/scalazday5/" rel="prev" title="learning Scalaz-day5">
+                learning Scalaz-day5 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#multi-view"><span class="nav-number">1.</span> <span class="nav-text">multi-view</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#固定v以及vv计算uv"><span class="nav-number">1.0.1.</span> <span class="nav-text">固定\(V^*\)以及\(V^{(v)}\)计算\(U^{(v)}\)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#固定v以及uv计算vv"><span class="nav-number">1.0.2.</span> <span class="nav-text">固定\(V^*\)以及\(U^{(v)}\)，计算\(V^{(v)}\)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#固定u和v优化v"><span class="nav-number">1.0.3.</span> <span class="nav-text">固定U和V，优化\(V^*\)</span></a></li></ol></li></ol><li class="nav-item nav-level-3"><a class="nav-link" href="#manifold"><span class="nav-number">2.</span> <span class="nav-text">Manifold</span></a></li></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="明天回学校了,僵硬。 接着之前的内容，之前我们总结了一部分Cats中的内容，接下里就会见识到更多炫酷的词了。">
+<meta name="keywords" content="Scala,Cats">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Functor-Cats和Cats">
+<meta property="og:url" content="http://ariwaranosai.xyz/2017/02/17/cat-1/index.html">
+<meta property="og:site_name" content="浑浑噩噩の佐為">
+<meta property="og:description" content="明天回学校了,僵硬。 接着之前的内容，之前我们总结了一部分Cats中的内容，接下里就会见识到更多炫酷的词了。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-12T15:10:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Functor-Cats和Cats">
+<meta name="twitter:description" content="明天回学校了,僵硬。 接着之前的内容，之前我们总结了一部分Cats中的内容，接下里就会见识到更多炫酷的词了。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://ariwaranosai.xyz/2017/02/17/cat-1/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Functor-Cats和Cats | 浑浑噩噩の佐為</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">浑浑噩噩の佐為</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://ariwaranosai.xyz/2017/02/17/cat-1/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ariwaranosai">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="浑浑噩噩の佐為">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Functor-Cats和Cats
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-02-17 09:23:37" itemprop="dateCreated datePublished" datetime="2017-02-17T09:23:37+08:00">2017-02-17</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-11-12 23:10:26" itemprop="dateModified" datetime="2018-11-12T23:10:26+08:00">2018-11-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Cats/" itemprop="url" rel="index"><span itemprop="name">Cats</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>明天回学校了,僵硬。</p>
+<p>接着之前的内容，之前我们总结了一部分<code>Cats</code>中的内容，接下里就会见识到更多炫酷的词了。</p>
+<a id="more"></a>
+<h3 id="functor">Functor</h3>
+<p><code>Functor</code>本身也是很简单的概念，可以简单的看做<code>Categories</code>之间的映射。对于两个范畴<span class="math inline">\(C\)</span>和<span class="math inline">\(D\)</span>，而<code>functor</code><span class="math inline">\(F\)</span>将<span class="math inline">\(C\)</span>中的<code>objects</code>映射到<span class="math inline">\(D\)</span>中。对于<span class="math inline">\(C\)</span>中的<code>object a</code>，其在<span class="math inline">\(D\)</span>中的映像为<code>F a</code>。但是，范畴中除了<code>objects</code>还有<code>morphisms</code>。所以<code>F</code>应该还要能映射对应的<code>morphisms</code>。即<code>Functor</code>除了映射<code>objects</code>，他还保留<code>objects</code>之间的连接关系，即</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 如果在cats c中有</span></span><br><span class="line"><span class="title">f</span> :: a → b</span><br><span class="line"><span class="comment">-- 则应该有</span></span><br><span class="line"><span class="type">F</span> f :: <span class="type">F</span> a → <span class="type">F</span> b</span><br></pre></td></tr></table></figure>
+<p>基于这个关系应该还有</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">h</span> = g . f</span><br><span class="line"><span class="comment">-- 则还有</span></span><br><span class="line"><span class="type">F</span> h = <span class="type">F</span> g . <span class="type">F</span> f</span><br></pre></td></tr></table></figure>
+<p>至于<span class="math inline">\(id_{a}\)</span>还应该有<span class="math inline">\(F\ id_{a} = id_{F\ a}\)</span>。</p>
+<h4 id="functor-laws">Functor Laws</h4>
+<p>为了满足这两点，我们需要一个类型构造器，以及一个函数</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="type">Functor</span> f <span class="keyword">where</span></span></span><br><span class="line">	fmap :: (a → b) → f a → f b</span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Functor</span>[<span class="type">F</span>[_]] </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">A</span>, <span class="type">B</span>](f: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>):<span class="type">F</span>[<span class="type">B</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其还应该满足<code>functor laws</code>，即<span class="math inline">\(F\ id_{a} = id_{F\ a}\)</span>变成</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">identity</span></span>[<span class="type">A</span>](fa: <span class="type">F</span>[<span class="type">A</span>]): <span class="type">IsEq</span>[<span class="type">F</span>[<span class="type">A</span>]] =</span><br><span class="line">    fa.map(identity) &lt;-&gt; fa</span><br></pre></td></tr></table></figure>
+<p>对于</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">h</span> = g . f</span><br><span class="line"><span class="comment">-- =&gt;</span></span><br><span class="line"><span class="type">F</span> h = <span class="type">F</span> g . <span class="type">F</span> f</span><br></pre></td></tr></table></figure>
+<p>就对应</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">composition</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>](fa: <span class="type">F</span>[<span class="type">A</span>], f: <span class="type">A</span> =&gt; <span class="type">B</span>, g: <span class="type">B</span> =&gt; <span class="type">C</span>): <span class="type">IsEq</span>[<span class="type">F</span>[<span class="type">C</span>]] =</span><br><span class="line">    fa.map(f).map(g) &lt;-&gt; fa.map(f andThen g)</span><br></pre></td></tr></table></figure>
+<p>不过这些性质的保证并不是编译器保证的，在<code>Cats</code>中，是通过<code>laws</code>中的约束生成单元测试的测试用例保证的。</p>
+<h4 id="some-functors">Some Functors</h4>
+<p>很多常见的类型都是<code>Functor</code></p>
+<h5 id="maybe-or-option">Maybe or Option</h5>
+<p><code>Haskell</code>中的<code>Maybe</code>或者说<code>Scala</code>中的<code>Option</code>，用来表示返回结果可能有异常。</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">instance</span> <span class="type">Functor</span> <span class="type">Maybe</span> <span class="keyword">where</span></span></span><br><span class="line">	fmap f (<span class="type">Just</span> a) = <span class="type">Just</span> (f a)</span><br><span class="line">	fmap _ <span class="type">Nothing</span> = <span class="type">Nothing</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">implicit</span> <span class="keyword">val</span> functorForOption: <span class="type">Functor</span>[<span class="type">Option</span>] = <span class="keyword">new</span> <span class="type">Functor</span>[<span class="type">Option</span>] &#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">Option</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">Option</span>[<span class="type">B</span>] = fa <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">None</span>    =&gt; <span class="type">None</span></span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(a) =&gt; <span class="type">Some</span>(f(a))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="function">Function?</h5>
+<p>其实一开始看到<code>Functor</code>和<code>Function</code>到底有什么关系？一个函数其实是<code>A -&gt; B</code>即<code>kind</code>为<code>* → * → *</code>，而我们的<code>functor</code>的<code>Kind</code>是<code>* → *</code>，所以我们先给函数一个参数类型即变成<code>→ B</code>，或者写成<code>(→) A</code>。这样我们就期望他的<code>fmap</code>的类型应该是<code>(b → c) → f b → f c</code>就变成<code>(b → c) → (a → b) → (a → c)</code>这更好就是函数的组合。</p>
+<p>可以简单的写成</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">instance</span> <span class="type">Functor</span> ((→) a) <span class="keyword">where</span></span> </span><br><span class="line">	fmap = (.)</span><br></pre></td></tr></table></figure>
+<h5 id="list">List</h5>
+<p><code>List</code>也是一个<code>functor</code>，而且其<code>fmap</code>函数很自然</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">instance</span> <span class="type">Functor</span> <span class="type">List</span> a <span class="keyword">where</span></span></span><br><span class="line">	fmap :: (a -&gt; b) -&gt; f a -&gt; f b</span><br><span class="line">	fmap _ <span class="type">Nil</span> = <span class="type">Nil</span></span><br><span class="line">	fmap f (<span class="type">Const</span> x t) = <span class="type">Const</span> (f x) (fmap f t)</span><br></pre></td></tr></table></figure>
+<p>这里其实可以发现<code>List</code>和<code>Maybe</code>有点像，他们都是一种容器，而<code>fmap</code>函数的类型是<code>(a -&gt; b) -&gt; f a -&gt; f b</code>，我们可以看成<code>(a -&gt; b) -&gt; (f a -&gt; f b)</code>，即将一个定义在原范畴的函数映射到新的范畴中。</p>
+<p>在<code>Cats</code>中就是</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lift</span></span>[<span class="type">A</span>, <span class="type">B</span>](f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">F</span>[<span class="type">A</span>] =&gt; <span class="type">F</span>[<span class="type">B</span>] = map(_)(f)</span><br></pre></td></tr></table></figure>
+<h5 id="functor-composition">Functor Composition</h5>
+<p>不同的<code>Functor</code>往往需要组合使用，比如需要对<code>List[Option[Int]]</code>进行操作。对于<code>Haskell</code>来说比较简单，直接多个<code>fmap</code>组合就好了，但是对于<code>Scala</code>就麻烦了很多。</p>
+<p><code>Cats</code>中的解决办法是显示的构造新的<code>functor</code>。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">ComposedFunctor</span>[<span class="type">F</span>[_], <span class="title">G</span>[_]] <span class="keyword">extends</span> <span class="title">Functor</span>[λ[α =&gt; <span class="type">F</span>[<span class="type">G</span>[α]]]] </span></span><br><span class="line"><span class="class">    <span class="keyword">with</span> <span class="title">ComposedInvariant</span>[<span class="type">F</span>, <span class="type">G</span>] </span>&#123; outer =&gt;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">F</span></span>: <span class="type">Functor</span>[<span class="type">F</span>]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">G</span></span>: <span class="type">Functor</span>[<span class="type">G</span>]</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">A</span>, <span class="type">B</span>](fga: <span class="type">F</span>[<span class="type">G</span>[<span class="type">A</span>]])(f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">F</span>[<span class="type">G</span>[<span class="type">B</span>]] =</span><br><span class="line">    <span class="type">F</span>.map(fga)(ga =&gt; <span class="type">G</span>.map(ga)(f))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后实现<code>compose</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">compose</span></span>[<span class="type">G</span>[_]: <span class="type">Functor</span>]: <span class="type">Functor</span>[λ[α =&gt; <span class="type">F</span>[<span class="type">G</span>[α]]]] =</span><br><span class="line">    <span class="keyword">new</span> <span class="type">ComposedFunctor</span>[<span class="type">F</span>, <span class="type">G</span>] &#123;</span><br><span class="line">      <span class="keyword">val</span> <span class="type">F</span> = self</span><br><span class="line">      <span class="keyword">val</span> <span class="type">G</span> = <span class="type">Functor</span>[<span class="type">G</span>]</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="functoriality">Functoriality</h3>
+<p>接下来会介绍更多像<code>functor</code>的类型。</p>
+<h4 id="bifunctors">Bifunctors</h4>
+<p>如果<code>functor</code>可以看做<code>Cats</code>上的只有一个参数的函数的话，那么我们可以稍微扩展一下，称有<code>两个参数的函数</code>为<code>bifunctor</code>。<code>bifunctor</code>映射元组<code>(a, b)</code>其中<code>a</code>输入范畴<code>A</code>，<code>b</code>属于范畴<code>B</code>。这部分到是容易理解，但是<code>functor</code>除了要映射<code>object</code>，还要映射<code>morphism</code>，就像这样<code>(f, g) ∘ (f', g') = (f ∘ f', g ∘ g')</code>。</p>
+<!-- 图片 -->
+<p>让我们具体定义<code>bifunctor</code></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="type">Bifunctor</span> f <span class="keyword">where</span></span></span><br><span class="line">    bimap :: (a -&gt; c) -&gt; (b -&gt; d) -&gt; f a b -&gt; f c d</span><br><span class="line">    bimap g h = first g . second h</span><br><span class="line">    first :: (a -&gt; c) -&gt; f a b -&gt; f c b</span><br><span class="line">    first g = bimap g id</span><br><span class="line">    second :: (b -&gt; d) -&gt; f a b -&gt; f a d</span><br><span class="line">    second = bimap id</span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@typeclass</span> <span class="class"><span class="keyword">trait</span> <span class="title">Bifunctor</span>[<span class="type">F</span>[_, _]] </span>&#123; self =&gt;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">bimap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>](fab: <span class="type">F</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">A</span> =&gt; <span class="type">C</span>, g: <span class="type">B</span> =&gt; <span class="type">D</span>): <span class="type">F</span>[<span class="type">C</span>, <span class="type">D</span>]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">leftMap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>](fab: <span class="type">F</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">A</span> =&gt; <span class="type">C</span>): <span class="type">F</span>[<span class="type">C</span>, <span class="type">B</span>] = bimap(fab)(f, identity)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于<code>Haskell</code>中的<code>first</code>、<code>second</code>或者<code>Scala</code>中的<code>leftMap</code>可以看做按住其中一个范畴的内容不变，只映射另一个。</p>
+<!-- 图片 -->
+<h4 id="product-and-coproduct-bifunctors">Product and Coproduct Bifunctors</h4>
+<p>一个容易想到的例子就是<code>category</code>的`<code>product</code>和<code>coproduct</code>也是<code>bifunctors</code>。</p>
+<p>我们可以看两个例子。</p>
+<p>一个<code>product</code>的例子就是<code>Tuple2[A, B]</code>在<code>Haskell</code>里面就是<code>(,)</code>。</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">instance</span> <span class="type">Bifunctor</span> (,) <span class="keyword">where</span></span></span><br><span class="line">    bimap f g (x, y) = (f x, g y)</span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> tuple2Bifunctor = <span class="keyword">new</span> <span class="type">Bifunctor</span>[<span class="type">Tuple2</span>] &#123;</span><br><span class="line">	  <span class="function"><span class="keyword">def</span> <span class="title">bimap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>](fab: <span class="type">Tuple2</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">A</span> =&gt; <span class="type">C</span>, g: <span class="type">B</span> =&gt; <span class="type">D</span>): <span class="type">Tuple2</span>[<span class="type">C</span>, <span class="type">D</span>] = </span><br><span class="line">		  (f(fab._1), g(fab._2))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一个<code>coproduct</code>的例子是<code>Either</code></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">instance</span> <span class="type">Bifunctor</span> <span class="type">Either</span> <span class="keyword">where</span></span></span><br><span class="line">    bimap f _ (<span class="type">Left</span> x)  = <span class="type">Left</span> (f x)</span><br><span class="line">    bimap _ g (<span class="type">Right</span> y) = <span class="type">Right</span> (g y)</span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> eitherBifunctor = <span class="keyword">new</span> <span class="type">Bifunctor</span>[<span class="type">Either</span>] &#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">bimap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>](fab: <span class="type">F</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">A</span> =&gt; <span class="type">C</span>, g: <span class="type">B</span> =&gt; <span class="type">D</span>): <span class="type">F</span>[<span class="type">C</span>, <span class="type">D</span>] = </span><br><span class="line">    fab <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Right</span>(x) =&gt; <span class="type">Right</span>(g(x))</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Left</span>(y) =&gt; <span class="type">Left</span>(f(y))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="composition-of-bifunctor">composition of bifunctor</h4>
+<p><code>bifunctor</code>的组合也和<code>functor</code>的很相似</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">ComposedBifunctor</span>[<span class="type">F</span>[_, _], <span class="title">G</span>[_, _]]</span></span><br><span class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">Bifunctor</span>[λ[(<span class="type">A</span>, <span class="type">B</span>) =&gt; <span class="type">F</span>[<span class="type">G</span>[<span class="type">A</span>, <span class="type">B</span>], <span class="title">G</span>[<span class="type">A</span>, <span class="type">B</span>]]]] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">F</span></span>: <span class="type">Bifunctor</span>[<span class="type">F</span>]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">G</span></span>: <span class="type">Bifunctor</span>[<span class="type">G</span>]</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">bimap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>](fab: <span class="type">F</span>[<span class="type">G</span>[<span class="type">A</span>, <span class="type">B</span>], <span class="type">G</span>[<span class="type">A</span>, <span class="type">B</span>]])(f: <span class="type">A</span> =&gt; <span class="type">C</span>, g: <span class="type">B</span> =&gt; <span class="type">D</span>): <span class="type">F</span>[<span class="type">G</span>[<span class="type">C</span>, <span class="type">D</span>], <span class="type">G</span>[<span class="type">C</span>, <span class="type">D</span>]] = &#123;</span><br><span class="line">    <span class="keyword">val</span> innerBimap: <span class="type">G</span>[<span class="type">A</span>, <span class="type">B</span>] =&gt; <span class="type">G</span>[<span class="type">C</span>, <span class="type">D</span>] = gab =&gt; <span class="type">G</span>.bimap(gab)(f, g)</span><br><span class="line">    <span class="type">F</span>.bimap(fab)(innerBimap, innerBimap)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="covariant-and-contravariant-functors">Covariant and Contravariant Functors</h3>
+<p>其实另外一个<code>bifunctor</code>的例子就是<code>function</code>。我们如果想利用两个<code>functor</code>组合的实现<code>bifunctor</code>，我们需要给第一个参数作为类型变量实现<code>functor</code>，为此我们定义<code>type Op r a = a -&gt; r</code>，这样为了实现<code>(b → c) → f b → f c</code>，实际的类型就是<code>(b -&gt; c) -&gt; (b -&gt; r) -&gt; (c -&gt; r)</code>。这种函数是无法通过组合来实现的，所以为了能够把前面的那个箭头反过来，我们本来想实现一个<span class="math inline">\(C \times C \rightarrow D\)</span>，转而实现<span class="math inline">\(C^{op} \times C \rightarrow D\)</span>。</p>
+<p>因为我们定义了两种<code>functor</code>。对于一个<code>functor</code>，如果他在映射过程中保留原箭头的方向，即对于<span class="math inline">\(f: A \rightarrow B\)</span>，都有<span class="math inline">\(F(f): F(A) \rightarrow F(B)\)</span>我们就称其为<code>Covariant Functor</code>。而如果其反转了映射的方向，我们就称其为<code>Contravariant Functors</code>。其实换个角度看对于<code>functor</code>从<span class="math inline">\(C\)</span>映射到<code>D</code>，那么<code>contravariant functor</code>其实就是从<span class="math inline">\(C^{op}\)</span>映射到<code>D</code>，<span class="math inline">\(C^{op}\)</span>正好是<span class="math inline">\(C\)</span>的对偶，所有的<code>object</code>都一直，只不过箭头的方向都反过来。</p>
+<p>我们看看<code>cats</code>中的<code>contravariant functor</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@typeclass</span> <span class="class"><span class="keyword">trait</span> <span class="title">Contravariant</span>[<span class="type">F</span>[_]] <span class="keyword">extends</span> <span class="title">Invariant</span>[<span class="type">F</span>] </span>&#123; self =&gt;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">contramap</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">B</span> =&gt; <span class="type">A</span>): <span class="type">F</span>[<span class="type">B</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实只看这个函数签名，感觉很奇怪，不妨看一个例子。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Order</span>[<span class="type">A</span>] </span>&#123; outer =&gt;</span><br><span class="line">	  <span class="function"><span class="keyword">def</span> <span class="title">compare</span></span>(x: <span class="type">T</span>, y: <span class="type">T</span>): <span class="type">Int</span></span><br><span class="line">	  <span class="function"><span class="keyword">def</span> <span class="title">on</span></span>[<span class="type">U</span>](f: <span class="type">U</span> =&gt; <span class="type">T</span>): <span class="type">Ordering</span>[<span class="type">U</span>] = <span class="keyword">new</span> <span class="type">Ordering</span>[<span class="type">U</span>] &#123;</span><br><span class="line">	    <span class="function"><span class="keyword">def</span> <span class="title">compare</span></span>(x: <span class="type">U</span>, y: <span class="type">U</span>) = outer.compare(f(x), f(y))</span><br><span class="line">	  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这部分是<code>Scala.math.Order</code>的代码，这里面的<code>on</code>函数就体现了<code>contravariant</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">contramap</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">Order</span>[<span class="type">A</span>])(f: <span class="type">B</span> =&gt; <span class="type">A</span>): <span class="type">Order</span>[<span class="type">B</span>] = <span class="keyword">new</span> <span class="type">Order</span>[<span class="type">B</span>] &#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">compare</span></span>(x: <span class="type">B</span>, y: <span class="type">B</span>): <span class="type">Int</span> = fa.compare(f(x), f(y))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以，对于函数来说，其第参数逆变，在结果协变。</p>
+<h3 id="profunctors">Profunctors</h3>
+<p>再回到函数，既然我们已经意识到了函数比较特殊，和<code>bifunctor</code>不太一样，我们就换个定义方法。我们定义<code>profunctor</code>为从<span class="math inline">\(C\)</span>到<span class="math inline">\(D\)</span>为<code>functor</code></p>
+<p><span class="math display">\[H_F \colon D^{op}\times C \to Set\]</span></p>
+<p>对应到<code>Haskell</code>，</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="type">Profunctor</span> p <span class="keyword">where</span></span></span><br><span class="line">  dimap :: (a -&gt; b) -&gt; (c -&gt; d) -&gt; p b c -&gt; p a d</span><br><span class="line">  dimap f g = lmap f . rmap g</span><br><span class="line">  lmap :: (a -&gt; b) -&gt; p b c -&gt; p a c</span><br><span class="line">  lmap f = dimap f id</span><br><span class="line">  rmap :: (b -&gt; c) -&gt; p a b -&gt; p a c</span><br><span class="line">  rmap = dimap id</span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@typeclass</span> <span class="class"><span class="keyword">trait</span> <span class="title">Profunctor</span>[<span class="type">F</span>[_, _]] </span>&#123; self =&gt;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">dimap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>](fab: <span class="type">F</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">C</span> =&gt; <span class="type">A</span>)(g: <span class="type">B</span> =&gt; <span class="type">D</span>): <span class="type">F</span>[<span class="type">C</span>, <span class="type">D</span>]</span><br><span class="line">  <span class="comment">// 在第一参数上逆变</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">lmap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>](fab: <span class="type">F</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">C</span> =&gt; <span class="type">A</span>): <span class="type">F</span>[<span class="type">C</span>, <span class="type">B</span>] =</span><br><span class="line">    dimap(fab)(f)(identity)</span><br><span class="line">  <span class="comment">// 在第二个参数上协变</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">rmap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>](fab: <span class="type">F</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">B</span> =&gt; <span class="type">C</span>): <span class="type">F</span>[<span class="type">A</span>, <span class="type">C</span>] =</span><br><span class="line">    dimap[<span class="type">A</span>, <span class="type">B</span>, <span class="type">A</span>, <span class="type">C</span>](fab)(identity)(f)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>p</code>是一个有两个类型参数的类型。</p>
+<p>然后我们实现函数即<code>-&gt;</code>为</p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">instance</span> <span class="type">Profunctor</span> (-&gt;) <span class="keyword">where</span></span></span><br><span class="line">  dimap ab cd bc = cd . bc . ab</span><br><span class="line">  lmap = flip (.)</span><br><span class="line">  rmap = (.)</span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> function1Profunctor = <span class="keyword">new</span> <span class="type">Profunctor</span>[? =&gt; ?] &#123;</span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">dimap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>](fab: <span class="type">A</span> =&gt; <span class="type">B</span>)(f: <span class="type">C</span> =&gt; <span class="type">A</span>)(g: <span class="type">B</span> =&gt; <span class="type">D</span>) =</span><br><span class="line">	  x =&gt; g(fab(f(x))) </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="subtyping-and-functor">subtyping and functor</h4>
+<p><code>subtyping</code>中我们也谈<code>variance</code>，包含这么三种情况。</p>
+<p><span class="math inline">\(invariance: A = B \rightarrow F[A] = F[B]\)</span></p>
+<p><span class="math inline">\(covariance: A &lt;: B \rightarrow F[A] &lt;: F[B]\)</span></p>
+<p><span class="math inline">\(contravariance: A &gt;: B \rightarrow F[A] &lt;: F[B]\)</span></p>
+<p>其实这里就能看出<code>subtyping</code>中的<code>variance</code>其实就是<code>functor</code>的原因。有时候会遇到这种代码</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">TT</span>[+<span class="type">T</span>] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">show</span></span>(t: <span class="type">T</span>) = println(t)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// error: covariant type T occurs in contravariant position in type T of value t</span></span><br></pre></td></tr></table></figure>
+<p>这是很常见(?)的错误。</p>
+<h5 id="show">show</h5>
+<p>一个常见的例子是<code>Show</code>。</p>
+<p>假设</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span></span><br><span class="line"><span class="class"><span class="title">val</span> <span class="title">showA</span></span>: <span class="type">Show</span>[<span class="type">A</span>] = <span class="type">Show</span>.show(a =&gt; <span class="string">"a!"</span>)</span><br></pre></td></tr></table></figure>
+<p>这样对于<code>B</code>，我们就有</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> showB1: <span class="type">Show</span>[<span class="type">B</span>] = showA.contramap(b =&gt; b: <span class="type">A</span>)</span><br><span class="line"><span class="keyword">val</span> showB2: <span class="type">Show</span>[<span class="type">B</span>] = <span class="type">Contravariant</span>[<span class="type">Show</span>].narrow[<span class="type">A</span>, <span class="type">B</span>](showA)</span><br></pre></td></tr></table></figure>
+<p>首先一个直观的解释<code>show</code>可以看做<code>A =&gt; String</code>，即将任意类型映射成<code>String</code>。因此，他在类型参数<code>A</code>上是逆变的就很好理解了。从实现上，由于我们知道给一个<code>A</code>怎么转化成<code>String</code>，那对于给定的<code>B</code>，我们只要类型转化成<code>A</code>，那结果也一定是成立的。</p>
+<p>另一个有意思的地方在<code>Cats</code>中实现了<code>narrow</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">narrow</span></span>[<span class="type">A</span>, <span class="type">B</span> &lt;: <span class="type">A</span>](fa: <span class="type">F</span>[<span class="type">A</span>]): <span class="type">F</span>[<span class="type">B</span>] = fa.asInstanceOf[<span class="type">F</span>[<span class="type">B</span>]]</span><br></pre></td></tr></table></figure>
+<p>确实是直接用的强制类型转换，不过因为有<code>B &lt;: A</code>的限制，所以并不会运行时出错。</p>
+<h4 id="invariant">Invariant</h4>
+<p>我们重新整理一下<code>Cats</code>中<code>functor</code>中实现的内容</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Invariant</span>[<span class="type">F</span>[_]] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">imap</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>)(g: <span class="type">B</span> =&gt; <span class="type">A</span>): <span class="type">F</span>[<span class="type">B</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Contravariant</span>[<span class="type">F</span>[_]] <span class="keyword">extends</span> <span class="title">Invariant</span>[<span class="type">F</span>] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">contramap</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">B</span> =&gt; <span class="type">A</span>): <span class="type">F</span>[<span class="type">B</span>]</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">imap</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>)(fi: <span class="type">B</span> =&gt; <span class="type">A</span>): <span class="type">F</span>[<span class="type">B</span>] =</span><br><span class="line">    contramap(fa)(fi)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// functor 其实就是 covariant functor</span></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Functor</span>[<span class="type">F</span>[_]] <span class="keyword">extends</span> <span class="title">functor</span>.<span class="title">Invariant</span>[<span class="type">F</span>] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">map</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>): <span class="type">F</span>[<span class="type">B</span>]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">imap</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>)(fi: <span class="type">B</span> =&gt; <span class="type">A</span>): <span class="type">F</span>[<span class="type">B</span>] = </span><br><span class="line">    map(fa)(f)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Bifunctor</span>[<span class="type">F</span>[_, _]] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">bimap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>](fab: <span class="type">F</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">A</span> =&gt; <span class="type">C</span>, g: <span class="type">B</span> =&gt; <span class="type">D</span>): <span class="type">F</span>[<span class="type">C</span>, <span class="type">D</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Profunctor</span>[<span class="type">F</span>[_, _]] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">dimap</span></span>[<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>](fab: <span class="type">F</span>[<span class="type">A</span>, <span class="type">B</span>])(f: <span class="type">C</span> =&gt; <span class="type">A</span>)(g: <span class="type">B</span> =&gt; <span class="type">D</span>): <span class="type">F</span>[<span class="type">C</span>, <span class="type">D</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后还剩下<code>Invariant</code>。</p>
+<p><code>Invariant</code>的核心是</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">imap</span></span>[<span class="type">A</span>, <span class="type">B</span>](fa: <span class="type">F</span>[<span class="type">A</span>])(f: <span class="type">A</span> =&gt; <span class="type">B</span>)(g: <span class="type">B</span> =&gt; <span class="type">A</span>): <span class="type">F</span>[<span class="type">B</span>]</span><br></pre></td></tr></table></figure>
+<p>这个其实也很奇怪，为什么<code>A =&gt; B</code>、<code>B =&gt; A</code>的都需要呢？其实原因很简单，因为类型参数即出现在应该协变的地方，又出现在应该逆变的地方。</p>
+<p>有两个常见的例子，第一个就是<code>higher order abstract syntax</code></p>
+<figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">data</span> <span class="type">ExpF</span> a </span></span><br><span class="line">  = <span class="type">App</span> a a</span><br><span class="line">  | <span class="type">Lam</span> (a -&gt; a)</span><br></pre></td></tr></table></figure>
+<p>这里的<code>a</code>就很明显同时出现在两种地方。</p>
+<p>另一个例子就是很多<code>mutable</code>的数据类型上，比如<code>C#</code>中<code>IEnumerable</code>是协变的，但是<code>IList</code>就是不变的。</p>
+<h3 id="引用">引用</h3>
+<ol type="1">
+<li><a href="http://comonad.com/reader/2008/rotten-bananas/" target="_blank" rel="noopener">Invariant</a></li>
+<li><a href="https://github.com/typelevel/cats/blob/master/core/src/main/scala/cats/functor/Invariant.scala" target="_blank" rel="noopener">cats</a></li>
+<li><a href="https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/" target="_blank" rel="noopener">Category Theory for Programmers</a></li>
+<li><a href="https://ncatlab.org/nlab/show/profunctor" target="_blank" rel="noopener">profunctor</a></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Scala/" rel="tag"># Scala</a>
+          
+            <a href="/tags/Cats/" rel="tag"># Cats</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/15/opsmacros/" rel="next" title="Spire’s Ops macros? Why and How!">
+                <i class="fa fa-chevron-left"></i> Spire’s Ops macros? Why and How!
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/30/cats-2/" rel="prev" title="一点尾巴以及-Cats和Cats">
+                一点尾巴以及-Cats和Cats <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">ariwaranosai</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">47</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#functor"><span class="nav-number">1.</span> <span class="nav-text">Functor</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#functor-laws"><span class="nav-number">1.1.</span> <span class="nav-text">Functor Laws</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#some-functors"><span class="nav-number">1.2.</span> <span class="nav-text">Some Functors</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#maybe-or-option"><span class="nav-number">1.2.1.</span> <span class="nav-text">Maybe or Option</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#function"><span class="nav-number">1.2.2.</span> <span class="nav-text">Function?</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#list"><span class="nav-number">1.2.3.</span> <span class="nav-text">List</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#functor-composition"><span class="nav-number">1.2.4.</span> <span class="nav-text">Functor Composition</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#functoriality"><span class="nav-number">2.</span> <span class="nav-text">Functoriality</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#bifunctors"><span class="nav-number">2.1.</span> <span class="nav-text">Bifunctors</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#product-and-coproduct-bifunctors"><span class="nav-number">2.2.</span> <span class="nav-text">Product and Coproduct Bifunctors</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#composition-of-bifunctor"><span class="nav-number">2.3.</span> <span class="nav-text">composition of bifunctor</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#covariant-and-contravariant-functors"><span class="nav-number">3.</span> <span class="nav-text">Covariant and Contravariant Functors</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#profunctors"><span class="nav-number">4.</span> <span class="nav-text">Profunctors</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#subtyping-and-functor"><span class="nav-number">4.1.</span> <span class="nav-text">subtyping and functor</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#show"><span class="nav-number">4.1.1.</span> <span class="nav-text">show</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#invariant"><span class="nav-number">4.2.</span> <span class="nav-text">Invariant</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用"><span class="nav-number">5.</span> <span class="nav-text">引用</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ariwaranosai</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+<!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": { 
+        preferredFont: "TeX", 
+        availableFonts: ["STIX","TeX"], 
+        linebreaks: { automatic:true }, 
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) 
+    },
+    tex2jax: { 
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ], 
+        processEscapes: true, 
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {  
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, 
+        Macros: { href: "{}" } 
+    },
+    messageStyle: "none"
+    }); 
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
